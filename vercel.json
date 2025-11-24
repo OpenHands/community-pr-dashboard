@@ -1,0 +1,9 @@
+{
+  "buildCommand": "rm -rf .next && npm run build",
+  "framework": "nextjs",
+  "installCommand": "npm ci",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
+}
