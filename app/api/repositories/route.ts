@@ -24,15 +24,36 @@ export async function GET(request: NextRequest) {
     for (const org of orgsToFetch) {
       try {
         console.log(`Fetching repositories for org: ${org}`)
-        const { data: repositories } = await octokit.rest.repos.listForOrg({
-          org,
-          type: 'public',
-          sort: 'updated',
-          per_page: 100, // Increased to get more repos
-        })
+        
+        // Paginate through all repositories
+        let page = 1
+        let hasMore = true
+        let orgRepoCount = 0
+        
+        while (hasMore) {
+          const { data: repositories } = await octokit.rest.repos.listForOrg({
+            org,
+            type: 'public',
+            sort: 'updated',
+            per_page: 100,
+            page,
+          })
 
-        console.log(`Found ${repositories.length} repositories for ${org}`)
-        allRepositories.push(...repositories)
+          if (repositories.length === 0) {
+            hasMore = false
+          } else {
+            allRepositories.push(...repositories)
+            orgRepoCount += repositories.length
+            page++
+            
+            // Stop if we got fewer than 100 repos (last page)
+            if (repositories.length < 100) {
+              hasMore = false
+            }
+          }
+        }
+
+        console.log(`Found ${orgRepoCount} repositories for ${org}`)
       } catch (orgError) {
         console.error(`Error fetching repositories for org ${org}:`, orgError)
         // Continue with other orgs even if one fails

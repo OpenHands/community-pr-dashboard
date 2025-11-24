@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
       authorType: authorTypeParam
     })}`;
     
-    // Temporarily bypass cache for debugging
-    const result = await (async () => {
+    // Use cache to improve performance
+    const result = await cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
       // Build employees set
       console.log('Building employees set...');
       const employeesSet = await buildEmployeesSet();
@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
         totalPrs: allPrs.length,
         employeeCount: employeesSet.size,
       };
-    })();
+    });
     
     const response = result;
     
