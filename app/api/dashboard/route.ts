@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
         totalPrs: allPrs.length,
         employeeCount: employeesSet.size,
       };
-    })();
+    });
     
     const response = result;
     
