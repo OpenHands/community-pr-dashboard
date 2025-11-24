@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<FilterState>({
     repositories: [],
     labels: [],
-    ageRange: '7-days', // Default to Last 7 days
+    ageRange: 'all', // Default to All Time - no filtering
     status: 'all',
     noReviewers: false,
     limit: 'all',
@@ -28,7 +28,7 @@ export default function Dashboard() {
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
     repositories: [],
     labels: [],
-    ageRange: '7-days', // Default to Last 7 days
+    ageRange: 'all', // Default to All Time - no filtering
     status: 'all',
     noReviewers: false,
     limit: 'all',
@@ -112,7 +112,7 @@ export default function Dashboard() {
     const clearedFilters = {
       repositories: [],
       labels: [],
-      ageRange: '7-days', // Keep Last 7 days as default
+      ageRange: 'all', // Default to All Time - no filtering
       status: 'all',
       noReviewers: false,
       limit: 'all',
