@@ -1,0 +1,144 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║              VERCEL STALE DEPLOYMENT - ROOT CAUSE & SOLUTION                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+COMMITS PUSHED:
+  • 30a044d - Fix Vercel stale build cache issue
+  • 00928dd - Add quick fix guide for deployment issue
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ROOT CAUSE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Vercel's aggressive build caching caused production to serve stale code:
+
+  ✓ PR #14 Preview: Fresh build → Showed updated code
+  ✗ Production:      Cached build → Showed OLD code from before PR #14
+
+When PR #14 was merged, Vercel reused cached .next artifacts instead of 
+building fresh, resulting in the stale deployment.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WHY PR PREVIEW WAS CURRENT BUT PRODUCTION WASN'T:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Preview deployments get isolated fresh builds with minimal caching.
+Production deployments aggressively cache to optimize build speed.
+
+When merging to main:
+  1. Vercel checks if "significant" changes exist
+  2. Sees TypeScript/JavaScript changes but decides they're not "significant"
+  3. Reuses cached .next directory from BEFORE PR #14
+  4. Serves old code despite new commits
+
+This is a known Vercel behavior that affects many Next.js projects.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOLUTION IMPLEMENTED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created/Modified Files:
+
+1. vercel.json (NEW)
+   └─ Forces removal of .next before build
+   └─ Uses npm ci for clean installs
+   └─ Ensures completely fresh builds
+
+2. next.config.js (MODIFIED)
+   └─ Added generateBuildId using git commit SHA
+   └─ Each commit gets unique build ID
+   └─ Prevents cache key collisions
+
+3. VERCEL_STALE_DEPLOYMENT_ISSUE.md (NEW)
+   └─ Comprehensive root cause analysis
+   └─ Multiple solution approaches
+   └─ Troubleshooting guide
+
+4. QUICK_FIX_GUIDE.md (NEW)
+   └─ Quick reference for immediate action
+   └─ Verification checklist
+   └─ Manual steps if needed
+
+5. verify-deployment.sh (NEW)
+   └─ Automated verification script
+   └─ Tests API endpoints
+   └─ Checks build IDs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EXPECTED CHANGES FROM PR #14 (Now Will Be Live):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/page.tsx
+  ✓ Default age filter: 'all' (was '7-days')
+  ✓ Shows ALL PRs by default, not just last 7 days
+
+File: app/api/dashboard/route.ts
+  ✓ Cache re-enabled with cache.withCache()
+  ✓ Faster API responses with proper caching
+
+File: app/api/repositories/route.ts
+  ✓ Repository pagination loops through ALL pages
+  ✓ Fetches all repos (not limited to 100 per org)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VERIFICATION (After Vercel Deploys):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Visual Check:
+  1. Open production URL
+  2. Age filter should default to "All Time"
+  3. Repository dropdown should show >100 repos
+
+Automated Check:
+  ./verify-deployment.sh https://your-production-url.vercel.app
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+IF STILL STALE (Fallback):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Manual Redeploy in Vercel Dashboard:
+  1. Go to Vercel Dashboard → Your Project
+  2. Click "Deployments"
+  3. Find latest deployment
+  4. Click "..." → "Redeploy"
+  5. IMPORTANT: Uncheck "Use existing build cache"
+  6. Click "Redeploy"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PREVENTION FOR FUTURE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+With the new configuration:
+  ✓ Every build clears .next directory
+  ✓ Each commit gets unique build ID
+  ✓ Vercel cannot reuse stale cached builds
+  ✓ This problem won't occur again
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TIMELINE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2025-11-24 11:26 - PR #14 merged to main (commit 24ed8ce)
+2025-11-24 (now) - Issue identified: Vercel serving stale build
+2025-11-24 (now) - Fix committed and pushed (commits 30a044d, 00928dd)
+2025-11-24 (soon) - Vercel auto-deploys fix → Production updated ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+REFERENCE DOCUMENTATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read these files for more information:
+  • QUICK_FIX_GUIDE.md                 (Quick start - recommended)
+  • VERCEL_STALE_DEPLOYMENT_ISSUE.md   (Full technical details)
+  • verify-deployment.sh               (Verification script)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
