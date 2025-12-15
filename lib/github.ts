@@ -134,7 +134,7 @@ export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<an
         pullRequests(states: OPEN, first: 50, after: $cursor, orderBy: {field: CREATED_AT, direction: DESC}) {
           pageInfo { hasNextPage endCursor }
           nodes {
-            number title url createdAt updatedAt isDraft authorAssociation
+            number title url createdAt updatedAt isDraft authorAssociation state
             author { login }
             mergeable
             labels(first: 20) { nodes { name } }
@@ -179,7 +179,9 @@ export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<an
     const result: OpenPRsResult = await graphql<OpenPRsResult>(query, { owner, name: repo, cursor });
 
     const prData = result.repository.pullRequests;
-    prs.push(...prData.nodes);
+    // Filter to ensure only OPEN PRs are included
+    const openPrs = prData.nodes.filter((pr: any) => pr.state === 'OPEN');
+    prs.push(...openPrs);
     
     hasNextPage = prData.pageInfo.hasNextPage;
     cursor = prData.pageInfo.endCursor;
