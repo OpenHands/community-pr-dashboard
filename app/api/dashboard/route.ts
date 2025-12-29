@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { config, validateConfig } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs } from '@/lib/github';
+import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, CompletedReviewData } from '@/lib/github';
 import { transformPR, computeKpis, computeDashboardData } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
 
@@ -88,6 +88,9 @@ export async function GET(request: NextRequest) {
       console.log('Target repos:', targetRepos);
       console.log('Repos to fetch:', reposToFetch);
       
+      // Fetch completed reviews from last month for reviewer stats
+      const allCompletedReviews: CompletedReviewData[] = [];
+      
       for (const repoPath of reposToFetch) {
         const [owner, repo] = repoPath.split('/');
         if (!owner || !repo) continue;
@@ -103,6 +106,12 @@ export async function GET(request: NextRequest) {
           });
           
           allPrs.push(...transformedPrs);
+          
+          // Fetch completed reviews from merged PRs
+          console.log(`Fetching completed reviews for ${repoPath}...`);
+          const completedReviews = await getRecentlyMergedPRsWithReviews(owner, repo, 30);
+          console.log(`Found ${completedReviews.length} completed reviews for ${repoPath}`);
+          allCompletedReviews.push(...completedReviews);
         } catch (error) {
           console.error(`Failed to fetch PRs for ${repoPath}:`, error);
           // Continue with other repos
@@ -193,7 +202,7 @@ export async function GET(request: NextRequest) {
       }
       
       // Compute dashboard data based on all PRs (not just filtered ones)
-      const dashboardData = computeDashboardData(allPrs, employeesSet);
+      const dashboardData = computeDashboardData(allPrs, employeesSet, allCompletedReviews);
       
       // But return filtered PRs for the table
       return {

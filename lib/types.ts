@@ -82,6 +82,9 @@ export type FilterState = {
 export type Reviewer = {
   name: string;
   pendingCount: number;
+  reviewsCompletedLastMonth: number;
+  avgReviewTimeHours: number | null;
+  completionRate: number | null;
 };
 
 export type DashboardKPIs = {

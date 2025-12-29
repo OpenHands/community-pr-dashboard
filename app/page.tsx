@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [darkMode, setDarkMode] = useState(false)
+  const [showAllReviewers, setShowAllReviewers] = useState(false)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
   
   const [filters, setFilters] = useState<FilterState>({
@@ -241,19 +242,11 @@ export default function Dashboard() {
             </div>
             
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
-              <h3 className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Top Pending Reviewers</h3>
-              <ul className="space-y-2 mt-3">
-                {data?.reviewers?.slice(0, 4).map((reviewer, index) => (
-                  <li key={index} className={`flex justify-between items-center py-2 border-b last:border-b-0 ${darkMode ? 'border-gray-600' : 'border-gray-100'}`}>
-                    <span className={`font-medium text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reviewer.name}</span>
-                    <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                      {reviewer.pendingCount}
-                    </span>
-                  </li>
-                )) || (
-                  <li className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No pending reviewers</li>
-                )}
-              </ul>
+              <h3 className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviews Completed (Last 30 Days)</h3>
+              <div className={`text-3xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                {data?.reviewers?.reduce((sum, r) => sum + r.reviewsCompletedLastMonth, 0) || 0}
+              </div>
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total reviews by team</div>
             </div>
             
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
@@ -266,33 +259,77 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Review Load Distribution Section - Matching wireframe exactly */}
+        {/* Reviewer Stats Section - New enhanced section */}
         <section className="py-6">
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
-            <h3 className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Review Load Distribution</h3>
-            <div className={`text-xs mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Current assignment fairness across team members</div>
-            <div className="space-y-3">
-              {data?.reviewers?.slice(0, 5).map((reviewer, index) => {
-                const maxCount = Math.max(...(data?.reviewers?.map(r => r.pendingCount) || [1]))
-                const percentage = Math.min((reviewer.pendingCount / maxCount) * 100, 100)
-                return (
-                  <div key={index} className="flex items-center">
-                    <div className={`w-24 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{reviewer.name}</div>
-                    <div className={`flex-1 mx-3 h-5 rounded-full overflow-hidden relative ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                      <div 
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${percentage}%`,
-                          background: 'linear-gradient(90deg, #10b981, #f59e0b, #ef4444)'
-                        }}
-                      ></div>
-                    </div>
-                    <div className={`text-sm font-semibold min-w-[30px] ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reviewer.pendingCount}</div>
-                  </div>
-                )
-              }) || (
-                <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No reviewer data available</div>
-              )}
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviewer Performance (Last 30 Days)</h3>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sorted by reviews completed</div>
+              </div>
+              <button
+                onClick={() => setShowAllReviewers(!showAllReviewers)}
+                className={`px-3 py-1 text-xs ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded border transition-colors`}
+              >
+                {showAllReviewers ? 'Show Top 5' : `Show All (${data?.reviewers?.length || 0})`}
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                    <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviews (30d)</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Avg Time</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Completion %</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Pending</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(showAllReviewers ? data?.reviewers : data?.reviewers?.slice(0, 5))?.map((reviewer, index) => {
+                    const formatAvgTime = (hours: number | null) => {
+                      if (hours === null) return 'N/A';
+                      if (hours < 24) return `${Math.round(hours)}h`;
+                      return `${Math.round(hours / 24)}d`;
+                    };
+                    const formatCompletionRate = (rate: number | null) => {
+                      if (rate === null) return 'N/A';
+                      return `${Math.round(rate)}%`;
+                    };
+                    return (
+                      <tr key={index} className={`border-b last:border-b-0 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                        <td className={`py-2 px-2 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reviewer.name}</td>
+                        <td className="py-2 px-2 text-center">
+                          <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                            {reviewer.reviewsCompletedLastMonth}
+                          </span>
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {formatAvgTime(reviewer.avgReviewTimeHours)}
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {formatCompletionRate(reviewer.completionRate)}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {reviewer.pendingCount > 0 ? (
+                            <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                              {reviewer.pendingCount}
+                            </span>
+                          ) : (
+                            <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>0</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  }) || (
+                    <tr>
+                      <td colSpan={5} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        No reviewer data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>

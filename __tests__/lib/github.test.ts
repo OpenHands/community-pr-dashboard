@@ -1,4 +1,4 @@
-import { getOpenPRsGraphQL } from '@/lib/github';
+import { getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews } from '@/lib/github';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -299,5 +299,216 @@ describe('getOpenPRsGraphQL', () => {
     expect(result[0].state).toBe('OPEN');
     expect(result[1].number).toBe(3);
     expect(result[1].state).toBe('OPEN');
+  });
+});
+
+describe('getRecentlyMergedPRsWithReviews', () => {
+  const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should extract completed reviews from merged PRs', async () => {
+    // Use dates within the last 30 days
+    const requestedDate = new Date();
+    requestedDate.setDate(requestedDate.getDate() - 5);
+    const submittedDate = new Date();
+    submittedDate.setDate(submittedDate.getDate() - 4);
+    
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: new Date().toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'ReviewRequestedEvent',
+                      createdAt: requestedDate.toISOString(),
+                      requestedReviewer: { __typename: 'User', login: 'reviewer1' },
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      submittedAt: submittedDate.toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].reviewerLogin).toBe('reviewer1');
+    expect(result[0].requestedAt).toBe(requestedDate.toISOString());
+    expect(result[0].submittedAt).toBe(submittedDate.toISOString());
+    expect(result[0].prNumber).toBe(1);
+  });
+
+  it('should handle reviews without request events', async () => {
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: new Date().toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].reviewerLogin).toBe('reviewer1');
+    expect(result[0].requestedAt).toBeNull();
+  });
+
+  it('should filter out reviews older than the specified days', async () => {
+    const oldDate = new Date();
+    oldDate.setDate(oldDate.getDate() - 60); // 60 days ago
+
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: oldDate.toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      submittedAt: oldDate.toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    // Review is older than 30 days, should be filtered out
+    expect(result).toHaveLength(0);
+  });
+
+  it('should only count actual reviews (APPROVED, CHANGES_REQUESTED, COMMENTED)', async () => {
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: new Date().toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'APPROVED',
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer2' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'CHANGES_REQUESTED',
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer3' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'COMMENTED',
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer4' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'PENDING', // Should be filtered out
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer5' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'DISMISSED', // Should be filtered out
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    // Only APPROVED, CHANGES_REQUESTED, and COMMENTED should be counted
+    expect(result).toHaveLength(3);
+    expect(result.map(r => r.reviewerLogin).sort()).toEqual(['reviewer1', 'reviewer2', 'reviewer3']);
   });
 });

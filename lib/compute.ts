@@ -1,6 +1,7 @@
-import { PR, Review, KPIs, ReviewStatsResponse } from './types';
+import { PR, Review, KPIs, ReviewStatsResponse, Reviewer } from './types';
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
+import { CompletedReviewData } from './github';
 
 export function computeFirsts(pr: any, employeesSet: Set<string>): {
   firstHumanResponseAt?: string;
@@ -146,7 +147,98 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
   };
 }
 
-export function computeDashboardData(allPrs: PR[], employeesSet: Set<string>): import('./types').DashboardData {
+export function computeReviewerStats(
+  allPrs: PR[],
+  completedReviews: CompletedReviewData[],
+  employeesSet: Set<string>
+): Reviewer[] {
+  // Calculate pending review counts from open PRs
+  const pendingCounts: Record<string, number> = {};
+  allPrs.forEach(pr => {
+    pr.requestedReviewers.users.forEach(reviewer => {
+      pendingCounts[reviewer] = (pendingCounts[reviewer] || 0) + 1;
+    });
+  });
+  
+  // Calculate completed reviews stats per reviewer
+  const reviewerStats: Record<string, {
+    completedCount: number;
+    reviewTimes: number[];
+    requestedCount: number;
+  }> = {};
+  
+  for (const review of completedReviews) {
+    const login = review.reviewerLogin;
+    if (!reviewerStats[login]) {
+      reviewerStats[login] = {
+        completedCount: 0,
+        reviewTimes: [],
+        requestedCount: 0,
+      };
+    }
+    
+    reviewerStats[login].completedCount++;
+    
+    // Calculate review time if we have the request time
+    if (review.requestedAt) {
+      reviewerStats[login].requestedCount++;
+      const requestedTime = new Date(review.requestedAt).getTime();
+      const submittedTime = new Date(review.submittedAt).getTime();
+      const reviewTimeHours = (submittedTime - requestedTime) / (1000 * 60 * 60);
+      if (reviewTimeHours > 0) {
+        reviewerStats[login].reviewTimes.push(reviewTimeHours);
+      }
+    }
+  }
+  
+  // Combine all reviewers (those with pending reviews and those with completed reviews)
+  const allReviewerLogins = new Set([
+    ...Object.keys(pendingCounts),
+    ...Object.keys(reviewerStats),
+  ]);
+  
+  // Filter to only include employees/maintainers
+  const filteredLogins = Array.from(allReviewerLogins).filter(login => 
+    isEmployee(login, employeesSet)
+  );
+  
+  // Build reviewer objects
+  const reviewers: Reviewer[] = filteredLogins.map(login => {
+    const stats = reviewerStats[login] || { completedCount: 0, reviewTimes: [], requestedCount: 0 };
+    const pendingCount = pendingCounts[login] || 0;
+    
+    // Calculate average review time
+    let avgReviewTimeHours: number | null = null;
+    if (stats.reviewTimes.length > 0) {
+      avgReviewTimeHours = stats.reviewTimes.reduce((a, b) => a + b, 0) / stats.reviewTimes.length;
+    }
+    
+    // Calculate completion rate (completed reviews / requested reviews)
+    let completionRate: number | null = null;
+    if (stats.requestedCount > 0) {
+      completionRate = (stats.completedCount / stats.requestedCount) * 100;
+    }
+    
+    return {
+      name: login,
+      pendingCount,
+      reviewsCompletedLastMonth: stats.completedCount,
+      avgReviewTimeHours,
+      completionRate,
+    };
+  });
+  
+  // Sort by reviews completed last month (descending)
+  reviewers.sort((a, b) => b.reviewsCompletedLastMonth - a.reviewsCompletedLastMonth);
+  
+  return reviewers;
+}
+
+export function computeDashboardData(
+  allPrs: PR[],
+  employeesSet: Set<string>,
+  completedReviews: CompletedReviewData[] = []
+): import('./types').DashboardData {
   const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
@@ -178,17 +270,8 @@ export function computeDashboardData(allPrs: PR[], employeesSet: Set<string>): i
     return `${Math.round(hours / 24)}d`;
   };
   
-  // Calculate reviewer load
-  const reviewerCounts: Record<string, number> = {};
-  allPrs.forEach(pr => {
-    pr.requestedReviewers.users.forEach(reviewer => {
-      reviewerCounts[reviewer] = (reviewerCounts[reviewer] || 0) + 1;
-    });
-  });
-  
-  const reviewers = Object.entries(reviewerCounts)
-    .map(([name, pendingCount]) => ({ name, pendingCount }))
-    .sort((a, b) => b.pendingCount - a.pendingCount);
+  // Calculate reviewer stats with completed reviews data
+  const reviewers = computeReviewerStats(allPrs, completedReviews, employeesSet);
   
   // Calculate compliance
   const prsWithAssignedReviewers = nonDraftPrs.filter(pr => pr.requestedReviewers.users.length > 0);
@@ -197,8 +280,8 @@ export function computeDashboardData(allPrs: PR[], employeesSet: Set<string>): i
     : 0;
   
   const prsWithoutReviewers = nonDraftPrs.filter(pr => pr.requestedReviewers.users.length === 0);
-  const totalPendingReviews = Object.values(reviewerCounts).reduce((sum, count) => sum + count, 0);
-  const activeReviewers = Object.keys(reviewerCounts).length;
+  const totalPendingReviews = reviewers.reduce((sum, r) => sum + r.pendingCount, 0);
+  const activeReviewers = reviewers.filter(r => r.pendingCount > 0 || r.reviewsCompletedLastMonth > 0).length;
   
   return {
     kpis: {

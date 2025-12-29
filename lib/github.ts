@@ -244,3 +244,117 @@ export async function getAllRepositoriesFromOrgs(orgs: string[]): Promise<string
   
   return allRepos;
 }
+
+export type CompletedReviewData = {
+  reviewerLogin: string;
+  submittedAt: string;
+  requestedAt: string | null;
+  prNumber: number;
+  prUrl: string;
+};
+
+export async function getRecentlyMergedPRsWithReviews(owner: string, repo: string, daysBack: number = 30): Promise<CompletedReviewData[]> {
+  const sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - daysBack);
+  const sinceISO = sinceDate.toISOString();
+  
+  const query = `
+    query RecentMergedPRs($owner: String!, $name: String!, $cursor: String) {
+      repository(owner: $owner, name: $name) {
+        pullRequests(states: MERGED, first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            number
+            url
+            mergedAt
+            timelineItems(first: 100, itemTypes: [REVIEW_REQUESTED_EVENT, PULL_REQUEST_REVIEW]) {
+              nodes {
+                __typename
+                ... on ReviewRequestedEvent {
+                  createdAt
+                  requestedReviewer {
+                    __typename
+                    ... on User { login }
+                  }
+                }
+                ... on PullRequestReview {
+                  author { login }
+                  submittedAt
+                  state
+                }
+              }
+            }
+          }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+  `;
+
+  const completedReviews: CompletedReviewData[] = [];
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  let pageCount = 0;
+  const maxPages = 5; // Limit pages to avoid excessive API calls
+
+  while (hasNextPage && pageCount < maxPages) {
+    type MergedPRsResult = {
+      repository: {
+        pullRequests: {
+          pageInfo: { hasNextPage: boolean; endCursor: string | null };
+          nodes: any[];
+        };
+      };
+    };
+    
+    const result: MergedPRsResult = await graphql<MergedPRsResult>(query, { owner, name: repo, cursor });
+
+    const prData = result.repository.pullRequests;
+    
+    for (const pr of prData.nodes) {
+      // Skip PRs merged before our date range
+      if (pr.mergedAt && new Date(pr.mergedAt) < sinceDate) {
+        hasNextPage = false;
+        break;
+      }
+      
+      // Build a map of review requests by reviewer
+      const reviewRequests: Record<string, string> = {};
+      const reviews: Array<{ login: string; submittedAt: string }> = [];
+      
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'ReviewRequestedEvent' && item.requestedReviewer?.login) {
+          reviewRequests[item.requestedReviewer.login] = item.createdAt;
+        } else if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
+          // Only count actual reviews (APPROVED, CHANGES_REQUESTED, COMMENTED)
+          if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
+            reviews.push({
+              login: item.author.login,
+              submittedAt: item.submittedAt,
+            });
+          }
+        }
+      }
+      
+      // Match reviews with their request times
+      for (const review of reviews) {
+        // Only count reviews submitted within our date range
+        if (new Date(review.submittedAt) >= sinceDate) {
+          completedReviews.push({
+            reviewerLogin: review.login,
+            submittedAt: review.submittedAt,
+            requestedAt: reviewRequests[review.login] || null,
+            prNumber: pr.number,
+            prUrl: pr.url,
+          });
+        }
+      }
+    }
+    
+    hasNextPage = prData.pageInfo.hasNextPage && hasNextPage;
+    cursor = prData.pageInfo.endCursor;
+    pageCount++;
+  }
+
+  return completedReviews;
+}
