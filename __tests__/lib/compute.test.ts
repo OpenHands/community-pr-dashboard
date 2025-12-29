@@ -80,12 +80,12 @@ describe('computeReviewerStats', () => {
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
         // 2 requested reviews
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-16T10:00:00Z', requestedAt: '2024-01-15T10:00:00Z', prNumber: 2, prUrl: 'url2' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-16T10:00:00Z', requestedAt: '2024-01-15T10:00:00Z', prNumber: 2, prUrl: 'url2' },
         // 1 unrequested review
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
         // employee2 has only unrequested
-        { reviewerLogin: 'employee2', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 4, prUrl: 'url4' },
+        { reviewerLogin: 'employee2', authorAssociation: 'MEMBER', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 4, prUrl: 'url4' },
       ],
       reviewRequests: [],
     };
@@ -109,11 +109,11 @@ describe('computeReviewerStats', () => {
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
         // 24 hours review time
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
         // 48 hours review time
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 2, prUrl: 'url2' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 2, prUrl: 'url2' },
         // 12 hours review time
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-01T22:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 3, prUrl: 'url3' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-01T22:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 3, prUrl: 'url3' },
       ],
       reviewRequests: [],
     };
@@ -129,7 +129,7 @@ describe('computeReviewerStats', () => {
     const prs: PR[] = [];
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
       ],
       reviewRequests: [],
     };
@@ -145,10 +145,10 @@ describe('computeReviewerStats', () => {
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
         // 2 reviews with request times (completed)
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-02T10:00:00Z', prNumber: 2, prUrl: 'url2' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-02T10:00:00Z', prNumber: 2, prUrl: 'url2' },
         // 1 review without request time (self-initiated)
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-04T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-04T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
       ],
       reviewRequests: [
         // 3 review requests, 2 completed
@@ -166,24 +166,43 @@ describe('computeReviewerStats', () => {
     expect(employee1?.requestedTotal).toBe(3);
   });
 
-  it('should include non-employees who have review activity', () => {
+  it('should include maintainers (COLLABORATOR/MEMBER/OWNER) who have review activity', () => {
     const prs: PR[] = [
-      createMockPR({ requestedReviewers: { users: ['external-user'], teams: [] } }),
+      createMockPR({ requestedReviewers: { users: ['maintainer-user'], teams: [] } }),
     ];
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
-        { reviewerLogin: 'external-user', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+        // maintainer-user has MEMBER authorAssociation, so should be included
+        { reviewerLogin: 'maintainer-user', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
       ],
       reviewRequests: [],
     };
 
     const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
-    // external-user should be included since they have review activity (pending or completed)
-    const externalUser = result.find(r => r.name === 'external-user');
-    expect(externalUser).toBeDefined();
-    expect(externalUser?.completedTotal).toBe(1);
-    expect(externalUser?.pendingCount).toBe(1);
+    // maintainer-user should be included since they have MEMBER authorAssociation
+    const maintainerUser = result.find(r => r.name === 'maintainer-user');
+    expect(maintainerUser).toBeDefined();
+    expect(maintainerUser?.completedTotal).toBe(1);
+    expect(maintainerUser?.pendingCount).toBe(1);
+  });
+
+  it('should filter out community members (non-employees, non-maintainers)', () => {
+    const prs: PR[] = [
+      createMockPR({ requestedReviewers: { users: ['community-user'], teams: [] } }),
+    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        // community-user has CONTRIBUTOR authorAssociation, so should NOT be included
+        { reviewerLogin: 'community-user', authorAssociation: 'CONTRIBUTOR', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+      ],
+      reviewRequests: [],
+    };
+
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
+
+    // community-user should NOT be included since they are not an employee or maintainer
+    expect(result.find(r => r.name === 'community-user')).toBeUndefined();
   });
 
   it('should filter out non-employees with no review activity', () => {
@@ -199,7 +218,7 @@ describe('computeReviewerStats', () => {
     const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     // inactive-user should not be in results since they have no actual review activity
-    // and are not an employee
+    // and are not an employee or maintainer
     expect(result.find(r => r.name === 'inactive-user')).toBeUndefined();
   });
 
@@ -207,12 +226,12 @@ describe('computeReviewerStats', () => {
     const prs: PR[] = [];
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
-        { reviewerLogin: 'employee2', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 2, prUrl: 'url2' },
-        { reviewerLogin: 'employee2', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
-        { reviewerLogin: 'employee2', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 4, prUrl: 'url4' },
-        { reviewerLogin: 'employee3', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 5, prUrl: 'url5' },
-        { reviewerLogin: 'employee3', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 6, prUrl: 'url6' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee2', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 2, prUrl: 'url2' },
+        { reviewerLogin: 'employee2', authorAssociation: 'MEMBER', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
+        { reviewerLogin: 'employee2', authorAssociation: 'MEMBER', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 4, prUrl: 'url4' },
+        { reviewerLogin: 'employee3', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 5, prUrl: 'url5' },
+        { reviewerLogin: 'employee3', authorAssociation: 'MEMBER', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 6, prUrl: 'url6' },
       ],
       reviewRequests: [],
     };
@@ -259,7 +278,7 @@ describe('computeDashboardData', () => {
     ];
     const reviewStatsData: ReviewStatsData = {
       completedReviews: [
-        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
       ],
       reviewRequests: [
         { reviewerLogin: 'employee1', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1 },

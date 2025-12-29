@@ -247,6 +247,7 @@ export async function getAllRepositoriesFromOrgs(orgs: string[]): Promise<string
 
 export type CompletedReviewData = {
   reviewerLogin: string;
+  authorAssociation: string;
   submittedAt: string;
   requestedAt: string | null;
   prNumber: number;
@@ -293,6 +294,7 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
                 }
                 ... on PullRequestReview {
                   author { login }
+                  authorAssociation
                   submittedAt
                   state
                 }
@@ -335,7 +337,7 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
       
       // Build a map of review requests by reviewer
       const prReviewRequests: Record<string, string> = {};
-      const reviews: Array<{ login: string; submittedAt: string }> = [];
+      const reviews: Array<{ login: string; authorAssociation: string; submittedAt: string }> = [];
       
       for (const item of pr.timelineItems?.nodes || []) {
         if (item.__typename === 'ReviewRequestedEvent' && item.requestedReviewer?.login) {
@@ -345,6 +347,7 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
           if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
             reviews.push({
               login: item.author.login,
+              authorAssociation: item.authorAssociation || 'NONE',
               submittedAt: item.submittedAt,
             });
           }
@@ -373,6 +376,7 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
           
           completedReviews.push({
             reviewerLogin: review.login,
+            authorAssociation: review.authorAssociation,
             submittedAt: review.submittedAt,
             requestedAt: requestedAtInRange,
             prNumber: pr.number,

@@ -154,6 +154,26 @@ export function computeReviewerStats(
 ): Reviewer[] {
   const { completedReviews, reviewRequests } = reviewStatsData;
   
+  // Build set of maintainers from:
+  // 1. PR authors with maintainer authorType
+  // 2. Reviewers with COLLABORATOR, MEMBER, or OWNER authorAssociation
+  const maintainersSet = new Set<string>();
+  
+  // From PR authors
+  allPrs.forEach(pr => {
+    if (pr.authorType === 'maintainer') {
+      maintainersSet.add(pr.authorLogin);
+    }
+  });
+  
+  // From completed reviews (reviewers with write access)
+  for (const review of completedReviews) {
+    const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(review.authorAssociation);
+    if (hasWriteAccess) {
+      maintainersSet.add(review.reviewerLogin);
+    }
+  }
+  
   // Calculate pending review counts from open PRs
   const pendingCounts: Record<string, number> = {};
   allPrs.forEach(pr => {
@@ -211,11 +231,9 @@ export function computeReviewerStats(
     ...Object.keys(requestStats),
   ]);
   
-  // Include employees and anyone with actual review activity
+  // Filter to only include employees or maintainers
   const filteredLogins = Array.from(allReviewerLogins).filter(login => 
-    isEmployee(login, employeesSet) ||
-    reviewerStats[login]?.completedTotal > 0 ||
-    pendingCounts[login] > 0
+    isEmployee(login, employeesSet) || maintainersSet.has(login)
   );
   
   // Helper function to calculate median

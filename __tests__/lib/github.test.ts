@@ -336,6 +336,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: submittedDate.toISOString(),
                       state: 'APPROVED',
                     },
@@ -358,6 +359,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
 
     expect(result.completedReviews).toHaveLength(1);
     expect(result.completedReviews[0].reviewerLogin).toBe('reviewer1');
+    expect(result.completedReviews[0].authorAssociation).toBe('MEMBER');
     expect(result.completedReviews[0].requestedAt).toBe(requestedDate.toISOString());
     expect(result.completedReviews[0].submittedAt).toBe(submittedDate.toISOString());
     expect(result.completedReviews[0].prNumber).toBe(1);
@@ -383,6 +385,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer1' },
+                      authorAssociation: 'COLLABORATOR',
                       submittedAt: new Date().toISOString(),
                       state: 'APPROVED',
                     },
@@ -405,6 +408,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
 
     expect(result.completedReviews).toHaveLength(1);
     expect(result.completedReviews[0].reviewerLogin).toBe('reviewer1');
+    expect(result.completedReviews[0].authorAssociation).toBe('COLLABORATOR');
     expect(result.completedReviews[0].requestedAt).toBeNull();
     
     // No review requests since there was no ReviewRequestedEvent
@@ -430,6 +434,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: oldDate.toISOString(),
                       state: 'APPROVED',
                     },
@@ -470,30 +475,35 @@ describe('getRecentlyMergedPRsWithReviews', () => {
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: new Date().toISOString(),
                       state: 'APPROVED',
                     },
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer2' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: new Date().toISOString(),
                       state: 'CHANGES_REQUESTED',
                     },
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer3' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: new Date().toISOString(),
                       state: 'COMMENTED',
                     },
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer4' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: new Date().toISOString(),
                       state: 'PENDING', // Should be filtered out
                     },
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer5' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: new Date().toISOString(),
                       state: 'DISMISSED', // Should be filtered out
                     },
@@ -549,6 +559,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
                     {
                       __typename: 'PullRequestReview',
                       author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
                       submittedAt: new Date().toISOString(),
                       state: 'APPROVED',
                     },
