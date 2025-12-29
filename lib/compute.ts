@@ -211,25 +211,11 @@ export function computeReviewerStats(
     ...Object.keys(requestStats),
   ]);
   
-  // Build set of maintainers from PR data (users with write access who authored PRs)
-  const maintainersSet = new Set<string>();
-  allPrs.forEach(pr => {
-    if (pr.authorType === 'maintainer') {
-      maintainersSet.add(pr.authorLogin);
-    }
-    // Also add reviewers from PR reviews (they have review access)
-    pr.reviews.forEach(review => {
-      // If someone reviewed a PR, they likely have review access
-      // We'll include them if they're in our reviewer data
-    });
-  });
-  
-  // Filter to only include employees or maintainers
-  // Include anyone who is an employee OR has pending/completed reviews (active reviewers)
+  // Include employees and anyone with actual review activity
   const filteredLogins = Array.from(allReviewerLogins).filter(login => 
-    isEmployee(login, employeesSet) || maintainersSet.has(login) || 
-    // Include anyone with actual review activity (they must have review access)
-    (reviewerStats[login]?.completedTotal > 0 || pendingCounts[login] > 0)
+    isEmployee(login, employeesSet) ||
+    reviewerStats[login]?.completedTotal > 0 ||
+    pendingCounts[login] > 0
   );
   
   // Helper function to calculate median

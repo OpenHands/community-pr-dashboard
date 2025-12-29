@@ -256,7 +256,6 @@ export type CompletedReviewData = {
 export type ReviewRequestData = {
   reviewerLogin: string;
   requestedAt: string;
-  completed: boolean;
   prNumber: number;
 };
 
@@ -266,6 +265,10 @@ export type ReviewStatsData = {
 };
 
 export async function getRecentlyMergedPRsWithReviews(owner: string, repo: string, daysBack: number = 30): Promise<ReviewStatsData> {
+  if (daysBack <= 0) {
+    throw new Error('daysBack must be a positive number');
+  }
+  
   const sinceDate = new Date();
   sinceDate.setDate(sinceDate.getDate() - daysBack);
   
@@ -348,14 +351,12 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
         }
       }
       
-      // Track all review requests and whether they were completed
-      const reviewersWhoReviewed = new Set(reviews.map(r => r.login));
+      // Track all review requests within the date range
       for (const [login, requestedAt] of Object.entries(prReviewRequests)) {
         if (new Date(requestedAt) >= sinceDate) {
           reviewRequests.push({
             reviewerLogin: login,
             requestedAt,
-            completed: reviewersWhoReviewed.has(login),
             prNumber: pr.number,
           });
         }

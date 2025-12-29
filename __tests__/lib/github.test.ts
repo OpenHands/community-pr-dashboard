@@ -365,7 +365,6 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     // Should also track the review request
     expect(result.reviewRequests).toHaveLength(1);
     expect(result.reviewRequests[0].reviewerLogin).toBe('reviewer1');
-    expect(result.reviewRequests[0].completed).toBe(true);
   });
 
   it('should handle reviews without request events', async () => {
@@ -574,9 +573,9 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     expect(result.reviewRequests).toHaveLength(2);
     
     const reviewer1Request = result.reviewRequests.find(r => r.reviewerLogin === 'reviewer1');
-    expect(reviewer1Request?.completed).toBe(true);
+    expect(reviewer1Request).toBeDefined();
     
     const reviewer2Request = result.reviewRequests.find(r => r.reviewerLogin === 'reviewer2');
-    expect(reviewer2Request?.completed).toBe(false);
+    expect(reviewer2Request).toBeDefined();
   });
 });

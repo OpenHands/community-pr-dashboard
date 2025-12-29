@@ -152,9 +152,9 @@ describe('computeReviewerStats', () => {
       ],
       reviewRequests: [
         // 3 review requests, 2 completed
-        { reviewerLogin: 'employee1', requestedAt: '2024-01-01T10:00:00Z', completed: true, prNumber: 1 },
-        { reviewerLogin: 'employee1', requestedAt: '2024-01-02T10:00:00Z', completed: true, prNumber: 2 },
-        { reviewerLogin: 'employee1', requestedAt: '2024-01-03T10:00:00Z', completed: false, prNumber: 4 },
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1 },
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-02T10:00:00Z', prNumber: 2 },
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-03T10:00:00Z', prNumber: 4 },
       ],
     };
 
@@ -192,7 +192,7 @@ describe('computeReviewerStats', () => {
       completedReviews: [],
       reviewRequests: [
         // Only has a review request but no completed reviews and no pending
-        { reviewerLogin: 'inactive-user', requestedAt: '2024-01-01T10:00:00Z', completed: false, prNumber: 1 },
+        { reviewerLogin: 'inactive-user', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1 },
       ],
     };
 
@@ -262,7 +262,7 @@ describe('computeDashboardData', () => {
         { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
       ],
       reviewRequests: [
-        { reviewerLogin: 'employee1', requestedAt: '2024-01-14T10:00:00Z', completed: true, prNumber: 1 },
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1 },
       ],
     };
 
