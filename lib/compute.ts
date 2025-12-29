@@ -1,6 +1,7 @@
-import { PR, Review, KPIs, ReviewStatsResponse } from './types';
+import { PR, Review, KPIs, ReviewStatsResponse, Reviewer } from './types';
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
+import { CompletedReviewData, ReviewRequestData, ReviewStatsData } from './github';
 
 export function computeFirsts(pr: any, employeesSet: Set<string>): {
   firstHumanResponseAt?: string;
@@ -146,7 +147,142 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
   };
 }
 
-export function computeDashboardData(allPrs: PR[], employeesSet: Set<string>): import('./types').DashboardData {
+export function computeReviewerStats(
+  allPrs: PR[],
+  reviewStatsData: ReviewStatsData,
+  employeesSet: Set<string>
+): Reviewer[] {
+  const { completedReviews, reviewRequests } = reviewStatsData;
+  
+  // Build set of maintainers from:
+  // 1. PR authors with maintainer authorType
+  // 2. Reviewers with COLLABORATOR, MEMBER, or OWNER authorAssociation
+  const maintainersSet = new Set<string>();
+  
+  // From PR authors
+  allPrs.forEach(pr => {
+    if (pr.authorType === 'maintainer') {
+      maintainersSet.add(pr.authorLogin);
+    }
+  });
+  
+  // From completed reviews (reviewers with write access)
+  for (const review of completedReviews) {
+    const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(review.authorAssociation);
+    if (hasWriteAccess) {
+      maintainersSet.add(review.reviewerLogin);
+    }
+  }
+  
+  // Calculate pending review counts from open PRs
+  const pendingCounts: Record<string, number> = {};
+  allPrs.forEach(pr => {
+    pr.requestedReviewers.users.forEach(reviewer => {
+      pendingCounts[reviewer] = (pendingCounts[reviewer] || 0) + 1;
+    });
+  });
+  
+  // Calculate completed reviews stats per reviewer
+  const reviewerStats: Record<string, {
+    completedTotal: number;
+    completedRequested: number;
+    completedUnrequested: number;
+    reviewTimes: number[];
+  }> = {};
+  
+  for (const review of completedReviews) {
+    const login = review.reviewerLogin;
+    if (!reviewerStats[login]) {
+      reviewerStats[login] = {
+        completedTotal: 0,
+        completedRequested: 0,
+        completedUnrequested: 0,
+        reviewTimes: [],
+      };
+    }
+    
+    reviewerStats[login].completedTotal++;
+    
+    // Calculate review time if we have the request time (this was a requested review)
+    if (review.requestedAt) {
+      reviewerStats[login].completedRequested++;
+      const requestedTime = new Date(review.requestedAt).getTime();
+      const submittedTime = new Date(review.submittedAt).getTime();
+      const reviewTimeHours = (submittedTime - requestedTime) / (1000 * 60 * 60);
+      if (reviewTimeHours > 0) {
+        reviewerStats[login].reviewTimes.push(reviewTimeHours);
+      }
+    } else {
+      reviewerStats[login].completedUnrequested++;
+    }
+  }
+  
+  // Calculate total requests from review requests
+  const requestStats: Record<string, number> = {};
+  for (const request of reviewRequests) {
+    const login = request.reviewerLogin;
+    requestStats[login] = (requestStats[login] || 0) + 1;
+  }
+  
+  // Combine all reviewers (those with pending reviews, completed reviews, or review requests)
+  const allReviewerLogins = new Set([
+    ...Object.keys(pendingCounts),
+    ...Object.keys(reviewerStats),
+    ...Object.keys(requestStats),
+  ]);
+  
+  // Filter to only include employees or maintainers
+  const filteredLogins = Array.from(allReviewerLogins).filter(login => 
+    isEmployee(login, employeesSet) || maintainersSet.has(login)
+  );
+  
+  // Helper function to calculate median
+  const median = (arr: number[]): number | null => {
+    if (arr.length === 0) return null;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  };
+  
+  // Build reviewer objects
+  const reviewers: Reviewer[] = filteredLogins.map(login => {
+    const stats = reviewerStats[login] || { completedTotal: 0, completedRequested: 0, completedUnrequested: 0, reviewTimes: [] };
+    const requestedTotal = requestStats[login] || 0;
+    const pendingCount = pendingCounts[login] || 0;
+    
+    // Calculate median review time
+    const medianReviewTimeHours = median(stats.reviewTimes);
+    
+    // Calculate completion rate (completed requested reviews / total requested reviews)
+    // This shows what percentage of requested reviews were actually completed
+    let completionRate: number | null = null;
+    if (requestedTotal > 0) {
+      completionRate = (stats.completedRequested / requestedTotal) * 100;
+    }
+    
+    return {
+      name: login,
+      pendingCount,
+      completedTotal: stats.completedTotal,
+      completedRequested: stats.completedRequested,
+      completedUnrequested: stats.completedUnrequested,
+      requestedTotal,
+      completionRate,
+      medianReviewTimeHours,
+    };
+  });
+  
+  // Sort by total reviews completed (descending)
+  reviewers.sort((a, b) => b.completedTotal - a.completedTotal);
+  
+  return reviewers;
+}
+
+export function computeDashboardData(
+  allPrs: PR[],
+  employeesSet: Set<string>,
+  reviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] }
+): import('./types').DashboardData {
   const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
@@ -178,17 +314,8 @@ export function computeDashboardData(allPrs: PR[], employeesSet: Set<string>): i
     return `${Math.round(hours / 24)}d`;
   };
   
-  // Calculate reviewer load
-  const reviewerCounts: Record<string, number> = {};
-  allPrs.forEach(pr => {
-    pr.requestedReviewers.users.forEach(reviewer => {
-      reviewerCounts[reviewer] = (reviewerCounts[reviewer] || 0) + 1;
-    });
-  });
-  
-  const reviewers = Object.entries(reviewerCounts)
-    .map(([name, pendingCount]) => ({ name, pendingCount }))
-    .sort((a, b) => b.pendingCount - a.pendingCount);
+  // Calculate reviewer stats with completed reviews data
+  const reviewers = computeReviewerStats(allPrs, reviewStatsData, employeesSet);
   
   // Calculate compliance
   const prsWithAssignedReviewers = nonDraftPrs.filter(pr => pr.requestedReviewers.users.length > 0);
@@ -197,8 +324,8 @@ export function computeDashboardData(allPrs: PR[], employeesSet: Set<string>): i
     : 0;
   
   const prsWithoutReviewers = nonDraftPrs.filter(pr => pr.requestedReviewers.users.length === 0);
-  const totalPendingReviews = Object.values(reviewerCounts).reduce((sum, count) => sum + count, 0);
-  const activeReviewers = Object.keys(reviewerCounts).length;
+  const totalPendingReviews = reviewers.reduce((sum, r) => sum + r.pendingCount, 0);
+  const activeReviewers = reviewers.filter(r => r.pendingCount > 0 || r.completedTotal > 0).length;
   
   return {
     kpis: {

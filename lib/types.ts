@@ -82,6 +82,14 @@ export type FilterState = {
 export type Reviewer = {
   name: string;
   pendingCount: number;
+  // Completed reviews breakdown
+  completedTotal: number;           // Total reviews completed (requested + unrequested)
+  completedRequested: number;       // Reviews completed that were requested
+  completedUnrequested: number;     // Reviews completed without being requested (self-initiated)
+  // Request tracking
+  requestedTotal: number;           // Total review requests received
+  completionRate: number | null;    // completedRequested / requestedTotal * 100
+  medianReviewTimeHours: number | null;  // Median time from request to completion
 };
 
 export type DashboardKPIs = {
