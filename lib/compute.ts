@@ -198,16 +198,10 @@ export function computeReviewerStats(
   }
   
   // Calculate total requests from review requests
-  const requestStats: Record<string, { requested: number; completed: number }> = {};
+  const requestStats: Record<string, number> = {};
   for (const request of reviewRequests) {
     const login = request.reviewerLogin;
-    if (!requestStats[login]) {
-      requestStats[login] = { requested: 0, completed: 0 };
-    }
-    requestStats[login].requested++;
-    if (request.completed) {
-      requestStats[login].completed++;
-    }
+    requestStats[login] = (requestStats[login] || 0) + 1;
   }
   
   // Combine all reviewers (those with pending reviews, completed reviews, or review requests)
@@ -217,9 +211,25 @@ export function computeReviewerStats(
     ...Object.keys(requestStats),
   ]);
   
-  // Filter to only include employees/maintainers
+  // Build set of maintainers from PR data (users with write access who authored PRs)
+  const maintainersSet = new Set<string>();
+  allPrs.forEach(pr => {
+    if (pr.authorType === 'maintainer') {
+      maintainersSet.add(pr.authorLogin);
+    }
+    // Also add reviewers from PR reviews (they have review access)
+    pr.reviews.forEach(review => {
+      // If someone reviewed a PR, they likely have review access
+      // We'll include them if they're in our reviewer data
+    });
+  });
+  
+  // Filter to only include employees or maintainers
+  // Include anyone who is an employee OR has pending/completed reviews (active reviewers)
   const filteredLogins = Array.from(allReviewerLogins).filter(login => 
-    isEmployee(login, employeesSet)
+    isEmployee(login, employeesSet) || maintainersSet.has(login) || 
+    // Include anyone with actual review activity (they must have review access)
+    (reviewerStats[login]?.completedTotal > 0 || pendingCounts[login] > 0)
   );
   
   // Helper function to calculate median
@@ -233,7 +243,7 @@ export function computeReviewerStats(
   // Build reviewer objects
   const reviewers: Reviewer[] = filteredLogins.map(login => {
     const stats = reviewerStats[login] || { completedTotal: 0, completedRequested: 0, completedUnrequested: 0, reviewTimes: [] };
-    const reqStats = requestStats[login] || { requested: 0, completed: 0 };
+    const requestedTotal = requestStats[login] || 0;
     const pendingCount = pendingCounts[login] || 0;
     
     // Calculate median review time
@@ -242,8 +252,8 @@ export function computeReviewerStats(
     // Calculate completion rate (completed requested reviews / total requested reviews)
     // This shows what percentage of requested reviews were actually completed
     let completionRate: number | null = null;
-    if (reqStats.requested > 0) {
-      completionRate = (reqStats.completed / reqStats.requested) * 100;
+    if (requestedTotal > 0) {
+      completionRate = (stats.completedRequested / requestedTotal) * 100;
     }
     
     return {
@@ -252,7 +262,7 @@ export function computeReviewerStats(
       completedTotal: stats.completedTotal,
       completedRequested: stats.completedRequested,
       completedUnrequested: stats.completedUnrequested,
-      requestedTotal: reqStats.requested,
+      requestedTotal,
       completionRate,
       medianReviewTimeHours,
     };

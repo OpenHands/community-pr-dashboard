@@ -166,7 +166,7 @@ describe('computeReviewerStats', () => {
     expect(employee1?.requestedTotal).toBe(3);
   });
 
-  it('should filter out non-employees from results', () => {
+  it('should include non-employees who have review activity', () => {
     const prs: PR[] = [
       createMockPR({ requestedReviewers: { users: ['external-user'], teams: [] } }),
     ];
@@ -179,8 +179,28 @@ describe('computeReviewerStats', () => {
 
     const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
-    // external-user should not be in results since they're not an employee
-    expect(result.find(r => r.name === 'external-user')).toBeUndefined();
+    // external-user should be included since they have review activity (pending or completed)
+    const externalUser = result.find(r => r.name === 'external-user');
+    expect(externalUser).toBeDefined();
+    expect(externalUser?.completedTotal).toBe(1);
+    expect(externalUser?.pendingCount).toBe(1);
+  });
+
+  it('should filter out non-employees with no review activity', () => {
+    const prs: PR[] = [];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [],
+      reviewRequests: [
+        // Only has a review request but no completed reviews and no pending
+        { reviewerLogin: 'inactive-user', requestedAt: '2024-01-01T10:00:00Z', completed: false, prNumber: 1 },
+      ],
+    };
+
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
+
+    // inactive-user should not be in results since they have no actual review activity
+    // and are not an employee
+    expect(result.find(r => r.name === 'inactive-user')).toBeUndefined();
   });
 
   it('should sort reviewers by total reviews completed (descending)', () => {

@@ -1,7 +1,6 @@
 {
   "allowlist": [
-    "openhands",
-    "enyst"
+    "openhands"
   ],
   "denylist": []
 }
