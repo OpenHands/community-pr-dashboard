@@ -253,10 +253,21 @@ export type CompletedReviewData = {
   prUrl: string;
 };
 
-export async function getRecentlyMergedPRsWithReviews(owner: string, repo: string, daysBack: number = 30): Promise<CompletedReviewData[]> {
+export type ReviewRequestData = {
+  reviewerLogin: string;
+  requestedAt: string;
+  completed: boolean;
+  prNumber: number;
+};
+
+export type ReviewStatsData = {
+  completedReviews: CompletedReviewData[];
+  reviewRequests: ReviewRequestData[];
+};
+
+export async function getRecentlyMergedPRsWithReviews(owner: string, repo: string, daysBack: number = 30): Promise<ReviewStatsData> {
   const sinceDate = new Date();
   sinceDate.setDate(sinceDate.getDate() - daysBack);
-  const sinceISO = sinceDate.toISOString();
   
   const query = `
     query RecentMergedPRs($owner: String!, $name: String!, $cursor: String) {
@@ -292,6 +303,7 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
   `;
 
   const completedReviews: CompletedReviewData[] = [];
+  const reviewRequests: ReviewRequestData[] = [];
   let cursor: string | null = null;
   let hasNextPage = true;
   let pageCount = 0;
@@ -319,12 +331,12 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
       }
       
       // Build a map of review requests by reviewer
-      const reviewRequests: Record<string, string> = {};
+      const prReviewRequests: Record<string, string> = {};
       const reviews: Array<{ login: string; submittedAt: string }> = [];
       
       for (const item of pr.timelineItems?.nodes || []) {
         if (item.__typename === 'ReviewRequestedEvent' && item.requestedReviewer?.login) {
-          reviewRequests[item.requestedReviewer.login] = item.createdAt;
+          prReviewRequests[item.requestedReviewer.login] = item.createdAt;
         } else if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
           // Only count actual reviews (APPROVED, CHANGES_REQUESTED, COMMENTED)
           if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
@@ -336,6 +348,19 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
         }
       }
       
+      // Track all review requests and whether they were completed
+      const reviewersWhoReviewed = new Set(reviews.map(r => r.login));
+      for (const [login, requestedAt] of Object.entries(prReviewRequests)) {
+        if (new Date(requestedAt) >= sinceDate) {
+          reviewRequests.push({
+            reviewerLogin: login,
+            requestedAt,
+            completed: reviewersWhoReviewed.has(login),
+            prNumber: pr.number,
+          });
+        }
+      }
+      
       // Match reviews with their request times
       for (const review of reviews) {
         // Only count reviews submitted within our date range
@@ -343,7 +368,7 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
           completedReviews.push({
             reviewerLogin: review.login,
             submittedAt: review.submittedAt,
-            requestedAt: reviewRequests[review.login] || null,
+            requestedAt: prReviewRequests[review.login] || null,
             prNumber: pr.number,
             prUrl: pr.url,
           });
@@ -356,5 +381,5 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
     pageCount++;
   }
 
-  return completedReviews;
+  return { completedReviews, reviewRequests };
 }

@@ -1,6 +1,6 @@
 import { computeReviewerStats, computeDashboardData } from '@/lib/compute';
 import { PR } from '@/lib/types';
-import { CompletedReviewData } from '@/lib/github';
+import { ReviewStatsData } from '@/lib/github';
 
 // Mock the employees module
 jest.mock('@/lib/employees', () => ({
@@ -60,8 +60,8 @@ describe('computeReviewerStats', () => {
       createMockPR({ requestedReviewers: { users: ['employee3'], teams: [] } }),
     ];
 
-    const completedReviews: CompletedReviewData[] = [];
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const reviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] };
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     expect(result).toHaveLength(3);
     
@@ -77,13 +77,16 @@ describe('computeReviewerStats', () => {
 
   it('should calculate reviews completed in last month', () => {
     const prs: PR[] = [];
-    const completedReviews: CompletedReviewData[] = [
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 2, prUrl: 'url2' },
-      { reviewerLogin: 'employee2', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 2, prUrl: 'url2' },
+        { reviewerLogin: 'employee2', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
+      ],
+      reviewRequests: [],
+    };
 
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     // Should be sorted by reviews completed (descending)
     expect(result[0].name).toBe('employee1');
@@ -95,14 +98,17 @@ describe('computeReviewerStats', () => {
 
   it('should calculate average review time when request time is available', () => {
     const prs: PR[] = [];
-    const completedReviews: CompletedReviewData[] = [
-      // 24 hours review time
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
-      // 48 hours review time
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 2, prUrl: 'url2' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        // 24 hours review time
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        // 48 hours review time
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 2, prUrl: 'url2' },
+      ],
+      reviewRequests: [],
+    };
 
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     const employee1 = result.find(r => r.name === 'employee1');
     // Average of 24 and 48 hours = 36 hours
@@ -111,11 +117,14 @@ describe('computeReviewerStats', () => {
 
   it('should return null for avgReviewTimeHours when no request times available', () => {
     const prs: PR[] = [];
-    const completedReviews: CompletedReviewData[] = [
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+      ],
+      reviewRequests: [],
+    };
 
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     const employee1 = result.find(r => r.name === 'employee1');
     expect(employee1?.avgReviewTimeHours).toBeNull();
@@ -123,30 +132,41 @@ describe('computeReviewerStats', () => {
 
   it('should calculate completion rate correctly', () => {
     const prs: PR[] = [];
-    const completedReviews: CompletedReviewData[] = [
-      // 2 reviews with request times (completed)
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-02T10:00:00Z', prNumber: 2, prUrl: 'url2' },
-      // 1 review without request time (self-initiated)
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-04T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        // 2 reviews with request times (completed)
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-02T10:00:00Z', requestedAt: '2024-01-01T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-03T10:00:00Z', requestedAt: '2024-01-02T10:00:00Z', prNumber: 2, prUrl: 'url2' },
+        // 1 review without request time (self-initiated)
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-04T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
+      ],
+      reviewRequests: [
+        // 3 review requests, 2 completed
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-01T10:00:00Z', completed: true, prNumber: 1 },
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-02T10:00:00Z', completed: true, prNumber: 2 },
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-03T10:00:00Z', completed: false, prNumber: 4 },
+      ],
+    };
 
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     const employee1 = result.find(r => r.name === 'employee1');
-    // 3 completed reviews / 2 requested reviews = 150%
-    expect(employee1?.completionRate).toBe(150);
+    // 2 completed requested reviews / 3 total requested reviews = 66.67%
+    expect(employee1?.completionRate).toBeCloseTo(66.67, 1);
   });
 
   it('should filter out non-employees from results', () => {
     const prs: PR[] = [
       createMockPR({ requestedReviewers: { users: ['external-user'], teams: [] } }),
     ];
-    const completedReviews: CompletedReviewData[] = [
-      { reviewerLogin: 'external-user', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        { reviewerLogin: 'external-user', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+      ],
+      reviewRequests: [],
+    };
 
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     // external-user should not be in results since they're not an employee
     expect(result.find(r => r.name === 'external-user')).toBeUndefined();
@@ -154,16 +174,19 @@ describe('computeReviewerStats', () => {
 
   it('should sort reviewers by reviews completed (descending)', () => {
     const prs: PR[] = [];
-    const completedReviews: CompletedReviewData[] = [
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
-      { reviewerLogin: 'employee2', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 2, prUrl: 'url2' },
-      { reviewerLogin: 'employee2', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
-      { reviewerLogin: 'employee2', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 4, prUrl: 'url4' },
-      { reviewerLogin: 'employee3', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 5, prUrl: 'url5' },
-      { reviewerLogin: 'employee3', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 6, prUrl: 'url6' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'employee2', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 2, prUrl: 'url2' },
+        { reviewerLogin: 'employee2', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 3, prUrl: 'url3' },
+        { reviewerLogin: 'employee2', submittedAt: '2024-01-17T10:00:00Z', requestedAt: null, prNumber: 4, prUrl: 'url4' },
+        { reviewerLogin: 'employee3', submittedAt: '2024-01-15T10:00:00Z', requestedAt: null, prNumber: 5, prUrl: 'url5' },
+        { reviewerLogin: 'employee3', submittedAt: '2024-01-16T10:00:00Z', requestedAt: null, prNumber: 6, prUrl: 'url6' },
+      ],
+      reviewRequests: [],
+    };
 
-    const result = computeReviewerStats(prs, completedReviews, employeesSet);
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
 
     expect(result[0].name).toBe('employee2');
     expect(result[0].reviewsCompletedLastMonth).toBe(3);
@@ -203,11 +226,16 @@ describe('computeDashboardData', () => {
     const prs: PR[] = [
       createMockPR({ requestedReviewers: { users: ['employee1'], teams: [] } }),
     ];
-    const completedReviews: CompletedReviewData[] = [
-      { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
-    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        { reviewerLogin: 'employee1', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+      ],
+      reviewRequests: [
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-14T10:00:00Z', completed: true, prNumber: 1 },
+      ],
+    };
 
-    const result = computeDashboardData(prs, employeesSet, completedReviews);
+    const result = computeDashboardData(prs, employeesSet, reviewStatsData);
 
     expect(result.reviewers).toBeDefined();
     expect(result.reviewers?.length).toBeGreaterThan(0);
@@ -224,7 +252,7 @@ describe('computeDashboardData', () => {
       createMockPR({ requestedReviewers: { users: ['employee1'], teams: [] } }),
     ];
 
-    const result = computeDashboardData(prs, employeesSet, []);
+    const result = computeDashboardData(prs, employeesSet, { completedReviews: [], reviewRequests: [] });
 
     expect(result.reviewers).toBeDefined();
     const employee1 = result.reviewers?.find(r => r.name === 'employee1');
@@ -238,7 +266,7 @@ describe('computeDashboardData', () => {
       createMockPR({ number: 2, requestedReviewers: { users: ['employee1'], teams: [] } }),
     ];
 
-    const result = computeDashboardData(prs, employeesSet, []);
+    const result = computeDashboardData(prs, employeesSet, { completedReviews: [], reviewRequests: [] });
 
     expect(result.kpis.pendingReviews).toBe(3); // 2 for employee1 + 1 for employee2
   });

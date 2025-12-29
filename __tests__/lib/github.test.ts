@@ -356,11 +356,16 @@ describe('getRecentlyMergedPRsWithReviews', () => {
 
     const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].reviewerLogin).toBe('reviewer1');
-    expect(result[0].requestedAt).toBe(requestedDate.toISOString());
-    expect(result[0].submittedAt).toBe(submittedDate.toISOString());
-    expect(result[0].prNumber).toBe(1);
+    expect(result.completedReviews).toHaveLength(1);
+    expect(result.completedReviews[0].reviewerLogin).toBe('reviewer1');
+    expect(result.completedReviews[0].requestedAt).toBe(requestedDate.toISOString());
+    expect(result.completedReviews[0].submittedAt).toBe(submittedDate.toISOString());
+    expect(result.completedReviews[0].prNumber).toBe(1);
+    
+    // Should also track the review request
+    expect(result.reviewRequests).toHaveLength(1);
+    expect(result.reviewRequests[0].reviewerLogin).toBe('reviewer1');
+    expect(result.reviewRequests[0].completed).toBe(true);
   });
 
   it('should handle reviews without request events', async () => {
@@ -399,9 +404,12 @@ describe('getRecentlyMergedPRsWithReviews', () => {
 
     const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
 
-    expect(result).toHaveLength(1);
-    expect(result[0].reviewerLogin).toBe('reviewer1');
-    expect(result[0].requestedAt).toBeNull();
+    expect(result.completedReviews).toHaveLength(1);
+    expect(result.completedReviews[0].reviewerLogin).toBe('reviewer1');
+    expect(result.completedReviews[0].requestedAt).toBeNull();
+    
+    // No review requests since there was no ReviewRequestedEvent
+    expect(result.reviewRequests).toHaveLength(0);
   });
 
   it('should filter out reviews older than the specified days', async () => {
@@ -444,7 +452,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
 
     // Review is older than 30 days, should be filtered out
-    expect(result).toHaveLength(0);
+    expect(result.completedReviews).toHaveLength(0);
   });
 
   it('should only count actual reviews (APPROVED, CHANGES_REQUESTED, COMMENTED)', async () => {
@@ -508,7 +516,67 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
 
     // Only APPROVED, CHANGES_REQUESTED, and COMMENTED should be counted
-    expect(result).toHaveLength(3);
-    expect(result.map(r => r.reviewerLogin).sort()).toEqual(['reviewer1', 'reviewer2', 'reviewer3']);
+    expect(result.completedReviews).toHaveLength(3);
+    expect(result.completedReviews.map(r => r.reviewerLogin).sort()).toEqual(['reviewer1', 'reviewer2', 'reviewer3']);
+  });
+
+  it('should track incomplete review requests', async () => {
+    const requestedDate = new Date();
+    requestedDate.setDate(requestedDate.getDate() - 5);
+    
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: new Date().toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'ReviewRequestedEvent',
+                      createdAt: requestedDate.toISOString(),
+                      requestedReviewer: { __typename: 'User', login: 'reviewer1' },
+                    },
+                    {
+                      __typename: 'ReviewRequestedEvent',
+                      createdAt: requestedDate.toISOString(),
+                      requestedReviewer: { __typename: 'User', login: 'reviewer2' },
+                    },
+                    // Only reviewer1 actually reviewed
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      submittedAt: new Date().toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    // Should have 2 review requests
+    expect(result.reviewRequests).toHaveLength(2);
+    
+    const reviewer1Request = result.reviewRequests.find(r => r.reviewerLogin === 'reviewer1');
+    expect(reviewer1Request?.completed).toBe(true);
+    
+    const reviewer2Request = result.reviewRequests.find(r => r.reviewerLogin === 'reviewer2');
+    expect(reviewer2Request?.completed).toBe(false);
   });
 });
