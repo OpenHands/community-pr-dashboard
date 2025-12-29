@@ -365,10 +365,15 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
       for (const review of reviews) {
         // Only count reviews submitted within our date range
         if (new Date(review.submittedAt) >= sinceDate) {
+          // Only include requestedAt if the request was also within the date range
+          // This ensures completedRequested <= requestedTotal
+          const requestedAt = prReviewRequests[review.login];
+          const requestedAtInRange = requestedAt && new Date(requestedAt) >= sinceDate ? requestedAt : null;
+          
           completedReviews.push({
             reviewerLogin: review.login,
             submittedAt: review.submittedAt,
-            requestedAt: prReviewRequests[review.login] || null,
+            requestedAt: requestedAtInRange,
             prNumber: pr.number,
             prUrl: pr.url,
           });

@@ -264,7 +264,7 @@ export default function Dashboard() {
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviewer Performance (Last 30 Days)</h3>
+                <h3 className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviewer Statistics (Last 30 Days)</h3>
                 <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Sorted by reviews completed</div>
               </div>
               <button
@@ -293,6 +293,10 @@ export default function Dashboard() {
                   {(showAllReviewers ? data?.reviewers : data?.reviewers?.slice(0, 5))?.map((reviewer, index) => {
                     const formatMedianTime = (hours: number | null) => {
                       if (hours === null) return 'N/A';
+                      if (hours < 1) {
+                        const minutes = Math.round(hours * 60);
+                        return `${minutes}m`;
+                      }
                       if (hours < 24) return `${Math.round(hours)}h`;
                       return `${Math.round(hours / 24)}d`;
                     };
