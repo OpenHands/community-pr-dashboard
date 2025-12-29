@@ -244,7 +244,7 @@ export default function Dashboard() {
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
               <h3 className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviews Completed (Last 30 Days)</h3>
               <div className={`text-3xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                {data?.reviewers?.reduce((sum, r) => sum + r.reviewsCompletedLastMonth, 0) || 0}
+                {data?.reviewers?.reduce((sum, r) => sum + r.completedTotal, 0) || 0}
               </div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total reviews by team</div>
             </div>
@@ -279,15 +279,19 @@ export default function Dashboard() {
                 <thead>
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
                     <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviews (30d)</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Avg Time</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div>Completed</div>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(total / requested / unrequested)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Requested</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Completion %</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Median Time</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Pending</th>
                   </tr>
                 </thead>
                 <tbody>
                   {(showAllReviewers ? data?.reviewers : data?.reviewers?.slice(0, 5))?.map((reviewer, index) => {
-                    const formatAvgTime = (hours: number | null) => {
+                    const formatMedianTime = (hours: number | null) => {
                       if (hours === null) return 'N/A';
                       if (hours < 24) return `${Math.round(hours)}h`;
                       return `${Math.round(hours / 24)}d`;
@@ -300,15 +304,21 @@ export default function Dashboard() {
                       <tr key={index} className={`border-b last:border-b-0 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <td className={`py-2 px-2 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reviewer.name}</td>
                         <td className="py-2 px-2 text-center">
-                          <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                            {reviewer.reviewsCompletedLastMonth}
+                          <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                            {reviewer.completedTotal}
+                          </span>
+                          <span className={`text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            / {reviewer.completedRequested} / {reviewer.completedUnrequested}
                           </span>
                         </td>
                         <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {formatAvgTime(reviewer.avgReviewTimeHours)}
+                          {reviewer.requestedTotal}
                         </td>
                         <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                           {formatCompletionRate(reviewer.completionRate)}
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {formatMedianTime(reviewer.medianReviewTimeHours)}
                         </td>
                         <td className="py-2 px-2 text-center">
                           {reviewer.pendingCount > 0 ? (
@@ -323,7 +333,7 @@ export default function Dashboard() {
                     );
                   }) || (
                     <tr>
-                      <td colSpan={5} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td colSpan={6} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         No reviewer data available
                       </td>
                     </tr>

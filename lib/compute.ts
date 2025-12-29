@@ -164,7 +164,9 @@ export function computeReviewerStats(
   
   // Calculate completed reviews stats per reviewer
   const reviewerStats: Record<string, {
-    completedCount: number;
+    completedTotal: number;
+    completedRequested: number;
+    completedUnrequested: number;
     reviewTimes: number[];
   }> = {};
   
@@ -172,25 +174,30 @@ export function computeReviewerStats(
     const login = review.reviewerLogin;
     if (!reviewerStats[login]) {
       reviewerStats[login] = {
-        completedCount: 0,
+        completedTotal: 0,
+        completedRequested: 0,
+        completedUnrequested: 0,
         reviewTimes: [],
       };
     }
     
-    reviewerStats[login].completedCount++;
+    reviewerStats[login].completedTotal++;
     
     // Calculate review time if we have the request time (this was a requested review)
     if (review.requestedAt) {
+      reviewerStats[login].completedRequested++;
       const requestedTime = new Date(review.requestedAt).getTime();
       const submittedTime = new Date(review.submittedAt).getTime();
       const reviewTimeHours = (submittedTime - requestedTime) / (1000 * 60 * 60);
       if (reviewTimeHours > 0) {
         reviewerStats[login].reviewTimes.push(reviewTimeHours);
       }
+    } else {
+      reviewerStats[login].completedUnrequested++;
     }
   }
   
-  // Calculate completion rate from review requests
+  // Calculate total requests from review requests
   const requestStats: Record<string, { requested: number; completed: number }> = {};
   for (const request of reviewRequests) {
     const login = request.reviewerLogin;
@@ -215,17 +222,22 @@ export function computeReviewerStats(
     isEmployee(login, employeesSet)
   );
   
+  // Helper function to calculate median
+  const median = (arr: number[]): number | null => {
+    if (arr.length === 0) return null;
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  };
+  
   // Build reviewer objects
   const reviewers: Reviewer[] = filteredLogins.map(login => {
-    const stats = reviewerStats[login] || { completedCount: 0, reviewTimes: [] };
+    const stats = reviewerStats[login] || { completedTotal: 0, completedRequested: 0, completedUnrequested: 0, reviewTimes: [] };
     const reqStats = requestStats[login] || { requested: 0, completed: 0 };
     const pendingCount = pendingCounts[login] || 0;
     
-    // Calculate average review time
-    let avgReviewTimeHours: number | null = null;
-    if (stats.reviewTimes.length > 0) {
-      avgReviewTimeHours = stats.reviewTimes.reduce((a, b) => a + b, 0) / stats.reviewTimes.length;
-    }
+    // Calculate median review time
+    const medianReviewTimeHours = median(stats.reviewTimes);
     
     // Calculate completion rate (completed requested reviews / total requested reviews)
     // This shows what percentage of requested reviews were actually completed
@@ -237,14 +249,17 @@ export function computeReviewerStats(
     return {
       name: login,
       pendingCount,
-      reviewsCompletedLastMonth: stats.completedCount,
-      avgReviewTimeHours,
+      completedTotal: stats.completedTotal,
+      completedRequested: stats.completedRequested,
+      completedUnrequested: stats.completedUnrequested,
+      requestedTotal: reqStats.requested,
       completionRate,
+      medianReviewTimeHours,
     };
   });
   
-  // Sort by reviews completed last month (descending)
-  reviewers.sort((a, b) => b.reviewsCompletedLastMonth - a.reviewsCompletedLastMonth);
+  // Sort by total reviews completed (descending)
+  reviewers.sort((a, b) => b.completedTotal - a.completedTotal);
   
   return reviewers;
 }
@@ -296,7 +311,7 @@ export function computeDashboardData(
   
   const prsWithoutReviewers = nonDraftPrs.filter(pr => pr.requestedReviewers.users.length === 0);
   const totalPendingReviews = reviewers.reduce((sum, r) => sum + r.pendingCount, 0);
-  const activeReviewers = reviewers.filter(r => r.pendingCount > 0 || r.reviewsCompletedLastMonth > 0).length;
+  const activeReviewers = reviewers.filter(r => r.pendingCount > 0 || r.completedTotal > 0).length;
   
   return {
     kpis: {
