@@ -335,13 +335,16 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
         break;
       }
       
-      // Build a map of review requests by reviewer
+      // Build a map of review requests by reviewer (keep the FIRST request time)
       const prReviewRequests: Record<string, string> = {};
       const reviews: Array<{ login: string; authorAssociation: string; submittedAt: string }> = [];
       
       for (const item of pr.timelineItems?.nodes || []) {
         if (item.__typename === 'ReviewRequestedEvent' && item.requestedReviewer?.login) {
-          prReviewRequests[item.requestedReviewer.login] = item.createdAt;
+          // Only store the first request time (don't overwrite if already exists)
+          if (!prReviewRequests[item.requestedReviewer.login]) {
+            prReviewRequests[item.requestedReviewer.login] = item.createdAt;
+          }
         } else if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
           // Only count actual reviews (APPROVED, CHANGES_REQUESTED, COMMENTED)
           if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
@@ -374,10 +377,12 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
         if (new Date(review.submittedAt) >= sinceDate) {
           // Only include requestedAt if:
           // 1. The request was within the date range
-          // 2. This is the first review from this reviewer on this PR (to avoid counting multiple reviews as multiple fulfilled requests)
+          // 2. The review was submitted AFTER the request (a review can't fulfill a request that came later)
+          // 3. This is the first review from this reviewer on this PR (to avoid counting multiple reviews as multiple fulfilled requests)
           const requestedAt = prReviewRequests[review.login];
           const requestedAtInRange = requestedAt && new Date(requestedAt) >= sinceDate ? requestedAt : null;
-          const isFirstReviewForRequest = requestedAtInRange && !fulfilledRequests.has(review.login);
+          const reviewAfterRequest = requestedAtInRange && new Date(review.submittedAt) >= new Date(requestedAtInRange);
+          const isFirstReviewForRequest = reviewAfterRequest && !fulfilledRequests.has(review.login);
           
           if (isFirstReviewForRequest) {
             fulfilledRequests.add(review.login);
