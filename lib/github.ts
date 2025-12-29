@@ -366,19 +366,28 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
       }
       
       // Match reviews with their request times
+      // Track which reviewers have already had their request "fulfilled" for this PR
+      const fulfilledRequests = new Set<string>();
+      
       for (const review of reviews) {
         // Only count reviews submitted within our date range
         if (new Date(review.submittedAt) >= sinceDate) {
-          // Only include requestedAt if the request was also within the date range
-          // This ensures completedRequested <= requestedTotal
+          // Only include requestedAt if:
+          // 1. The request was within the date range
+          // 2. This is the first review from this reviewer on this PR (to avoid counting multiple reviews as multiple fulfilled requests)
           const requestedAt = prReviewRequests[review.login];
           const requestedAtInRange = requestedAt && new Date(requestedAt) >= sinceDate ? requestedAt : null;
+          const isFirstReviewForRequest = requestedAtInRange && !fulfilledRequests.has(review.login);
+          
+          if (isFirstReviewForRequest) {
+            fulfilledRequests.add(review.login);
+          }
           
           completedReviews.push({
             reviewerLogin: review.login,
             authorAssociation: review.authorAssociation,
             submittedAt: review.submittedAt,
-            requestedAt: requestedAtInRange,
+            requestedAt: isFirstReviewForRequest ? requestedAtInRange : null,
             prNumber: pr.number,
             prUrl: pr.url,
           });

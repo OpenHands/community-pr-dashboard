@@ -589,4 +589,78 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     const reviewer2Request = result.reviewRequests.find(r => r.reviewerLogin === 'reviewer2');
     expect(reviewer2Request).toBeDefined();
   });
+
+  it('should only count first review as fulfilling a request when reviewer submits multiple reviews', async () => {
+    const requestedDate = new Date();
+    requestedDate.setDate(requestedDate.getDate() - 5);
+    const firstReviewDate = new Date();
+    firstReviewDate.setDate(firstReviewDate.getDate() - 4);
+    const secondReviewDate = new Date();
+    secondReviewDate.setDate(secondReviewDate.getDate() - 3);
+    
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: new Date().toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'ReviewRequestedEvent',
+                      createdAt: requestedDate.toISOString(),
+                      requestedReviewer: { __typename: 'User', login: 'reviewer1' },
+                    },
+                    // reviewer1 submits multiple reviews on the same PR
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
+                      submittedAt: firstReviewDate.toISOString(),
+                      state: 'CHANGES_REQUESTED',
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
+                      submittedAt: secondReviewDate.toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    // Should have 1 review request
+    expect(result.reviewRequests).toHaveLength(1);
+    
+    // Should have 2 completed reviews (both reviews count)
+    expect(result.completedReviews).toHaveLength(2);
+    
+    // But only the first review should have requestedAt set (fulfilling the request)
+    const reviewsWithRequestedAt = result.completedReviews.filter(r => r.requestedAt !== null);
+    expect(reviewsWithRequestedAt).toHaveLength(1);
+    expect(reviewsWithRequestedAt[0].submittedAt).toBe(firstReviewDate.toISOString());
+    
+    // The second review should have requestedAt as null
+    const reviewsWithoutRequestedAt = result.completedReviews.filter(r => r.requestedAt === null);
+    expect(reviewsWithoutRequestedAt).toHaveLength(1);
+    expect(reviewsWithoutRequestedAt[0].submittedAt).toBe(secondReviewDate.toISOString());
+  });
 });
