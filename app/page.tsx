@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import PrTable from '@/components/PrTable'
 import RepositorySelector from '@/components/RepositorySelector'
 import CustomDropdown from '@/components/CustomDropdown'
@@ -24,7 +24,8 @@ export default function Dashboard() {
     noReviewers: false,
     limit: 'all',
     draftStatus: 'all',
-    authorType: 'all'
+    authorType: 'all',
+    reviewer: 'all'
   })
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
     repositories: [],
@@ -34,7 +35,8 @@ export default function Dashboard() {
     noReviewers: false,
     limit: 'all',
     draftStatus: 'all',
-    authorType: 'all'
+    authorType: 'all',
+    reviewer: 'all'
   })
 
   const fetchData = useCallback(async (filtersToApply?: FilterState) => {
@@ -67,6 +69,9 @@ export default function Dashboard() {
       }
       if (targetFilters.authorType && targetFilters.authorType !== 'all') {
         params.append('authorType', targetFilters.authorType)
+      }
+      if (targetFilters.reviewer && targetFilters.reviewer !== 'all') {
+        params.append('reviewer', targetFilters.reviewer)
       }
 
       const response = await fetch(`/api/dashboard?${params}`)
@@ -118,7 +123,8 @@ export default function Dashboard() {
       noReviewers: false,
       limit: 'all',
       draftStatus: 'all',
-      authorType: 'all'
+      authorType: 'all',
+      reviewer: 'all'
     }
     setFilters(clearedFilters)
     setAppliedFilters(clearedFilters)
@@ -128,6 +134,27 @@ export default function Dashboard() {
   const handleRefresh = () => {
     fetchData()
   }
+
+  // Compute unique reviewers from all PRs for the filter dropdown
+  const reviewerOptions = useMemo(() => {
+    if (!data?.prs) return [{ value: 'all', label: 'All Reviewers' }]
+    
+    const reviewerSet = new Set<string>()
+    data.prs.forEach(pr => {
+      pr.requestedReviewers.users.forEach(reviewer => {
+        reviewerSet.add(reviewer)
+      })
+    })
+    
+    const sortedReviewers = Array.from(reviewerSet).sort((a, b) => 
+      a.toLowerCase().localeCompare(b.toLowerCase())
+    )
+    
+    return [
+      { value: 'all', label: 'All Reviewers' },
+      ...sortedReviewers.map(reviewer => ({ value: reviewer, label: reviewer }))
+    ]
+  }, [data?.prs])
 
   if (loading && !data) {
     return (
@@ -352,7 +379,7 @@ export default function Dashboard() {
         <section className="py-6">
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
             <h3 className={`text-sm font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Filters</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-4">
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Repository</label>
                 <RepositorySelector
@@ -476,14 +503,30 @@ export default function Dashboard() {
               </div>
               
               <div className="flex flex-col">
-                <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Reviewers</label>
+                <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Reviewer</label>
+                <CustomDropdown
+                  options={reviewerOptions}
+                  value={filters.reviewer || 'all'}
+                  onChange={(value) => {
+                    const newFilters = { ...filters, reviewer: value as string, noReviewers: false }
+                    setFilters(newFilters)
+                    setAppliedFilters(newFilters)
+                    fetchData(newFilters)
+                  }}
+                  placeholder="All Reviewers"
+                  darkMode={darkMode}
+                />
+              </div>
+              
+              <div className="flex flex-col">
+                <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>No Reviewer</label>
                 <div className="flex items-center h-[38px]">
                   <input
                     type="checkbox"
                     id="noReviewers"
                     checked={filters.noReviewers || false}
                     onChange={(e) => {
-                      const newFilters = { ...filters, noReviewers: e.target.checked }
+                      const newFilters = { ...filters, noReviewers: e.target.checked, reviewer: e.target.checked ? 'all' : filters.reviewer }
                       setFilters(newFilters)
                       setAppliedFilters(newFilters)
                       fetchData(newFilters)
@@ -494,7 +537,7 @@ export default function Dashboard() {
                     htmlFor="noReviewers" 
                     className={`ml-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
                   >
-                    No reviewers assigned
+                    None assigned
                   </label>
                 </div>
               </div>

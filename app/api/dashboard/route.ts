@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const draftStatusParam = searchParams.get('draftStatus');
     const authorTypeParam = searchParams.get('authorType');
+    const reviewerParam = searchParams.get('reviewer');
     
     // Parse filters
     const targetRepos = reposParam 
@@ -49,7 +50,8 @@ export async function GET(request: NextRequest) {
       noReviewers: noReviewersParam,
       limit: limitParam,
       draftStatus: draftStatusParam,
-      authorType: authorTypeParam
+      authorType: authorTypeParam,
+      reviewer: reviewerParam
     })}`;
     
     // Use cache to improve performance
@@ -177,6 +179,14 @@ export async function GET(request: NextRequest) {
           // Check if PR has no requested reviewers (both users and teams)
           const hasRequestedReviewers = pr.requestedReviewers.users.length > 0 || pr.requestedReviewers.teams.length > 0;
           return !hasRequestedReviewers;
+        });
+      }
+      
+      // Apply reviewer filter if provided
+      if (reviewerParam && reviewerParam !== 'all') {
+        filteredPrs = filteredPrs.filter(pr => {
+          // Check if the specified reviewer is in the requested reviewers list
+          return pr.requestedReviewers.users.includes(reviewerParam);
         });
       }
       
