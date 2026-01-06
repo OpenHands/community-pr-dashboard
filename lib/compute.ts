@@ -1,7 +1,7 @@
-import { PR, Review, KPIs, ReviewStatsResponse, Reviewer } from './types';
+import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats } from './types';
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
-import { CompletedReviewData, ReviewRequestData, ReviewStatsData } from './github';
+import { CompletedReviewData, ReviewRequestData, ReviewStatsData, CommunityPRReviewData } from './github';
 
 export function computeFirsts(pr: any, employeesSet: Set<string>): {
   firstHumanResponseAt?: string;
@@ -372,4 +372,57 @@ export function computeReviewStats(allPrs: PR[]): ReviewStatsResponse {
     topPendingReviewers,
     uniqueReviewersWithPending,
   };
+}
+
+// Minimum number of community PR reviews required to calculate a meaningful median
+const MIN_COMMUNITY_REVIEWS_FOR_MEDIAN = 3;
+
+/**
+ * Compute community PR review stats per reviewer.
+ * This measures time from PR ready-for-review to first review,
+ * only for PRs authored by non-org-members.
+ * 
+ * Safety checks:
+ * - Only includes positive review times (review after PR ready)
+ * - Returns null median if reviewer has fewer than MIN_COMMUNITY_REVIEWS_FOR_MEDIAN reviews
+ */
+export function computeCommunityReviewerStats(
+  communityReviews: CommunityPRReviewData[]
+): CommunityReviewerStats[] {
+  // Group reviews by reviewer
+  const reviewerData: Record<string, number[]> = {};
+
+  for (const review of communityReviews) {
+    // Safety check: skip any invalid review times (should already be filtered, but double-check)
+    if (review.reviewTimeHours <= 0) {
+      continue;
+    }
+
+    if (!reviewerData[review.reviewerLogin]) {
+      reviewerData[review.reviewerLogin] = [];
+    }
+    reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
+  }
+
+  // Helper function to calculate median
+  const median = (arr: number[]): number | null => {
+    if (arr.length < MIN_COMMUNITY_REVIEWS_FOR_MEDIAN) {
+      return null; // Not enough data for meaningful median
+    }
+    const sorted = [...arr].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  };
+
+  // Build stats for each reviewer
+  const stats: CommunityReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
+    name,
+    communityPRsReviewed: times.length,
+    medianCommunityReviewTimeHours: median(times),
+  }));
+
+  // Sort by number of community PRs reviewed (descending)
+  stats.sort((a, b) => b.communityPRsReviewed - a.communityPRsReviewed);
+
+  return stats;
 }

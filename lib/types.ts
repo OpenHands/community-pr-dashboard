@@ -91,6 +91,9 @@ export type Reviewer = {
   requestedTotal: number;           // Total review requests received
   completionRate: number | null;    // completedRequested / requestedTotal * 100
   medianReviewTimeHours: number | null;  // Median time from request to completion
+  // Community PR metrics (more meaningful for measuring responsiveness)
+  communityPRsReviewed?: number;    // Number of community PRs reviewed
+  medianCommunityReviewTimeHours?: number | null;  // Median time from PR ready to first review (community PRs only)
 };
 
 export type DashboardKPIs = {
@@ -110,4 +113,23 @@ export type DashboardData = {
   reviewers?: Reviewer[];
   lastUpdated?: string;
   totalPrs?: number;
+};
+
+// Community PR review metrics - measures time from PR ready to first review
+// Only for PRs authored by non-org-members
+export type CommunityReviewData = {
+  reviewerLogin: string;
+  prNumber: number;
+  prUrl: string;
+  prAuthor: string;
+  prAuthorAssociation: string;
+  readyForReviewAt: string;    // When PR became ready (or createdAt if never draft)
+  firstReviewAt: string;       // First review submission by this reviewer
+  reviewTimeHours: number;     // Computed: firstReviewAt - readyForReviewAt
+};
+
+export type CommunityReviewerStats = {
+  name: string;
+  communityPRsReviewed: number;
+  medianCommunityReviewTimeHours: number | null;  // null if below minimum sample size
 };

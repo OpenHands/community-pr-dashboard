@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { config, validateConfig } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, ReviewStatsData } from '@/lib/github';
-import { transformPR, computeKpis, computeDashboardData } from '@/lib/compute';
+import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getCommunityPRReviewStats, ReviewStatsData, CommunityPRReviewData } from '@/lib/github';
+import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -92,6 +92,8 @@ export async function GET(request: NextRequest) {
       
       // Fetch completed reviews from last month for reviewer stats
       const allReviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] };
+      // Fetch community PR review stats (time from ready to first review)
+      const allCommunityReviews: CommunityPRReviewData[] = [];
       
       for (const repoPath of reposToFetch) {
         const [owner, repo] = repoPath.split('/');
@@ -115,6 +117,12 @@ export async function GET(request: NextRequest) {
           console.log(`Found ${reviewStatsData.completedReviews.length} completed reviews and ${reviewStatsData.reviewRequests.length} review requests for ${repoPath}`);
           allReviewStatsData.completedReviews.push(...reviewStatsData.completedReviews);
           allReviewStatsData.reviewRequests.push(...reviewStatsData.reviewRequests);
+          
+          // Fetch community PR review stats
+          console.log(`Fetching community PR review stats for ${repoPath}...`);
+          const communityReviews = await getCommunityPRReviewStats(owner, repo, 30, employeesSet);
+          console.log(`Found ${communityReviews.length} community PR reviews for ${repoPath}`);
+          allCommunityReviews.push(...communityReviews);
         } catch (error) {
           console.error(`Failed to fetch PRs for ${repoPath}:`, error);
           // Continue with other repos
@@ -214,6 +222,42 @@ export async function GET(request: NextRequest) {
       
       // Compute dashboard data based on all PRs (not just filtered ones)
       const dashboardData = computeDashboardData(allPrs, employeesSet, allReviewStatsData);
+      
+      // Compute community reviewer stats and merge into existing reviewer data
+      const communityReviewerStats = computeCommunityReviewerStats(allCommunityReviews);
+      
+      // Merge community stats into existing reviewers
+      if (dashboardData.reviewers) {
+        const communityStatsMap = new Map(
+          communityReviewerStats.map(s => [s.name, s])
+        );
+        
+        for (const reviewer of dashboardData.reviewers) {
+          const communityStats = communityStatsMap.get(reviewer.name);
+          if (communityStats) {
+            reviewer.communityPRsReviewed = communityStats.communityPRsReviewed;
+            reviewer.medianCommunityReviewTimeHours = communityStats.medianCommunityReviewTimeHours;
+          }
+        }
+        
+        // Add any reviewers who only have community reviews (not in the original list)
+        for (const communityStats of communityReviewerStats) {
+          if (!dashboardData.reviewers.find(r => r.name === communityStats.name)) {
+            dashboardData.reviewers.push({
+              name: communityStats.name,
+              pendingCount: 0,
+              completedTotal: 0,
+              completedRequested: 0,
+              completedUnrequested: 0,
+              requestedTotal: 0,
+              completionRate: null,
+              medianReviewTimeHours: null,
+              communityPRsReviewed: communityStats.communityPRsReviewed,
+              medianCommunityReviewTimeHours: communityStats.medianCommunityReviewTimeHours,
+            });
+          }
+        }
+      }
       
       // But return filtered PRs for the table
       return {
