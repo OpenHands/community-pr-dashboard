@@ -495,6 +495,11 @@ export function computeBotReviewerStats(
   const reviewerData: Record<string, number[]> = {};
 
   for (const review of botReviews) {
+    // Safety check: skip any invalid review times (should already be filtered, but double-check)
+    if (review.reviewTimeHours <= 0) {
+      continue;
+    }
+
     if (!reviewerData[review.reviewerLogin]) {
       reviewerData[review.reviewerLogin] = [];
     }
