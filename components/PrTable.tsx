@@ -231,8 +231,8 @@ export default function PrTable({ prs, loading = false, darkMode = false, totalP
                   <div className={`text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {pr.requestedReviewers.users.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
-                        {pr.requestedReviewers.users.slice(0, 2).map((reviewer) => (
-                          <Badge key={reviewer} variant="default">
+                        {pr.requestedReviewers.users.slice(0, 2).map((reviewer, idx) => (
+                          <Badge key={`${reviewer}-${idx}`} variant="default">
                             {reviewer}
                           </Badge>
                         ))}
