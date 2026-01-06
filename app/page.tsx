@@ -289,7 +289,7 @@ export default function Dashboard() {
 
         {/* Reviewer Stats Section - New enhanced section */}
         <section className="py-6">
-          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
+          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm overflow-visible`}>
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviewer Statistics (Last 30 Days)</h3>
@@ -302,7 +302,7 @@ export default function Dashboard() {
                 {showAllReviewers ? 'Show Top 5' : `Show All (${data?.reviewers?.length || 0})`}
               </button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-visible">
               <table className="w-full">
                 <thead>
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
