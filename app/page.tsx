@@ -302,7 +302,7 @@ export default function Dashboard() {
                 {showAllReviewers ? 'Show Top 5' : `Show All (${data?.reviewers?.length || 0})`}
               </button>
             </div>
-            <div className="overflow-x-auto overflow-y-visible">
+            <div className="overflow-visible">
               <table className="w-full">
                 <thead>
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>

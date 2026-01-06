@@ -1,0 +1,3159 @@
+
+> openhands-pr-review-dashboard@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:12000
+   - Network:       http://10.2.35.27:12000
+
+ ✓ Starting...
+ ✓ Ready in 434ms
+ ⚠ Cross origin request detected from work-1-hxckzumfdkputbyj.prod-runtime.all-hands.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ GET / 200 in 2.2s (compile: 2.1s, render: 96ms)
+ GET / 200 in 1654ms (compile: 1520ms, render: 134ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+Building employees set...
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+Building employees set...
+GraphQL failed for org all-hands-ai, falling back to REST: Error: GraphQL error: Resource not accessible by integration
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+GraphQL failed for org all-hands-ai, falling back to REST: Error: GraphQL error: Resource not accessible by integration
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+GraphQL failed for org openhands, falling back to REST: Error: GraphQL error: Resource not accessible by integration
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+GraphQL failed for org openhands, falling back to REST: Error: GraphQL error: Resource not accessible by integration
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Found 2 employees
+No specific repos provided, fetching all repos from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for organization: all-hands-ai
+Found 2 employees
+No specific repos provided, fetching all repos from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for organization: all-hands-ai
+Found 1 active repositories for all-hands-ai
+Fetching repositories for organization: openhands
+Found 1 active repositories for all-hands-ai
+Fetching repositories for organization: openhands
+Found 28 active repositories for openhands
+Dynamically discovered 29 repositories from organizations
+Target repos: []
+Repos to fetch: [
+  'All-Hands-AI/OpenHands-Cloud',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/benchmarks',
+  'OpenHands/community-pr-dashboard',
+  'OpenHands/typescript-client',
+  'OpenHands/docs',
+  'OpenHands/agentic-code-search-oss',
+  'OpenHands/trajectory-visualizer',
+  'OpenHands/ToM-SWE',
+  'OpenHands/open-operator',
+  'OpenHands/litellm',
+  'OpenHands/skills',
+  'OpenHands/openhands-index-results',
+  'OpenHands/openhands-chrome-extension',
+  'OpenHands/homebrew-openhands',
+  'OpenHands/terraform-gcp-datadog-integration',
+  'OpenHands/cve-demo',
+  'OpenHands/java-refactor-example',
+  'OpenHands/OpenHands-Server',
+  'OpenHands/liteLLM-proxy',
+  'OpenHands/BrowserGym',
+  'OpenHands/agent-analysis',
+  'OpenHands/rubric',
+  'OpenHands/openhands-agent-monitor',
+  'OpenHands/critic-rubrics',
+  'OpenHands/rbren-sdk-experiments',
+  'OpenHands/test-owner-change'
+]
+Fetching PRs for All-Hands-AI/OpenHands-Cloud...
+Found 28 active repositories for openhands
+Dynamically discovered 29 repositories from organizations
+Target repos: []
+Repos to fetch: [
+  'All-Hands-AI/OpenHands-Cloud',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/benchmarks',
+  'OpenHands/community-pr-dashboard',
+  'OpenHands/typescript-client',
+  'OpenHands/docs',
+  'OpenHands/agentic-code-search-oss',
+  'OpenHands/trajectory-visualizer',
+  'OpenHands/ToM-SWE',
+  'OpenHands/open-operator',
+  'OpenHands/litellm',
+  'OpenHands/skills',
+  'OpenHands/openhands-index-results',
+  'OpenHands/openhands-chrome-extension',
+  'OpenHands/homebrew-openhands',
+  'OpenHands/terraform-gcp-datadog-integration',
+  'OpenHands/cve-demo',
+  'OpenHands/java-refactor-example',
+  'OpenHands/OpenHands-Server',
+  'OpenHands/liteLLM-proxy',
+  'OpenHands/BrowserGym',
+  'OpenHands/agent-analysis',
+  'OpenHands/rubric',
+  'OpenHands/openhands-agent-monitor',
+  'OpenHands/critic-rubrics',
+  'OpenHands/rbren-sdk-experiments',
+  'OpenHands/test-owner-change'
+]
+Fetching PRs for All-Hands-AI/OpenHands-Cloud...
+Found 6 PRs for All-Hands-AI/OpenHands-Cloud
+Fetching completed reviews for All-Hands-AI/OpenHands-Cloud...
+Found 6 PRs for All-Hands-AI/OpenHands-Cloud
+Fetching completed reviews for All-Hands-AI/OpenHands-Cloud...
+Found 1 completed reviews and 0 review requests for All-Hands-AI/OpenHands-Cloud
+Fetching community PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 1 completed reviews and 0 review requests for All-Hands-AI/OpenHands-Cloud
+Fetching community PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 community PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching org member PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 community PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching org member PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 1 org member PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching bot PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 bot PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching PRs for OpenHands/software-agent-sdk...
+Found 1 org member PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching bot PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 bot PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching PRs for OpenHands/software-agent-sdk...
+ GET / 200 in 23ms (compile: 3ms, render: 20ms)
+ GET / 200 in 20ms (compile: 2ms, render: 18ms)
+Found 57 PRs for OpenHands/software-agent-sdk
+Fetching completed reviews for OpenHands/software-agent-sdk...
+Found 57 PRs for OpenHands/software-agent-sdk
+Fetching completed reviews for OpenHands/software-agent-sdk...
+Found 322 completed reviews and 139 review requests for OpenHands/software-agent-sdk
+Fetching community PR review stats for OpenHands/software-agent-sdk...
+Found 322 completed reviews and 139 review requests for OpenHands/software-agent-sdk
+Fetching community PR review stats for OpenHands/software-agent-sdk...
+Found 23 community PR reviews for OpenHands/software-agent-sdk
+Fetching org member PR review stats for OpenHands/software-agent-sdk...
+Found 23 community PR reviews for OpenHands/software-agent-sdk
+Fetching org member PR review stats for OpenHands/software-agent-sdk...
+Skipping invalid review time for org member PR #1542: -26.94388888888889 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-30T15:50:33Z)
+Skipping invalid review time for org member PR #1542: -4.176944444444445 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-31T14:36:34Z)
+Skipping invalid review time for org member PR #1553: -0.025277777777777777 hours (readyAt: 2025-12-30T18:24:31Z, reviewAt: 2025-12-30T18:23:00Z)
+Skipping invalid review time for org member PR #1383: -0.37833333333333335 hours (readyAt: 2025-12-25T22:45:32Z, reviewAt: 2025-12-25T22:22:50Z)
+Skipping invalid review time for org member PR #1462: -0.04138888888888889 hours (readyAt: 2025-12-20T04:41:11Z, reviewAt: 2025-12-20T04:38:42Z)
+Skipping invalid review time for org member PR #892: -245.03055555555557 hours (readyAt: 2025-12-18T22:26:37Z, reviewAt: 2025-12-08T17:24:47Z)
+Skipping invalid review time for org member PR #1542: -26.94388888888889 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-30T15:50:33Z)
+Skipping invalid review time for org member PR #1542: -4.176944444444445 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-31T14:36:34Z)
+Skipping invalid review time for org member PR #1553: -0.025277777777777777 hours (readyAt: 2025-12-30T18:24:31Z, reviewAt: 2025-12-30T18:23:00Z)
+Skipping invalid review time for org member PR #1383: -0.37833333333333335 hours (readyAt: 2025-12-25T22:45:32Z, reviewAt: 2025-12-25T22:22:50Z)
+Skipping invalid review time for org member PR #1462: -0.04138888888888889 hours (readyAt: 2025-12-20T04:41:11Z, reviewAt: 2025-12-20T04:38:42Z)
+Skipping invalid review time for org member PR #892: -245.03055555555557 hours (readyAt: 2025-12-18T22:26:37Z, reviewAt: 2025-12-08T17:24:47Z)
+Skipping invalid review time for org member PR #1328: -0.17944444444444443 hours (readyAt: 2025-12-20T06:34:02Z, reviewAt: 2025-12-20T06:23:16Z)
+Skipping invalid review time for org member PR #1509: -0.6630555555555555 hours (readyAt: 2025-12-24T17:59:22Z, reviewAt: 2025-12-24T17:19:35Z)
+Skipping invalid review time for org member PR #1199: -531.2680555555555 hours (readyAt: 2025-12-20T14:48:52Z, reviewAt: 2025-11-28T11:32:47Z)
+Skipping invalid review time for org member PR #427: -244.40194444444444 hours (readyAt: 2025-12-18T20:35:38Z, reviewAt: 2025-12-08T16:11:31Z)
+Skipping invalid review time for org member PR #495: -776.92 hours (readyAt: 2025-12-11T03:35:59Z, reviewAt: 2025-11-08T18:40:47Z)
+Skipping invalid review time for org member PR #1202: -565.0519444444444 hours (readyAt: 2025-12-19T02:59:25Z, reviewAt: 2025-11-25T13:56:18Z)
+Skipping invalid review time for org member PR #763: -1507.0847222222221 hours (readyAt: 2025-12-18T21:20:56Z, reviewAt: 2025-10-17T02:15:51Z)
+Skipping invalid review time for org member PR #1345: -1.3047222222222221 hours (readyAt: 2025-12-06T16:30:18Z, reviewAt: 2025-12-06T15:12:01Z)
+Skipping invalid review time for org member PR #1328: -0.17944444444444443 hours (readyAt: 2025-12-20T06:34:02Z, reviewAt: 2025-12-20T06:23:16Z)
+Skipping invalid review time for org member PR #1509: -0.6630555555555555 hours (readyAt: 2025-12-24T17:59:22Z, reviewAt: 2025-12-24T17:19:35Z)
+Skipping invalid review time for org member PR #1199: -531.2680555555555 hours (readyAt: 2025-12-20T14:48:52Z, reviewAt: 2025-11-28T11:32:47Z)
+Skipping invalid review time for org member PR #427: -244.40194444444444 hours (readyAt: 2025-12-18T20:35:38Z, reviewAt: 2025-12-08T16:11:31Z)
+Skipping invalid review time for org member PR #495: -776.92 hours (readyAt: 2025-12-11T03:35:59Z, reviewAt: 2025-11-08T18:40:47Z)
+Skipping invalid review time for org member PR #1202: -565.0519444444444 hours (readyAt: 2025-12-19T02:59:25Z, reviewAt: 2025-11-25T13:56:18Z)
+Skipping invalid review time for org member PR #763: -1507.0847222222221 hours (readyAt: 2025-12-18T21:20:56Z, reviewAt: 2025-10-17T02:15:51Z)
+Skipping invalid review time for org member PR #1345: -1.3047222222222221 hours (readyAt: 2025-12-06T16:30:18Z, reviewAt: 2025-12-06T15:12:01Z)
+Skipping invalid review time for org member PR #600: -44.08611111111111 hours (readyAt: 2025-11-10T14:49:29Z, reviewAt: 2025-11-08T18:44:19Z)
+Skipping invalid review time for org member PR #1396: -0.015555555555555555 hours (readyAt: 2025-12-15T19:15:07Z, reviewAt: 2025-12-15T19:14:11Z)
+Skipping invalid review time for org member PR #1321: -6.5633333333333335 hours (readyAt: 2025-12-08T21:58:08Z, reviewAt: 2025-12-08T15:24:20Z)
+Skipping invalid review time for org member PR #1354: -0.017777777777777778 hours (readyAt: 2025-12-08T16:45:33Z, reviewAt: 2025-12-08T16:44:29Z)
+Found 140 org member PR reviews for OpenHands/software-agent-sdk
+Fetching bot PR review stats for OpenHands/software-agent-sdk...
+Skipping invalid review time for org member PR #600: -44.08611111111111 hours (readyAt: 2025-11-10T14:49:29Z, reviewAt: 2025-11-08T18:44:19Z)
+Skipping invalid review time for org member PR #1396: -0.015555555555555555 hours (readyAt: 2025-12-15T19:15:07Z, reviewAt: 2025-12-15T19:14:11Z)
+Skipping invalid review time for org member PR #1321: -6.5633333333333335 hours (readyAt: 2025-12-08T21:58:08Z, reviewAt: 2025-12-08T15:24:20Z)
+Skipping invalid review time for org member PR #1354: -0.017777777777777778 hours (readyAt: 2025-12-08T16:45:33Z, reviewAt: 2025-12-08T16:44:29Z)
+Found 140 org member PR reviews for OpenHands/software-agent-sdk
+Fetching bot PR review stats for OpenHands/software-agent-sdk...
+Found 5 bot PR reviews for OpenHands/software-agent-sdk
+Fetching PRs for OpenHands/OpenHands...
+Found 61 PRs for OpenHands/OpenHands
+Fetching completed reviews for OpenHands/OpenHands...
+Found 5 bot PR reviews for OpenHands/software-agent-sdk
+Fetching PRs for OpenHands/OpenHands...
+Found 61 PRs for OpenHands/OpenHands
+Fetching completed reviews for OpenHands/OpenHands...
+ GET / 200 in 29ms (compile: 3ms, render: 26ms)
+ GET /api/dashboard? 200 in 43s (compile: 309ms, render: 42s)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+Building employees set...
+Found 2 employees
+No specific repos provided, fetching all repos from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for organization: all-hands-ai
+Found 280 completed reviews and 270 review requests for OpenHands/OpenHands
+Fetching community PR review stats for OpenHands/OpenHands...
+Found 1 active repositories for all-hands-ai
+Fetching repositories for organization: openhands
+Found 28 active repositories for openhands
+Dynamically discovered 29 repositories from organizations
+Target repos: []
+Repos to fetch: [
+  'All-Hands-AI/OpenHands-Cloud',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/benchmarks',
+  'OpenHands/community-pr-dashboard',
+  'OpenHands/typescript-client',
+  'OpenHands/docs',
+  'OpenHands/agentic-code-search-oss',
+  'OpenHands/trajectory-visualizer',
+  'OpenHands/ToM-SWE',
+  'OpenHands/open-operator',
+  'OpenHands/litellm',
+  'OpenHands/skills',
+  'OpenHands/openhands-index-results',
+  'OpenHands/openhands-chrome-extension',
+  'OpenHands/homebrew-openhands',
+  'OpenHands/terraform-gcp-datadog-integration',
+  'OpenHands/cve-demo',
+  'OpenHands/java-refactor-example',
+  'OpenHands/OpenHands-Server',
+  'OpenHands/liteLLM-proxy',
+  'OpenHands/BrowserGym',
+  'OpenHands/agent-analysis',
+  'OpenHands/rubric',
+  'OpenHands/openhands-agent-monitor',
+  'OpenHands/critic-rubrics',
+  'OpenHands/rbren-sdk-experiments',
+  'OpenHands/test-owner-change'
+]
+Fetching PRs for All-Hands-AI/OpenHands-Cloud...
+Found 6 PRs for All-Hands-AI/OpenHands-Cloud
+Fetching completed reviews for All-Hands-AI/OpenHands-Cloud...
+Found 1 completed reviews and 0 review requests for All-Hands-AI/OpenHands-Cloud
+Fetching community PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 community PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching org member PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 280 completed reviews and 270 review requests for OpenHands/OpenHands
+Fetching community PR review stats for OpenHands/OpenHands...
+Found 40 community PR reviews for OpenHands/OpenHands
+Fetching org member PR review stats for OpenHands/OpenHands...
+Found 1 org member PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching bot PR review stats for All-Hands-AI/OpenHands-Cloud...
+Skipping invalid review time for org member PR #12111: -0.18416666666666667 hours (readyAt: 2025-12-22T16:54:44Z, reviewAt: 2025-12-22T16:43:41Z)
+Skipping invalid review time for org member PR #12168: -0.0016666666666666668 hours (readyAt: 2025-12-26T17:15:21Z, reviewAt: 2025-12-26T17:15:15Z)
+Skipping invalid review time for org member PR #12212: -0.003611111111111111 hours (readyAt: 2025-12-30T16:33:38Z, reviewAt: 2025-12-30T16:33:25Z)
+Skipping invalid review time for org member PR #12201: -0.45611111111111113 hours (readyAt: 2025-12-29T22:38:18Z, reviewAt: 2025-12-29T22:10:56Z)
+Skipping invalid review time for org member PR #12047: -1.3572222222222223 hours (readyAt: 2025-12-29T15:19:33Z, reviewAt: 2025-12-29T13:58:07Z)
+Found 0 bot PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching PRs for OpenHands/software-agent-sdk...
+Skipping invalid review time for org member PR #11516: -123.7461111111111 hours (readyAt: 2025-10-31T23:49:01Z, reviewAt: 2025-10-26T20:04:15Z)
+Skipping invalid review time for org member PR #12144: -0.3461111111111111 hours (readyAt: 2025-12-23T18:24:03Z, reviewAt: 2025-12-23T18:03:17Z)
+Skipping invalid review time for org member PR #12144: -0.32305555555555554 hours (readyAt: 2025-12-23T18:24:03Z, reviewAt: 2025-12-23T18:04:40Z)
+Skipping invalid review time for org member PR #12095: -8.049722222222222 hours (readyAt: 2025-12-19T20:49:56Z, reviewAt: 2025-12-19T12:46:57Z)
+Skipping invalid review time for org member PR #12076: -0.06694444444444445 hours (readyAt: 2025-12-17T23:45:11Z, reviewAt: 2025-12-17T23:41:10Z)
+Skipping invalid review time for org member PR #11812: -15.870555555555555 hours (readyAt: 2025-12-17T13:16:03Z, reviewAt: 2025-12-16T21:23:49Z)
+Skipping invalid review time for org member PR #12067: -0.005 hours (readyAt: 2025-12-16T21:13:42Z, reviewAt: 2025-12-16T21:13:24Z)
+Skipping invalid review time for org member PR #11984: -5.682222222222222 hours (readyAt: 2025-12-11T21:03:13Z, reviewAt: 2025-12-11T15:22:17Z)
+Skipping invalid review time for org member PR #12008: -0.41583333333333333 hours (readyAt: 2025-12-11T18:23:47Z, reviewAt: 2025-12-11T17:58:50Z)
+Found 57 PRs for OpenHands/software-agent-sdk
+Fetching completed reviews for OpenHands/software-agent-sdk...
+Found 111 org member PR reviews for OpenHands/OpenHands
+Fetching bot PR review stats for OpenHands/OpenHands...
+Found 40 community PR reviews for OpenHands/OpenHands
+Fetching org member PR review stats for OpenHands/OpenHands...
+Skipping invalid review time for org member PR #12111: -0.18416666666666667 hours (readyAt: 2025-12-22T16:54:44Z, reviewAt: 2025-12-22T16:43:41Z)
+Skipping invalid review time for org member PR #12168: -0.0016666666666666668 hours (readyAt: 2025-12-26T17:15:21Z, reviewAt: 2025-12-26T17:15:15Z)
+Skipping invalid review time for org member PR #12212: -0.003611111111111111 hours (readyAt: 2025-12-30T16:33:38Z, reviewAt: 2025-12-30T16:33:25Z)
+Skipping invalid review time for org member PR #12201: -0.45611111111111113 hours (readyAt: 2025-12-29T22:38:18Z, reviewAt: 2025-12-29T22:10:56Z)
+Skipping invalid review time for org member PR #12047: -1.3572222222222223 hours (readyAt: 2025-12-29T15:19:33Z, reviewAt: 2025-12-29T13:58:07Z)
+Found 20 bot PR reviews for OpenHands/OpenHands
+Fetching PRs for OpenHands/OpenHands-CLI...
+Skipping invalid review time for org member PR #11516: -123.7461111111111 hours (readyAt: 2025-10-31T23:49:01Z, reviewAt: 2025-10-26T20:04:15Z)
+Skipping invalid review time for org member PR #12144: -0.3461111111111111 hours (readyAt: 2025-12-23T18:24:03Z, reviewAt: 2025-12-23T18:03:17Z)
+Skipping invalid review time for org member PR #12144: -0.32305555555555554 hours (readyAt: 2025-12-23T18:24:03Z, reviewAt: 2025-12-23T18:04:40Z)
+Skipping invalid review time for org member PR #12095: -8.049722222222222 hours (readyAt: 2025-12-19T20:49:56Z, reviewAt: 2025-12-19T12:46:57Z)
+Found 20 PRs for OpenHands/OpenHands-CLI
+Fetching completed reviews for OpenHands/OpenHands-CLI...
+Skipping invalid review time for org member PR #12076: -0.06694444444444445 hours (readyAt: 2025-12-17T23:45:11Z, reviewAt: 2025-12-17T23:41:10Z)
+Skipping invalid review time for org member PR #11812: -15.870555555555555 hours (readyAt: 2025-12-17T13:16:03Z, reviewAt: 2025-12-16T21:23:49Z)
+Skipping invalid review time for org member PR #12067: -0.005 hours (readyAt: 2025-12-16T21:13:42Z, reviewAt: 2025-12-16T21:13:24Z)
+Skipping invalid review time for org member PR #11984: -5.682222222222222 hours (readyAt: 2025-12-11T21:03:13Z, reviewAt: 2025-12-11T15:22:17Z)
+Skipping invalid review time for org member PR #12008: -0.41583333333333333 hours (readyAt: 2025-12-11T18:23:47Z, reviewAt: 2025-12-11T17:58:50Z)
+Found 71 completed reviews and 16 review requests for OpenHands/OpenHands-CLI
+Fetching community PR review stats for OpenHands/OpenHands-CLI...
+Found 111 org member PR reviews for OpenHands/OpenHands
+Fetching bot PR review stats for OpenHands/OpenHands...
+Found 6 community PR reviews for OpenHands/OpenHands-CLI
+Fetching org member PR review stats for OpenHands/OpenHands-CLI...
+Skipping invalid review time for org member PR #263: -4.0505555555555555 hours (readyAt: 2025-12-29T21:11:12Z, reviewAt: 2025-12-29T17:08:10Z)
+Skipping invalid review time for org member PR #231: -20.72888888888889 hours (readyAt: 2025-12-18T19:28:44Z, reviewAt: 2025-12-17T22:45:00Z)
+Skipping invalid review time for org member PR #192: -16.560555555555556 hours (readyAt: 2025-12-11T21:04:11Z, reviewAt: 2025-12-11T04:30:33Z)
+Found 35 org member PR reviews for OpenHands/OpenHands-CLI
+Fetching bot PR review stats for OpenHands/OpenHands-CLI...
+Found 322 completed reviews and 139 review requests for OpenHands/software-agent-sdk
+Fetching community PR review stats for OpenHands/software-agent-sdk...
+Found 2 bot PR reviews for OpenHands/OpenHands-CLI
+Fetching PRs for OpenHands/benchmarks...
+Found 19 PRs for OpenHands/benchmarks
+Fetching completed reviews for OpenHands/benchmarks...
+Found 43 completed reviews and 18 review requests for OpenHands/benchmarks
+Fetching community PR review stats for OpenHands/benchmarks...
+Found 0 community PR reviews for OpenHands/benchmarks
+Fetching org member PR review stats for OpenHands/benchmarks...
+Found 20 bot PR reviews for OpenHands/OpenHands
+Fetching PRs for OpenHands/OpenHands-CLI...
+Found 23 community PR reviews for OpenHands/software-agent-sdk
+Fetching org member PR review stats for OpenHands/software-agent-sdk...
+Found 30 org member PR reviews for OpenHands/benchmarks
+Fetching bot PR review stats for OpenHands/benchmarks...
+Found 20 PRs for OpenHands/OpenHands-CLI
+Fetching completed reviews for OpenHands/OpenHands-CLI...
+Found 1 bot PR reviews for OpenHands/benchmarks
+Fetching PRs for OpenHands/community-pr-dashboard...
+Found 0 PRs for OpenHands/community-pr-dashboard
+Fetching completed reviews for OpenHands/community-pr-dashboard...
+Found 1 completed reviews and 3 review requests for OpenHands/community-pr-dashboard
+Fetching community PR review stats for OpenHands/community-pr-dashboard...
+Found 0 community PR reviews for OpenHands/community-pr-dashboard
+Fetching org member PR review stats for OpenHands/community-pr-dashboard...
+Skipping invalid review time for org member PR #1542: -26.94388888888889 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-30T15:50:33Z)
+Skipping invalid review time for org member PR #1542: -4.176944444444445 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-31T14:36:34Z)
+Skipping invalid review time for org member PR #1553: -0.025277777777777777 hours (readyAt: 2025-12-30T18:24:31Z, reviewAt: 2025-12-30T18:23:00Z)
+Skipping invalid review time for org member PR #1383: -0.37833333333333335 hours (readyAt: 2025-12-25T22:45:32Z, reviewAt: 2025-12-25T22:22:50Z)
+Skipping invalid review time for org member PR #1462: -0.04138888888888889 hours (readyAt: 2025-12-20T04:41:11Z, reviewAt: 2025-12-20T04:38:42Z)
+Skipping invalid review time for org member PR #892: -245.03055555555557 hours (readyAt: 2025-12-18T22:26:37Z, reviewAt: 2025-12-08T17:24:47Z)
+Found 71 completed reviews and 16 review requests for OpenHands/OpenHands-CLI
+Fetching community PR review stats for OpenHands/OpenHands-CLI...
+Found 1 org member PR reviews for OpenHands/community-pr-dashboard
+Fetching bot PR review stats for OpenHands/community-pr-dashboard...
+Found 0 bot PR reviews for OpenHands/community-pr-dashboard
+Fetching PRs for OpenHands/typescript-client...
+Found 4 PRs for OpenHands/typescript-client
+Fetching completed reviews for OpenHands/typescript-client...
+Skipping invalid review time for org member PR #1328: -0.17944444444444443 hours (readyAt: 2025-12-20T06:34:02Z, reviewAt: 2025-12-20T06:23:16Z)
+Skipping invalid review time for org member PR #1509: -0.6630555555555555 hours (readyAt: 2025-12-24T17:59:22Z, reviewAt: 2025-12-24T17:19:35Z)
+Skipping invalid review time for org member PR #1199: -531.2680555555555 hours (readyAt: 2025-12-20T14:48:52Z, reviewAt: 2025-11-28T11:32:47Z)
+Skipping invalid review time for org member PR #427: -244.40194444444444 hours (readyAt: 2025-12-18T20:35:38Z, reviewAt: 2025-12-08T16:11:31Z)
+Skipping invalid review time for org member PR #495: -776.92 hours (readyAt: 2025-12-11T03:35:59Z, reviewAt: 2025-11-08T18:40:47Z)
+Skipping invalid review time for org member PR #1202: -565.0519444444444 hours (readyAt: 2025-12-19T02:59:25Z, reviewAt: 2025-11-25T13:56:18Z)
+Skipping invalid review time for org member PR #763: -1507.0847222222221 hours (readyAt: 2025-12-18T21:20:56Z, reviewAt: 2025-10-17T02:15:51Z)
+Skipping invalid review time for org member PR #1345: -1.3047222222222221 hours (readyAt: 2025-12-06T16:30:18Z, reviewAt: 2025-12-06T15:12:01Z)
+Found 6 community PR reviews for OpenHands/OpenHands-CLI
+Fetching org member PR review stats for OpenHands/OpenHands-CLI...
+Skipping invalid review time for org member PR #600: -44.08611111111111 hours (readyAt: 2025-11-10T14:49:29Z, reviewAt: 2025-11-08T18:44:19Z)
+Skipping invalid review time for org member PR #1396: -0.015555555555555555 hours (readyAt: 2025-12-15T19:15:07Z, reviewAt: 2025-12-15T19:14:11Z)
+Skipping invalid review time for org member PR #1321: -6.5633333333333335 hours (readyAt: 2025-12-08T21:58:08Z, reviewAt: 2025-12-08T15:24:20Z)
+Skipping invalid review time for org member PR #1354: -0.017777777777777778 hours (readyAt: 2025-12-08T16:45:33Z, reviewAt: 2025-12-08T16:44:29Z)
+Found 141 org member PR reviews for OpenHands/software-agent-sdk
+Fetching bot PR review stats for OpenHands/software-agent-sdk...
+Skipping invalid review time for org member PR #263: -4.0505555555555555 hours (readyAt: 2025-12-29T21:11:12Z, reviewAt: 2025-12-29T17:08:10Z)
+Skipping invalid review time for org member PR #231: -20.72888888888889 hours (readyAt: 2025-12-18T19:28:44Z, reviewAt: 2025-12-17T22:45:00Z)
+Skipping invalid review time for org member PR #192: -16.560555555555556 hours (readyAt: 2025-12-11T21:04:11Z, reviewAt: 2025-12-11T04:30:33Z)
+Found 35 org member PR reviews for OpenHands/OpenHands-CLI
+Fetching bot PR review stats for OpenHands/OpenHands-CLI...
+Found 1 completed reviews and 0 review requests for OpenHands/typescript-client
+Fetching community PR review stats for OpenHands/typescript-client...
+Found 1 community PR reviews for OpenHands/typescript-client
+Fetching org member PR review stats for OpenHands/typescript-client...
+Found 0 org member PR reviews for OpenHands/typescript-client
+Fetching bot PR review stats for OpenHands/typescript-client...
+Found 2 bot PR reviews for OpenHands/OpenHands-CLI
+Fetching PRs for OpenHands/benchmarks...
+Found 0 bot PR reviews for OpenHands/typescript-client
+Fetching PRs for OpenHands/docs...
+Found 19 PRs for OpenHands/benchmarks
+Fetching completed reviews for OpenHands/benchmarks...
+Found 24 PRs for OpenHands/docs
+Fetching completed reviews for OpenHands/docs...
+Found 43 completed reviews and 18 review requests for OpenHands/benchmarks
+Fetching community PR review stats for OpenHands/benchmarks...
+Found 5 bot PR reviews for OpenHands/software-agent-sdk
+Fetching PRs for OpenHands/OpenHands...
+Found 0 community PR reviews for OpenHands/benchmarks
+Fetching org member PR review stats for OpenHands/benchmarks...
+Found 64 completed reviews and 94 review requests for OpenHands/docs
+Fetching community PR review stats for OpenHands/docs...
+Found 61 PRs for OpenHands/OpenHands
+Fetching completed reviews for OpenHands/OpenHands...
+Found 30 org member PR reviews for OpenHands/benchmarks
+Fetching bot PR review stats for OpenHands/benchmarks...
+Found 33 community PR reviews for OpenHands/docs
+Fetching org member PR review stats for OpenHands/docs...
+Found 1 bot PR reviews for OpenHands/benchmarks
+Fetching PRs for OpenHands/community-pr-dashboard...
+Found 0 PRs for OpenHands/community-pr-dashboard
+Fetching completed reviews for OpenHands/community-pr-dashboard...
+Found 1 completed reviews and 3 review requests for OpenHands/community-pr-dashboard
+Fetching community PR review stats for OpenHands/community-pr-dashboard...
+Skipping invalid review time for org member PR #224: -0.06222222222222222 hours (readyAt: 2025-12-31T18:11:56Z, reviewAt: 2025-12-31T18:08:12Z)
+Skipping invalid review time for org member PR #177: -0.6602777777777777 hours (readyAt: 2025-12-29T17:43:46Z, reviewAt: 2025-12-29T17:04:09Z)
+Skipping invalid review time for org member PR #212: -0.06388888888888888 hours (readyAt: 2025-12-26T17:30:55Z, reviewAt: 2025-12-26T17:27:05Z)
+Skipping invalid review time for org member PR #156: -0.004722222222222222 hours (readyAt: 2025-12-07T17:50:04Z, reviewAt: 2025-12-07T17:49:47Z)
+Skipping invalid review time for org member PR #196: -0.015277777777777777 hours (readyAt: 2025-12-18T21:45:16Z, reviewAt: 2025-12-18T21:44:21Z)
+Skipping invalid review time for org member PR #103: -868.2733333333333 hours (readyAt: 2025-12-18T21:29:27Z, reviewAt: 2025-11-12T17:13:03Z)
+Found 0 community PR reviews for OpenHands/community-pr-dashboard
+Fetching org member PR review stats for OpenHands/community-pr-dashboard...
+Found 1 org member PR reviews for OpenHands/community-pr-dashboard
+Fetching bot PR review stats for OpenHands/community-pr-dashboard...
+Found 21 org member PR reviews for OpenHands/docs
+Fetching bot PR review stats for OpenHands/docs...
+Found 0 bot PR reviews for OpenHands/community-pr-dashboard
+Fetching PRs for OpenHands/typescript-client...
+Found 4 PRs for OpenHands/typescript-client
+Fetching completed reviews for OpenHands/typescript-client...
+Found 1 completed reviews and 0 review requests for OpenHands/typescript-client
+Fetching community PR review stats for OpenHands/typescript-client...
+Found 1 community PR reviews for OpenHands/typescript-client
+Fetching org member PR review stats for OpenHands/typescript-client...
+Found 0 org member PR reviews for OpenHands/typescript-client
+Fetching bot PR review stats for OpenHands/typescript-client...
+Found 0 bot PR reviews for OpenHands/docs
+Fetching PRs for OpenHands/agentic-code-search-oss...
+Found 11 PRs for OpenHands/agentic-code-search-oss
+Fetching completed reviews for OpenHands/agentic-code-search-oss...
+Found 0 bot PR reviews for OpenHands/typescript-client
+Fetching PRs for OpenHands/docs...
+Found 6 completed reviews and 2 review requests for OpenHands/agentic-code-search-oss
+Fetching community PR review stats for OpenHands/agentic-code-search-oss...
+Found 24 PRs for OpenHands/docs
+Fetching completed reviews for OpenHands/docs...
+Found 0 community PR reviews for OpenHands/agentic-code-search-oss
+Fetching org member PR review stats for OpenHands/agentic-code-search-oss...
+Found 280 completed reviews and 270 review requests for OpenHands/OpenHands
+Fetching community PR review stats for OpenHands/OpenHands...
+Skipping invalid review time for org member PR #40: -267.90222222222224 hours (readyAt: 2025-12-21T20:24:54Z, reviewAt: 2025-12-10T16:30:46Z)
+Skipping invalid review time for org member PR #40: -144.78972222222222 hours (readyAt: 2025-12-21T20:24:54Z, reviewAt: 2025-12-15T19:37:31Z)
+Found 3 org member PR reviews for OpenHands/agentic-code-search-oss
+Fetching bot PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 bot PR reviews for OpenHands/agentic-code-search-oss
+Fetching PRs for OpenHands/trajectory-visualizer...
+Found 0 PRs for OpenHands/trajectory-visualizer
+Fetching completed reviews for OpenHands/trajectory-visualizer...
+Found 0 completed reviews and 0 review requests for OpenHands/trajectory-visualizer
+Fetching community PR review stats for OpenHands/trajectory-visualizer...
+Found 0 community PR reviews for OpenHands/trajectory-visualizer
+Fetching org member PR review stats for OpenHands/trajectory-visualizer...
+Found 0 org member PR reviews for OpenHands/trajectory-visualizer
+Fetching bot PR review stats for OpenHands/trajectory-visualizer...
+Found 0 bot PR reviews for OpenHands/trajectory-visualizer
+Fetching PRs for OpenHands/ToM-SWE...
+Found 0 PRs for OpenHands/ToM-SWE
+Fetching completed reviews for OpenHands/ToM-SWE...
+Found 0 completed reviews and 0 review requests for OpenHands/ToM-SWE
+Fetching community PR review stats for OpenHands/ToM-SWE...
+Found 0 community PR reviews for OpenHands/ToM-SWE
+Fetching org member PR review stats for OpenHands/ToM-SWE...
+Found 64 completed reviews and 94 review requests for OpenHands/docs
+Fetching community PR review stats for OpenHands/docs...
+Found 40 community PR reviews for OpenHands/OpenHands
+Fetching org member PR review stats for OpenHands/OpenHands...
+Found 0 org member PR reviews for OpenHands/ToM-SWE
+Fetching bot PR review stats for OpenHands/ToM-SWE...
+Found 0 bot PR reviews for OpenHands/ToM-SWE
+Fetching PRs for OpenHands/open-operator...
+Found 0 PRs for OpenHands/open-operator
+Fetching completed reviews for OpenHands/open-operator...
+Found 0 completed reviews and 0 review requests for OpenHands/open-operator
+Fetching community PR review stats for OpenHands/open-operator...
+Found 0 community PR reviews for OpenHands/open-operator
+Fetching org member PR review stats for OpenHands/open-operator...
+Found 0 org member PR reviews for OpenHands/open-operator
+Fetching bot PR review stats for OpenHands/open-operator...
+Found 0 bot PR reviews for OpenHands/open-operator
+Fetching PRs for OpenHands/litellm...
+Found 1 PRs for OpenHands/litellm
+Fetching completed reviews for OpenHands/litellm...
+Skipping invalid review time for org member PR #12111: -0.18416666666666667 hours (readyAt: 2025-12-22T16:54:44Z, reviewAt: 2025-12-22T16:43:41Z)
+Skipping invalid review time for org member PR #12168: -0.0016666666666666668 hours (readyAt: 2025-12-26T17:15:21Z, reviewAt: 2025-12-26T17:15:15Z)
+Skipping invalid review time for org member PR #12212: -0.003611111111111111 hours (readyAt: 2025-12-30T16:33:38Z, reviewAt: 2025-12-30T16:33:25Z)
+Skipping invalid review time for org member PR #12201: -0.45611111111111113 hours (readyAt: 2025-12-29T22:38:18Z, reviewAt: 2025-12-29T22:10:56Z)
+Skipping invalid review time for org member PR #12047: -1.3572222222222223 hours (readyAt: 2025-12-29T15:19:33Z, reviewAt: 2025-12-29T13:58:07Z)
+Found 33 community PR reviews for OpenHands/docs
+Fetching org member PR review stats for OpenHands/docs...
+Found 0 completed reviews and 0 review requests for OpenHands/litellm
+Fetching community PR review stats for OpenHands/litellm...
+Found 0 community PR reviews for OpenHands/litellm
+Fetching org member PR review stats for OpenHands/litellm...
+Found 0 org member PR reviews for OpenHands/litellm
+Fetching bot PR review stats for OpenHands/litellm...
+Skipping invalid review time for org member PR #224: -0.06222222222222222 hours (readyAt: 2025-12-31T18:11:56Z, reviewAt: 2025-12-31T18:08:12Z)
+Skipping invalid review time for org member PR #177: -0.6602777777777777 hours (readyAt: 2025-12-29T17:43:46Z, reviewAt: 2025-12-29T17:04:09Z)
+Skipping invalid review time for org member PR #212: -0.06388888888888888 hours (readyAt: 2025-12-26T17:30:55Z, reviewAt: 2025-12-26T17:27:05Z)
+Skipping invalid review time for org member PR #156: -0.004722222222222222 hours (readyAt: 2025-12-07T17:50:04Z, reviewAt: 2025-12-07T17:49:47Z)
+Skipping invalid review time for org member PR #196: -0.015277777777777777 hours (readyAt: 2025-12-18T21:45:16Z, reviewAt: 2025-12-18T21:44:21Z)
+Skipping invalid review time for org member PR #103: -868.2733333333333 hours (readyAt: 2025-12-18T21:29:27Z, reviewAt: 2025-11-12T17:13:03Z)
+Found 0 bot PR reviews for OpenHands/litellm
+Fetching PRs for OpenHands/skills...
+Found 0 PRs for OpenHands/skills
+Fetching completed reviews for OpenHands/skills...
+Skipping invalid review time for org member PR #11516: -123.7461111111111 hours (readyAt: 2025-10-31T23:49:01Z, reviewAt: 2025-10-26T20:04:15Z)
+Skipping invalid review time for org member PR #12144: -0.3461111111111111 hours (readyAt: 2025-12-23T18:24:03Z, reviewAt: 2025-12-23T18:03:17Z)
+Skipping invalid review time for org member PR #12144: -0.32305555555555554 hours (readyAt: 2025-12-23T18:24:03Z, reviewAt: 2025-12-23T18:04:40Z)
+Skipping invalid review time for org member PR #12095: -8.049722222222222 hours (readyAt: 2025-12-19T20:49:56Z, reviewAt: 2025-12-19T12:46:57Z)
+Found 8 completed reviews and 3 review requests for OpenHands/skills
+Fetching community PR review stats for OpenHands/skills...
+Found 21 org member PR reviews for OpenHands/docs
+Fetching bot PR review stats for OpenHands/docs...
+Found 1 community PR reviews for OpenHands/skills
+Fetching org member PR review stats for OpenHands/skills...
+Skipping invalid review time for org member PR #12076: -0.06694444444444445 hours (readyAt: 2025-12-17T23:45:11Z, reviewAt: 2025-12-17T23:41:10Z)
+Skipping invalid review time for org member PR #11812: -15.870555555555555 hours (readyAt: 2025-12-17T13:16:03Z, reviewAt: 2025-12-16T21:23:49Z)
+Skipping invalid review time for org member PR #12067: -0.005 hours (readyAt: 2025-12-16T21:13:42Z, reviewAt: 2025-12-16T21:13:24Z)
+Skipping invalid review time for org member PR #11984: -5.682222222222222 hours (readyAt: 2025-12-11T21:03:13Z, reviewAt: 2025-12-11T15:22:17Z)
+Skipping invalid review time for org member PR #12008: -0.41583333333333333 hours (readyAt: 2025-12-11T18:23:47Z, reviewAt: 2025-12-11T17:58:50Z)
+Skipping invalid review time for org member PR #7: -0.04416666666666667 hours (readyAt: 2025-12-26T17:15:58Z, reviewAt: 2025-12-26T17:13:19Z)
+Found 5 org member PR reviews for OpenHands/skills
+Fetching bot PR review stats for OpenHands/skills...
+Found 0 bot PR reviews for OpenHands/skills
+Fetching PRs for OpenHands/openhands-index-results...
+Found 6 PRs for OpenHands/openhands-index-results
+Fetching completed reviews for OpenHands/openhands-index-results...
+Found 111 org member PR reviews for OpenHands/OpenHands
+Fetching bot PR review stats for OpenHands/OpenHands...
+Found 1 completed reviews and 1 review requests for OpenHands/openhands-index-results
+Fetching community PR review stats for OpenHands/openhands-index-results...
+Found 0 community PR reviews for OpenHands/openhands-index-results
+Fetching org member PR review stats for OpenHands/openhands-index-results...
+Found 1 org member PR reviews for OpenHands/openhands-index-results
+Fetching bot PR review stats for OpenHands/openhands-index-results...
+Found 0 bot PR reviews for OpenHands/openhands-index-results
+Fetching PRs for OpenHands/openhands-chrome-extension...
+Found 0 PRs for OpenHands/openhands-chrome-extension
+Fetching completed reviews for OpenHands/openhands-chrome-extension...
+Found 0 completed reviews and 0 review requests for OpenHands/openhands-chrome-extension
+Fetching community PR review stats for OpenHands/openhands-chrome-extension...
+Found 0 community PR reviews for OpenHands/openhands-chrome-extension
+Fetching org member PR review stats for OpenHands/openhands-chrome-extension...
+Found 0 org member PR reviews for OpenHands/openhands-chrome-extension
+Fetching bot PR review stats for OpenHands/openhands-chrome-extension...
+Found 0 bot PR reviews for OpenHands/openhands-chrome-extension
+Fetching PRs for OpenHands/homebrew-openhands...
+Found 0 PRs for OpenHands/homebrew-openhands
+Fetching completed reviews for OpenHands/homebrew-openhands...
+Found 0 completed reviews and 0 review requests for OpenHands/homebrew-openhands
+Fetching community PR review stats for OpenHands/homebrew-openhands...
+Found 0 community PR reviews for OpenHands/homebrew-openhands
+Fetching org member PR review stats for OpenHands/homebrew-openhands...
+Found 0 org member PR reviews for OpenHands/homebrew-openhands
+Fetching bot PR review stats for OpenHands/homebrew-openhands...
+Found 0 bot PR reviews for OpenHands/homebrew-openhands
+Fetching PRs for OpenHands/terraform-gcp-datadog-integration...
+Found 0 PRs for OpenHands/terraform-gcp-datadog-integration
+Fetching completed reviews for OpenHands/terraform-gcp-datadog-integration...
+Found 0 completed reviews and 0 review requests for OpenHands/terraform-gcp-datadog-integration
+Fetching community PR review stats for OpenHands/terraform-gcp-datadog-integration...
+Found 0 community PR reviews for OpenHands/terraform-gcp-datadog-integration
+Fetching org member PR review stats for OpenHands/terraform-gcp-datadog-integration...
+Found 0 org member PR reviews for OpenHands/terraform-gcp-datadog-integration
+Fetching bot PR review stats for OpenHands/terraform-gcp-datadog-integration...
+Found 0 bot PR reviews for OpenHands/terraform-gcp-datadog-integration
+Fetching PRs for OpenHands/cve-demo...
+Found 0 PRs for OpenHands/cve-demo
+Fetching completed reviews for OpenHands/cve-demo...
+Found 20 bot PR reviews for OpenHands/OpenHands
+Fetching PRs for OpenHands/OpenHands-CLI...
+Found 0 bot PR reviews for OpenHands/docs
+Fetching PRs for OpenHands/agentic-code-search-oss...
+Found 0 completed reviews and 0 review requests for OpenHands/cve-demo
+Fetching community PR review stats for OpenHands/cve-demo...
+Found 11 PRs for OpenHands/agentic-code-search-oss
+Fetching completed reviews for OpenHands/agentic-code-search-oss...
+Found 0 community PR reviews for OpenHands/cve-demo
+Fetching org member PR review stats for OpenHands/cve-demo...
+Found 0 org member PR reviews for OpenHands/cve-demo
+Fetching bot PR review stats for OpenHands/cve-demo...
+Found 6 completed reviews and 2 review requests for OpenHands/agentic-code-search-oss
+Fetching community PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 bot PR reviews for OpenHands/cve-demo
+Fetching PRs for OpenHands/java-refactor-example...
+Found 20 PRs for OpenHands/OpenHands-CLI
+Fetching completed reviews for OpenHands/OpenHands-CLI...
+Found 0 PRs for OpenHands/java-refactor-example
+Fetching completed reviews for OpenHands/java-refactor-example...
+Found 0 community PR reviews for OpenHands/agentic-code-search-oss
+Fetching org member PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 completed reviews and 0 review requests for OpenHands/java-refactor-example
+Fetching community PR review stats for OpenHands/java-refactor-example...
+Found 0 community PR reviews for OpenHands/java-refactor-example
+Fetching org member PR review stats for OpenHands/java-refactor-example...
+Skipping invalid review time for org member PR #40: -267.90222222222224 hours (readyAt: 2025-12-21T20:24:54Z, reviewAt: 2025-12-10T16:30:46Z)
+Skipping invalid review time for org member PR #40: -144.78972222222222 hours (readyAt: 2025-12-21T20:24:54Z, reviewAt: 2025-12-15T19:37:31Z)
+Found 3 org member PR reviews for OpenHands/agentic-code-search-oss
+Fetching bot PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 org member PR reviews for OpenHands/java-refactor-example
+Fetching bot PR review stats for OpenHands/java-refactor-example...
+Found 71 completed reviews and 16 review requests for OpenHands/OpenHands-CLI
+Fetching community PR review stats for OpenHands/OpenHands-CLI...
+Found 0 bot PR reviews for OpenHands/java-refactor-example
+Fetching PRs for OpenHands/OpenHands-Server...
+Found 0 PRs for OpenHands/OpenHands-Server
+Fetching completed reviews for OpenHands/OpenHands-Server...
+Found 0 bot PR reviews for OpenHands/agentic-code-search-oss
+Fetching PRs for OpenHands/trajectory-visualizer...
+Found 0 PRs for OpenHands/trajectory-visualizer
+Fetching completed reviews for OpenHands/trajectory-visualizer...
+Found 0 completed reviews and 0 review requests for OpenHands/OpenHands-Server
+Fetching community PR review stats for OpenHands/OpenHands-Server...
+Found 6 community PR reviews for OpenHands/OpenHands-CLI
+Fetching org member PR review stats for OpenHands/OpenHands-CLI...
+Found 0 community PR reviews for OpenHands/OpenHands-Server
+Fetching org member PR review stats for OpenHands/OpenHands-Server...
+Found 0 completed reviews and 0 review requests for OpenHands/trajectory-visualizer
+Fetching community PR review stats for OpenHands/trajectory-visualizer...
+Found 0 community PR reviews for OpenHands/trajectory-visualizer
+Fetching org member PR review stats for OpenHands/trajectory-visualizer...
+Found 0 org member PR reviews for OpenHands/OpenHands-Server
+Fetching bot PR review stats for OpenHands/OpenHands-Server...
+Found 0 org member PR reviews for OpenHands/trajectory-visualizer
+Fetching bot PR review stats for OpenHands/trajectory-visualizer...
+Found 0 bot PR reviews for OpenHands/OpenHands-Server
+Fetching PRs for OpenHands/liteLLM-proxy...
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+Building employees set...
+Found 2 employees
+No specific repos provided, fetching all repos from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for organization: all-hands-ai
+Found 0 bot PR reviews for OpenHands/trajectory-visualizer
+Fetching PRs for OpenHands/ToM-SWE...
+Found 0 PRs for OpenHands/liteLLM-proxy
+Fetching completed reviews for OpenHands/liteLLM-proxy...
+Found 0 PRs for OpenHands/ToM-SWE
+Fetching completed reviews for OpenHands/ToM-SWE...
+Found 0 completed reviews and 0 review requests for OpenHands/liteLLM-proxy
+Fetching community PR review stats for OpenHands/liteLLM-proxy...
+Found 1 active repositories for all-hands-ai
+Fetching repositories for organization: openhands
+Found 0 community PR reviews for OpenHands/liteLLM-proxy
+Fetching org member PR review stats for OpenHands/liteLLM-proxy...
+Skipping invalid review time for org member PR #263: -4.0505555555555555 hours (readyAt: 2025-12-29T21:11:12Z, reviewAt: 2025-12-29T17:08:10Z)
+Skipping invalid review time for org member PR #231: -20.72888888888889 hours (readyAt: 2025-12-18T19:28:44Z, reviewAt: 2025-12-17T22:45:00Z)
+Skipping invalid review time for org member PR #192: -16.560555555555556 hours (readyAt: 2025-12-11T21:04:11Z, reviewAt: 2025-12-11T04:30:33Z)
+Found 35 org member PR reviews for OpenHands/OpenHands-CLI
+Fetching bot PR review stats for OpenHands/OpenHands-CLI...
+Found 0 org member PR reviews for OpenHands/liteLLM-proxy
+Fetching bot PR review stats for OpenHands/liteLLM-proxy...
+Found 0 completed reviews and 0 review requests for OpenHands/ToM-SWE
+Fetching community PR review stats for OpenHands/ToM-SWE...
+Found 0 bot PR reviews for OpenHands/liteLLM-proxy
+Fetching PRs for OpenHands/BrowserGym...
+Found 0 PRs for OpenHands/BrowserGym
+Fetching completed reviews for OpenHands/BrowserGym...
+Found 0 community PR reviews for OpenHands/ToM-SWE
+Fetching org member PR review stats for OpenHands/ToM-SWE...
+Found 0 completed reviews and 0 review requests for OpenHands/BrowserGym
+Fetching community PR review stats for OpenHands/BrowserGym...
+Found 28 active repositories for openhands
+Dynamically discovered 29 repositories from organizations
+Target repos: []
+Repos to fetch: [
+  'All-Hands-AI/OpenHands-Cloud',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/benchmarks',
+  'OpenHands/community-pr-dashboard',
+  'OpenHands/typescript-client',
+  'OpenHands/docs',
+  'OpenHands/agentic-code-search-oss',
+  'OpenHands/trajectory-visualizer',
+  'OpenHands/ToM-SWE',
+  'OpenHands/open-operator',
+  'OpenHands/litellm',
+  'OpenHands/skills',
+  'OpenHands/openhands-index-results',
+  'OpenHands/openhands-chrome-extension',
+  'OpenHands/homebrew-openhands',
+  'OpenHands/terraform-gcp-datadog-integration',
+  'OpenHands/cve-demo',
+  'OpenHands/java-refactor-example',
+  'OpenHands/OpenHands-Server',
+  'OpenHands/liteLLM-proxy',
+  'OpenHands/BrowserGym',
+  'OpenHands/agent-analysis',
+  'OpenHands/rubric',
+  'OpenHands/openhands-agent-monitor',
+  'OpenHands/critic-rubrics',
+  'OpenHands/rbren-sdk-experiments',
+  'OpenHands/test-owner-change'
+]
+Fetching PRs for All-Hands-AI/OpenHands-Cloud...
+Found 0 community PR reviews for OpenHands/BrowserGym
+Fetching org member PR review stats for OpenHands/BrowserGym...
+Found 0 org member PR reviews for OpenHands/BrowserGym
+Fetching bot PR review stats for OpenHands/BrowserGym...
+Found 0 org member PR reviews for OpenHands/ToM-SWE
+Fetching bot PR review stats for OpenHands/ToM-SWE...
+Found 0 bot PR reviews for OpenHands/BrowserGym
+Fetching PRs for OpenHands/agent-analysis...
+Found 2 bot PR reviews for OpenHands/OpenHands-CLI
+Fetching PRs for OpenHands/benchmarks...
+Found 6 PRs for All-Hands-AI/OpenHands-Cloud
+Fetching completed reviews for All-Hands-AI/OpenHands-Cloud...
+Found 0 PRs for OpenHands/agent-analysis
+Fetching completed reviews for OpenHands/agent-analysis...
+Found 0 bot PR reviews for OpenHands/ToM-SWE
+Fetching PRs for OpenHands/open-operator...
+Found 0 PRs for OpenHands/open-operator
+Fetching completed reviews for OpenHands/open-operator...
+Found 19 PRs for OpenHands/benchmarks
+Fetching completed reviews for OpenHands/benchmarks...
+Found 0 completed reviews and 0 review requests for OpenHands/agent-analysis
+Fetching community PR review stats for OpenHands/agent-analysis...
+Found 0 completed reviews and 0 review requests for OpenHands/open-operator
+Fetching community PR review stats for OpenHands/open-operator...
+Found 0 community PR reviews for OpenHands/agent-analysis
+Fetching org member PR review stats for OpenHands/agent-analysis...
+Found 0 community PR reviews for OpenHands/open-operator
+Fetching org member PR review stats for OpenHands/open-operator...
+Found 0 org member PR reviews for OpenHands/open-operator
+Fetching bot PR review stats for OpenHands/open-operator...
+Found 0 org member PR reviews for OpenHands/agent-analysis
+Fetching bot PR review stats for OpenHands/agent-analysis...
+Found 1 completed reviews and 0 review requests for All-Hands-AI/OpenHands-Cloud
+Fetching community PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 bot PR reviews for OpenHands/agent-analysis
+Fetching PRs for OpenHands/rubric...
+Found 0 bot PR reviews for OpenHands/open-operator
+Fetching PRs for OpenHands/litellm...
+Found 0 PRs for OpenHands/rubric
+Fetching completed reviews for OpenHands/rubric...
+Found 1 PRs for OpenHands/litellm
+Fetching completed reviews for OpenHands/litellm...
+Found 43 completed reviews and 18 review requests for OpenHands/benchmarks
+Fetching community PR review stats for OpenHands/benchmarks...
+Found 0 completed reviews and 0 review requests for OpenHands/rubric
+Fetching community PR review stats for OpenHands/rubric...
+Found 0 community PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching org member PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 community PR reviews for OpenHands/rubric
+Fetching org member PR review stats for OpenHands/rubric...
+Found 0 completed reviews and 0 review requests for OpenHands/litellm
+Fetching community PR review stats for OpenHands/litellm...
+Found 0 org member PR reviews for OpenHands/rubric
+Fetching bot PR review stats for OpenHands/rubric...
+Found 0 community PR reviews for OpenHands/litellm
+Fetching org member PR review stats for OpenHands/litellm...
+Found 0 bot PR reviews for OpenHands/rubric
+Fetching PRs for OpenHands/openhands-agent-monitor...
+Found 0 PRs for OpenHands/openhands-agent-monitor
+Fetching completed reviews for OpenHands/openhands-agent-monitor...
+Found 1 org member PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching bot PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 org member PR reviews for OpenHands/litellm
+Fetching bot PR review stats for OpenHands/litellm...
+Found 0 bot PR reviews for OpenHands/litellm
+Fetching PRs for OpenHands/skills...
+Found 0 completed reviews and 0 review requests for OpenHands/openhands-agent-monitor
+Fetching community PR review stats for OpenHands/openhands-agent-monitor...
+Found 0 PRs for OpenHands/skills
+Fetching completed reviews for OpenHands/skills...
+Found 0 bot PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching PRs for OpenHands/software-agent-sdk...
+Found 0 community PR reviews for OpenHands/openhands-agent-monitor
+Fetching org member PR review stats for OpenHands/openhands-agent-monitor...
+Found 0 community PR reviews for OpenHands/benchmarks
+Fetching org member PR review stats for OpenHands/benchmarks...
+Found 8 completed reviews and 3 review requests for OpenHands/skills
+Fetching community PR review stats for OpenHands/skills...
+Found 0 org member PR reviews for OpenHands/openhands-agent-monitor
+Fetching bot PR review stats for OpenHands/openhands-agent-monitor...
+Found 1 community PR reviews for OpenHands/skills
+Fetching org member PR review stats for OpenHands/skills...
+Found 30 org member PR reviews for OpenHands/benchmarks
+Fetching bot PR review stats for OpenHands/benchmarks...
+Found 0 bot PR reviews for OpenHands/openhands-agent-monitor
+Fetching PRs for OpenHands/critic-rubrics...
+Skipping invalid review time for org member PR #7: -0.04416666666666667 hours (readyAt: 2025-12-26T17:15:58Z, reviewAt: 2025-12-26T17:13:19Z)
+Found 5 org member PR reviews for OpenHands/skills
+Fetching bot PR review stats for OpenHands/skills...
+Found 0 PRs for OpenHands/critic-rubrics
+Fetching completed reviews for OpenHands/critic-rubrics...
+Found 0 completed reviews and 0 review requests for OpenHands/critic-rubrics
+Fetching community PR review stats for OpenHands/critic-rubrics...
+Found 0 bot PR reviews for OpenHands/skills
+Fetching PRs for OpenHands/openhands-index-results...
+Found 0 community PR reviews for OpenHands/critic-rubrics
+Fetching org member PR review stats for OpenHands/critic-rubrics...
+Found 6 PRs for OpenHands/openhands-index-results
+Fetching completed reviews for OpenHands/openhands-index-results...
+Found 1 bot PR reviews for OpenHands/benchmarks
+Fetching PRs for OpenHands/community-pr-dashboard...
+Found 0 PRs for OpenHands/community-pr-dashboard
+Fetching completed reviews for OpenHands/community-pr-dashboard...
+Found 1 completed reviews and 1 review requests for OpenHands/openhands-index-results
+Fetching community PR review stats for OpenHands/openhands-index-results...
+Found 0 org member PR reviews for OpenHands/critic-rubrics
+Fetching bot PR review stats for OpenHands/critic-rubrics...
+Found 56 PRs for OpenHands/software-agent-sdk
+Fetching completed reviews for OpenHands/software-agent-sdk...
+Found 0 community PR reviews for OpenHands/openhands-index-results
+Fetching org member PR review stats for OpenHands/openhands-index-results...
+Found 0 bot PR reviews for OpenHands/critic-rubrics
+Fetching PRs for OpenHands/rbren-sdk-experiments...
+Found 1 completed reviews and 3 review requests for OpenHands/community-pr-dashboard
+Fetching community PR review stats for OpenHands/community-pr-dashboard...
+Found 1 org member PR reviews for OpenHands/openhands-index-results
+Fetching bot PR review stats for OpenHands/openhands-index-results...
+Found 0 PRs for OpenHands/rbren-sdk-experiments
+Fetching completed reviews for OpenHands/rbren-sdk-experiments...
+Found 0 bot PR reviews for OpenHands/openhands-index-results
+Fetching PRs for OpenHands/openhands-chrome-extension...
+ GET / 200 in 50ms (compile: 3ms, render: 47ms)
+ GET /api/dashboard? 200 in 90s (compile: 3ms, render: 90s)
+Found 0 community PR reviews for OpenHands/community-pr-dashboard
+Fetching org member PR review stats for OpenHands/community-pr-dashboard...
+Found 0 completed reviews and 0 review requests for OpenHands/rbren-sdk-experiments
+Fetching community PR review stats for OpenHands/rbren-sdk-experiments...
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+Building employees set...
+Found 0 PRs for OpenHands/openhands-chrome-extension
+Fetching completed reviews for OpenHands/openhands-chrome-extension...
+GraphQL failed for org all-hands-ai, falling back to REST: Error: GraphQL error: Resource not accessible by integration
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Found 0 community PR reviews for OpenHands/rbren-sdk-experiments
+Fetching org member PR review stats for OpenHands/rbren-sdk-experiments...
+Found 1 org member PR reviews for OpenHands/community-pr-dashboard
+Fetching bot PR review stats for OpenHands/community-pr-dashboard...
+Found 0 completed reviews and 0 review requests for OpenHands/openhands-chrome-extension
+Fetching community PR review stats for OpenHands/openhands-chrome-extension...
+Found 0 org member PR reviews for OpenHands/rbren-sdk-experiments
+Fetching bot PR review stats for OpenHands/rbren-sdk-experiments...
+GraphQL failed for org openhands, falling back to REST: Error: GraphQL error: Resource not accessible by integration
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Found 0 community PR reviews for OpenHands/openhands-chrome-extension
+Fetching org member PR review stats for OpenHands/openhands-chrome-extension...
+Found 2 employees
+No specific repos provided, fetching all repos from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for organization: all-hands-ai
+Found 0 bot PR reviews for OpenHands/community-pr-dashboard
+Fetching PRs for OpenHands/typescript-client...
+Found 0 bot PR reviews for OpenHands/rbren-sdk-experiments
+Fetching PRs for OpenHands/test-owner-change...
+Found 4 PRs for OpenHands/typescript-client
+Fetching completed reviews for OpenHands/typescript-client...
+Found 0 org member PR reviews for OpenHands/openhands-chrome-extension
+Fetching bot PR review stats for OpenHands/openhands-chrome-extension...
+Found 0 PRs for OpenHands/test-owner-change
+Fetching completed reviews for OpenHands/test-owner-change...
+Found 1 active repositories for all-hands-ai
+Fetching repositories for organization: openhands
+Found 0 completed reviews and 0 review requests for OpenHands/test-owner-change
+Fetching community PR review stats for OpenHands/test-owner-change...
+Found 1 completed reviews and 0 review requests for OpenHands/typescript-client
+Fetching community PR review stats for OpenHands/typescript-client...
+Found 0 community PR reviews for OpenHands/test-owner-change
+Fetching org member PR review stats for OpenHands/test-owner-change...
+Found 0 org member PR reviews for OpenHands/test-owner-change
+Fetching bot PR review stats for OpenHands/test-owner-change...
+Found 0 bot PR reviews for OpenHands/test-owner-change
+Found 28 active repositories for openhands
+Dynamically discovered 29 repositories from organizations
+Target repos: []
+Repos to fetch: [
+  'All-Hands-AI/OpenHands-Cloud',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/benchmarks',
+  'OpenHands/community-pr-dashboard',
+  'OpenHands/typescript-client',
+  'OpenHands/docs',
+  'OpenHands/agentic-code-search-oss',
+  'OpenHands/trajectory-visualizer',
+  'OpenHands/ToM-SWE',
+  'OpenHands/open-operator',
+  'OpenHands/litellm',
+  'OpenHands/skills',
+  'OpenHands/openhands-index-results',
+  'OpenHands/openhands-chrome-extension',
+  'OpenHands/homebrew-openhands',
+  'OpenHands/terraform-gcp-datadog-integration',
+  'OpenHands/cve-demo',
+  'OpenHands/java-refactor-example',
+  'OpenHands/OpenHands-Server',
+  'OpenHands/liteLLM-proxy',
+  'OpenHands/BrowserGym',
+  'OpenHands/agent-analysis',
+  'OpenHands/rubric',
+  'OpenHands/openhands-agent-monitor',
+  'OpenHands/critic-rubrics',
+  'OpenHands/rbren-sdk-experiments',
+  'OpenHands/test-owner-change'
+]
+Fetching PRs for All-Hands-AI/OpenHands-Cloud...
+Found 0 bot PR reviews for OpenHands/openhands-chrome-extension
+Fetching PRs for OpenHands/homebrew-openhands...
+Found 1 community PR reviews for OpenHands/typescript-client
+Fetching org member PR review stats for OpenHands/typescript-client...
+Found 0 PRs for OpenHands/homebrew-openhands
+Fetching completed reviews for OpenHands/homebrew-openhands...
+Found 6 PRs for All-Hands-AI/OpenHands-Cloud
+Fetching completed reviews for All-Hands-AI/OpenHands-Cloud...
+Found 0 completed reviews and 0 review requests for OpenHands/homebrew-openhands
+Fetching community PR review stats for OpenHands/homebrew-openhands...
+Found 0 org member PR reviews for OpenHands/typescript-client
+Fetching bot PR review stats for OpenHands/typescript-client...
+Found 0 community PR reviews for OpenHands/homebrew-openhands
+Fetching org member PR review stats for OpenHands/homebrew-openhands...
+Found 323 completed reviews and 140 review requests for OpenHands/software-agent-sdk
+Fetching community PR review stats for OpenHands/software-agent-sdk...
+Found 0 org member PR reviews for OpenHands/homebrew-openhands
+Fetching bot PR review stats for OpenHands/homebrew-openhands...
+Found 0 bot PR reviews for OpenHands/typescript-client
+Fetching PRs for OpenHands/docs...
+Found 0 bot PR reviews for OpenHands/homebrew-openhands
+Fetching PRs for OpenHands/terraform-gcp-datadog-integration...
+Found 0 PRs for OpenHands/terraform-gcp-datadog-integration
+Fetching completed reviews for OpenHands/terraform-gcp-datadog-integration...
+Found 1 completed reviews and 0 review requests for All-Hands-AI/OpenHands-Cloud
+Fetching community PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 completed reviews and 0 review requests for OpenHands/terraform-gcp-datadog-integration
+Fetching community PR review stats for OpenHands/terraform-gcp-datadog-integration...
+Found 0 community PR reviews for OpenHands/terraform-gcp-datadog-integration
+Fetching org member PR review stats for OpenHands/terraform-gcp-datadog-integration...
+Found 0 org member PR reviews for OpenHands/terraform-gcp-datadog-integration
+Fetching bot PR review stats for OpenHands/terraform-gcp-datadog-integration...
+Found 0 community PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching org member PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 bot PR reviews for OpenHands/terraform-gcp-datadog-integration
+Fetching PRs for OpenHands/cve-demo...
+Found 24 PRs for OpenHands/docs
+Fetching completed reviews for OpenHands/docs...
+Found 0 PRs for OpenHands/cve-demo
+Fetching completed reviews for OpenHands/cve-demo...
+Found 0 completed reviews and 0 review requests for OpenHands/cve-demo
+Fetching community PR review stats for OpenHands/cve-demo...
+Found 1 org member PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching bot PR review stats for All-Hands-AI/OpenHands-Cloud...
+Found 0 community PR reviews for OpenHands/cve-demo
+Fetching org member PR review stats for OpenHands/cve-demo...
+Found 0 org member PR reviews for OpenHands/cve-demo
+Fetching bot PR review stats for OpenHands/cve-demo...
+Found 0 bot PR reviews for All-Hands-AI/OpenHands-Cloud
+Fetching PRs for OpenHands/software-agent-sdk...
+Found 0 bot PR reviews for OpenHands/cve-demo
+Fetching PRs for OpenHands/java-refactor-example...
+Found 0 PRs for OpenHands/java-refactor-example
+Fetching completed reviews for OpenHands/java-refactor-example...
+Found 23 community PR reviews for OpenHands/software-agent-sdk
+Fetching org member PR review stats for OpenHands/software-agent-sdk...
+Found 0 completed reviews and 0 review requests for OpenHands/java-refactor-example
+Fetching community PR review stats for OpenHands/java-refactor-example...
+Found 0 community PR reviews for OpenHands/java-refactor-example
+Fetching org member PR review stats for OpenHands/java-refactor-example...
+Found 0 org member PR reviews for OpenHands/java-refactor-example
+Fetching bot PR review stats for OpenHands/java-refactor-example...
+Found 0 bot PR reviews for OpenHands/java-refactor-example
+Fetching PRs for OpenHands/OpenHands-Server...
+Found 0 PRs for OpenHands/OpenHands-Server
+Fetching completed reviews for OpenHands/OpenHands-Server...
+Found 64 completed reviews and 94 review requests for OpenHands/docs
+Fetching community PR review stats for OpenHands/docs...
+Found 56 PRs for OpenHands/software-agent-sdk
+Fetching completed reviews for OpenHands/software-agent-sdk...
+Skipping invalid review time for org member PR #1542: -26.94388888888889 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-30T15:50:33Z)
+Skipping invalid review time for org member PR #1542: -4.176944444444445 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-31T14:36:34Z)
+Skipping invalid review time for org member PR #1553: -0.025277777777777777 hours (readyAt: 2025-12-30T18:24:31Z, reviewAt: 2025-12-30T18:23:00Z)
+Skipping invalid review time for org member PR #1383: -0.37833333333333335 hours (readyAt: 2025-12-25T22:45:32Z, reviewAt: 2025-12-25T22:22:50Z)
+Skipping invalid review time for org member PR #1462: -0.04138888888888889 hours (readyAt: 2025-12-20T04:41:11Z, reviewAt: 2025-12-20T04:38:42Z)
+Skipping invalid review time for org member PR #892: -245.03055555555557 hours (readyAt: 2025-12-18T22:26:37Z, reviewAt: 2025-12-08T17:24:47Z)
+Found 0 completed reviews and 0 review requests for OpenHands/OpenHands-Server
+Fetching community PR review stats for OpenHands/OpenHands-Server...
+ GET / 200 in 26ms (compile: 3ms, render: 24ms)
+Found 0 community PR reviews for OpenHands/OpenHands-Server
+Fetching org member PR review stats for OpenHands/OpenHands-Server...
+Skipping invalid review time for org member PR #1328: -0.17944444444444443 hours (readyAt: 2025-12-20T06:34:02Z, reviewAt: 2025-12-20T06:23:16Z)
+Skipping invalid review time for org member PR #1509: -0.6630555555555555 hours (readyAt: 2025-12-24T17:59:22Z, reviewAt: 2025-12-24T17:19:35Z)
+Skipping invalid review time for org member PR #1199: -531.2680555555555 hours (readyAt: 2025-12-20T14:48:52Z, reviewAt: 2025-11-28T11:32:47Z)
+Skipping invalid review time for org member PR #427: -244.40194444444444 hours (readyAt: 2025-12-18T20:35:38Z, reviewAt: 2025-12-08T16:11:31Z)
+Skipping invalid review time for org member PR #495: -776.92 hours (readyAt: 2025-12-11T03:35:59Z, reviewAt: 2025-11-08T18:40:47Z)
+Skipping invalid review time for org member PR #1202: -565.0519444444444 hours (readyAt: 2025-12-19T02:59:25Z, reviewAt: 2025-11-25T13:56:18Z)
+Skipping invalid review time for org member PR #763: -1507.0847222222221 hours (readyAt: 2025-12-18T21:20:56Z, reviewAt: 2025-10-17T02:15:51Z)
+Skipping invalid review time for org member PR #1345: -1.3047222222222221 hours (readyAt: 2025-12-06T16:30:18Z, reviewAt: 2025-12-06T15:12:01Z)
+Found 33 community PR reviews for OpenHands/docs
+Fetching org member PR review stats for OpenHands/docs...
+Found 0 org member PR reviews for OpenHands/OpenHands-Server
+Fetching bot PR review stats for OpenHands/OpenHands-Server...
+Skipping invalid review time for org member PR #600: -44.08611111111111 hours (readyAt: 2025-11-10T14:49:29Z, reviewAt: 2025-11-08T18:44:19Z)
+Skipping invalid review time for org member PR #1396: -0.015555555555555555 hours (readyAt: 2025-12-15T19:15:07Z, reviewAt: 2025-12-15T19:14:11Z)
+Skipping invalid review time for org member PR #1321: -6.5633333333333335 hours (readyAt: 2025-12-08T21:58:08Z, reviewAt: 2025-12-08T15:24:20Z)
+Skipping invalid review time for org member PR #1354: -0.017777777777777778 hours (readyAt: 2025-12-08T16:45:33Z, reviewAt: 2025-12-08T16:44:29Z)
+Found 141 org member PR reviews for OpenHands/software-agent-sdk
+Fetching bot PR review stats for OpenHands/software-agent-sdk...
+Skipping invalid review time for org member PR #224: -0.06222222222222222 hours (readyAt: 2025-12-31T18:11:56Z, reviewAt: 2025-12-31T18:08:12Z)
+Skipping invalid review time for org member PR #177: -0.6602777777777777 hours (readyAt: 2025-12-29T17:43:46Z, reviewAt: 2025-12-29T17:04:09Z)
+Skipping invalid review time for org member PR #212: -0.06388888888888888 hours (readyAt: 2025-12-26T17:30:55Z, reviewAt: 2025-12-26T17:27:05Z)
+Skipping invalid review time for org member PR #156: -0.004722222222222222 hours (readyAt: 2025-12-07T17:50:04Z, reviewAt: 2025-12-07T17:49:47Z)
+Skipping invalid review time for org member PR #196: -0.015277777777777777 hours (readyAt: 2025-12-18T21:45:16Z, reviewAt: 2025-12-18T21:44:21Z)
+Skipping invalid review time for org member PR #103: -868.2733333333333 hours (readyAt: 2025-12-18T21:29:27Z, reviewAt: 2025-11-12T17:13:03Z)
+ GET / 200 in 24ms (compile: 2ms, render: 22ms)
+Found 0 bot PR reviews for OpenHands/OpenHands-Server
+Fetching PRs for OpenHands/liteLLM-proxy...
+Found 0 PRs for OpenHands/liteLLM-proxy
+Fetching completed reviews for OpenHands/liteLLM-proxy...
+Found 0 completed reviews and 0 review requests for OpenHands/liteLLM-proxy
+Fetching community PR review stats for OpenHands/liteLLM-proxy...
+Found 0 community PR reviews for OpenHands/liteLLM-proxy
+Fetching org member PR review stats for OpenHands/liteLLM-proxy...
+Found 21 org member PR reviews for OpenHands/docs
+Fetching bot PR review stats for OpenHands/docs...
+Found 0 org member PR reviews for OpenHands/liteLLM-proxy
+Fetching bot PR review stats for OpenHands/liteLLM-proxy...
+Found 0 bot PR reviews for OpenHands/liteLLM-proxy
+Fetching PRs for OpenHands/BrowserGym...
+Found 0 PRs for OpenHands/BrowserGym
+Fetching completed reviews for OpenHands/BrowserGym...
+Found 323 completed reviews and 140 review requests for OpenHands/software-agent-sdk
+Fetching community PR review stats for OpenHands/software-agent-sdk...
+Found 0 completed reviews and 0 review requests for OpenHands/BrowserGym
+Fetching community PR review stats for OpenHands/BrowserGym...
+Found 0 community PR reviews for OpenHands/BrowserGym
+Fetching org member PR review stats for OpenHands/BrowserGym...
+Found 0 org member PR reviews for OpenHands/BrowserGym
+Fetching bot PR review stats for OpenHands/BrowserGym...
+Found 0 bot PR reviews for OpenHands/docs
+Fetching PRs for OpenHands/agentic-code-search-oss...
+Found 5 bot PR reviews for OpenHands/software-agent-sdk
+Fetching PRs for OpenHands/OpenHands...
+Found 0 bot PR reviews for OpenHands/BrowserGym
+Fetching PRs for OpenHands/agent-analysis...
+Found 11 PRs for OpenHands/agentic-code-search-oss
+Fetching completed reviews for OpenHands/agentic-code-search-oss...
+Found 0 PRs for OpenHands/agent-analysis
+Fetching completed reviews for OpenHands/agent-analysis...
+Found 6 completed reviews and 2 review requests for OpenHands/agentic-code-search-oss
+Fetching community PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 completed reviews and 0 review requests for OpenHands/agent-analysis
+Fetching community PR review stats for OpenHands/agent-analysis...
+Found 0 community PR reviews for OpenHands/agent-analysis
+Fetching org member PR review stats for OpenHands/agent-analysis...
+Found 0 community PR reviews for OpenHands/agentic-code-search-oss
+Fetching org member PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 org member PR reviews for OpenHands/agent-analysis
+Fetching bot PR review stats for OpenHands/agent-analysis...
+Skipping invalid review time for org member PR #40: -267.90222222222224 hours (readyAt: 2025-12-21T20:24:54Z, reviewAt: 2025-12-10T16:30:46Z)
+Skipping invalid review time for org member PR #40: -144.78972222222222 hours (readyAt: 2025-12-21T20:24:54Z, reviewAt: 2025-12-15T19:37:31Z)
+Found 3 org member PR reviews for OpenHands/agentic-code-search-oss
+Fetching bot PR review stats for OpenHands/agentic-code-search-oss...
+Found 0 bot PR reviews for OpenHands/agent-analysis
+Fetching PRs for OpenHands/rubric...
+Found 61 PRs for OpenHands/OpenHands
+Fetching completed reviews for OpenHands/OpenHands...
+Found 0 PRs for OpenHands/rubric
+Fetching completed reviews for OpenHands/rubric...
+Found 0 bot PR reviews for OpenHands/agentic-code-search-oss
+Fetching PRs for OpenHands/trajectory-visualizer...
+Found 0 completed reviews and 0 review requests for OpenHands/rubric
+Fetching community PR review stats for OpenHands/rubric...
+Found 0 PRs for OpenHands/trajectory-visualizer
+Fetching completed reviews for OpenHands/trajectory-visualizer...
+Found 23 community PR reviews for OpenHands/software-agent-sdk
+Fetching org member PR review stats for OpenHands/software-agent-sdk...
+Found 0 community PR reviews for OpenHands/rubric
+Fetching org member PR review stats for OpenHands/rubric...
+Found 0 org member PR reviews for OpenHands/rubric
+Fetching bot PR review stats for OpenHands/rubric...
+Found 0 bot PR reviews for OpenHands/rubric
+Fetching PRs for OpenHands/openhands-agent-monitor...
+Found 0 PRs for OpenHands/openhands-agent-monitor
+Fetching completed reviews for OpenHands/openhands-agent-monitor...
+Skipping invalid review time for org member PR #1542: -26.94388888888889 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-30T15:50:33Z)
+Skipping invalid review time for org member PR #1542: -4.176944444444445 hours (readyAt: 2025-12-31T18:47:11Z, reviewAt: 2025-12-31T14:36:34Z)
+Skipping invalid review time for org member PR #1553: -0.025277777777777777 hours (readyAt: 2025-12-30T18:24:31Z, reviewAt: 2025-12-30T18:23:00Z)
+Skipping invalid review time for org member PR #1383: -0.37833333333333335 hours (readyAt: 2025-12-25T22:45:32Z, reviewAt: 2025-12-25T22:22:50Z)
+Skipping invalid review time for org member PR #1462: -0.04138888888888889 hours (readyAt: 2025-12-20T04:41:11Z, reviewAt: 2025-12-20T04:38:42Z)
+Skipping invalid review time for org member PR #892: -245.03055555555557 hours (readyAt: 2025-12-18T22:26:37Z, reviewAt: 2025-12-08T17:24:47Z)
+Found 0 completed reviews and 0 review requests for OpenHands/trajectory-visualizer
+Fetching community PR review stats for OpenHands/trajectory-visualizer...
+Found 0 completed reviews and 0 review requests for OpenHands/openhands-agent-monitor
+Fetching community PR review stats for OpenHands/openhands-agent-monitor...
+Found 0 community PR reviews for OpenHands/trajectory-visualizer
+Fetching org member PR review stats for OpenHands/trajectory-visualizer...
+Found 0 community PR reviews for OpenHands/openhands-agent-monitor
+Fetching org member PR review stats for OpenHands/openhands-agent-monitor...
+Skipping invalid review time for org member PR #1328: -0.17944444444444443 hours (readyAt: 2025-12-20T06:34:02Z, reviewAt: 2025-12-20T06:23:16Z)
+Skipping invalid review time for org member PR #1509: -0.6630555555555555 hours (readyAt: 2025-12-24T17:59:22Z, reviewAt: 2025-12-24T17:19:35Z)
+Skipping invalid review time for org member PR #1199: -531.2680555555555 hours (readyAt: 2025-12-20T14:48:52Z, reviewAt: 2025-11-28T11:32:47Z)
+Skipping invalid review time for org member PR #427: -244.40194444444444 hours (readyAt: 2025-12-18T20:35:38Z, reviewAt: 2025-12-08T16:11:31Z)
+Skipping invalid review time for org member PR #495: -776.92 hours (readyAt: 2025-12-11T03:35:59Z, reviewAt: 2025-11-08T18:40:47Z)
+Skipping invalid review time for org member PR #1202: -565.0519444444444 hours (readyAt: 2025-12-19T02:59:25Z, reviewAt: 2025-11-25T13:56:18Z)
+Skipping invalid review time for org member PR #763: -1507.0847222222221 hours (readyAt: 2025-12-18T21:20:56Z, reviewAt: 2025-10-17T02:15:51Z)
+Skipping invalid review time for org member PR #1345: -1.3047222222222221 hours (readyAt: 2025-12-06T16:30:18Z, reviewAt: 2025-12-06T15:12:01Z)
+Found 0 org member PR reviews for OpenHands/trajectory-visualizer
+Fetching bot PR review stats for OpenHands/trajectory-visualizer...
+Found 0 org member PR reviews for OpenHands/openhands-agent-monitor
+Fetching bot PR review stats for OpenHands/openhands-agent-monitor...
+Skipping invalid review time for org member PR #600: -44.08611111111111 hours (readyAt: 2025-11-10T14:49:29Z, reviewAt: 2025-11-08T18:44:19Z)
+Skipping invalid review time for org member PR #1396: -0.015555555555555555 hours (readyAt: 2025-12-15T19:15:07Z, reviewAt: 2025-12-15T19:14:11Z)
+Skipping invalid review time for org member PR #1321: -6.5633333333333335 hours (readyAt: 2025-12-08T21:58:08Z, reviewAt: 2025-12-08T15:24:20Z)
+Skipping invalid review time for org member PR #1354: -0.017777777777777778 hours (readyAt: 2025-12-08T16:45:33Z, reviewAt: 2025-12-08T16:44:29Z)
+Found 141 org member PR reviews for OpenHands/software-agent-sdk
+Fetching bot PR review stats for OpenHands/software-agent-sdk...
+Found 0 bot PR reviews for OpenHands/trajectory-visualizer
+Fetching PRs for OpenHands/ToM-SWE...
+Found 0 PRs for OpenHands/ToM-SWE
+Fetching completed reviews for OpenHands/ToM-SWE...
+Found 0 bot PR reviews for OpenHands/openhands-agent-monitor
+Fetching PRs for OpenHands/critic-rubrics...
+Found 0 completed reviews and 0 review requests for OpenHands/ToM-SWE
+Fetching community PR review stats for OpenHands/ToM-SWE...
+Found 0 PRs for OpenHands/critic-rubrics
+Fetching completed reviews for OpenHands/critic-rubrics...
+Found 0 completed reviews and 0 review requests for OpenHands/critic-rubrics
+Fetching community PR review stats for OpenHands/critic-rubrics...
+Found 0 community PR reviews for OpenHands/ToM-SWE
+Fetching org member PR review stats for OpenHands/ToM-SWE...
+Found 280 completed reviews and 270 review requests for OpenHands/OpenHands
+Fetching community PR review stats for OpenHands/OpenHands...
+Found 0 community PR reviews for OpenHands/critic-rubrics
+Fetching org member PR review stats for OpenHands/critic-rubrics...
+Found 0 org member PR reviews for OpenHands/critic-rubrics
+Fetching bot PR review stats for OpenHands/critic-rubrics...
+Found 0 org member PR reviews for OpenHands/ToM-SWE
+Fetching bot PR review stats for OpenHands/ToM-SWE...
+Found 0 bot PR reviews for OpenHands/critic-rubrics
+Fetching PRs for OpenHands/rbren-sdk-experiments...
+Found 0 bot PR reviews for OpenHands/ToM-SWE
+Fetching PRs for OpenHands/open-operator...
+Found 0 PRs for OpenHands/rbren-sdk-experiments
+Fetching completed reviews for OpenHands/rbren-sdk-experiments...
+Found 0 PRs for OpenHands/open-operator
+Fetching completed reviews for OpenHands/open-operator...
+Found 0 completed reviews and 0 review requests for OpenHands/rbren-sdk-experiments
+Fetching community PR review stats for OpenHands/rbren-sdk-experiments...
+Found 0 completed reviews and 0 review requests for OpenHands/open-operator
+Fetching community PR review stats for OpenHands/open-operator...
+Found 5 bot PR reviews for OpenHands/software-agent-sdk
+Fetching PRs for OpenHands/OpenHands...
+Found 0 community PR reviews for OpenHands/rbren-sdk-experiments
+Fetching org member PR review stats for OpenHands/rbren-sdk-experiments...
+Found 0 community PR reviews for OpenHands/open-operator
+Fetching org member PR review stats for OpenHands/open-operator...
+Found 0 org member PR reviews for OpenHands/rbren-sdk-experiments
+Fetching bot PR review stats for OpenHands/rbren-sdk-experiments...
+Found 0 org member PR reviews for OpenHands/open-operator
+Fetching bot PR review stats for OpenHands/open-operator...
+Found 0 bot PR reviews for OpenHands/rbren-sdk-experiments
+Fetching PRs for OpenHands/test-owner-change...
+Found 0 PRs for OpenHands/test-owner-change
+Fetching completed reviews for OpenHands/test-owner-change...
+Found 0 completed reviews and 0 review requests for OpenHands/test-owner-change
+Fetching community PR review stats for OpenHands/test-owner-change...
+Found 0 bot PR reviews for OpenHands/open-operator
+Fetching PRs for OpenHands/litellm...
+Found 0 community PR reviews for OpenHands/test-owner-change
+Fetching org member PR review stats for OpenHands/test-owner-change...
+Found 1 PRs for OpenHands/litellm
+Fetching completed reviews for OpenHands/litellm...
+Found 0 org member PR reviews for OpenHands/test-owner-change
+Fetching bot PR review stats for OpenHands/test-owner-change...
+Found 61 PRs for OpenHands/OpenHands
+Fetching completed reviews for OpenHands/OpenHands...
+Found 0 bot PR reviews for OpenHands/test-owner-change
+Found 0 completed reviews and 0 review requests for OpenHands/litellm
+Fetching community PR review stats for OpenHands/litellm...
+ GET /api/dashboard? 200 in 2.7min (compile: 118ms, render: 2.7min)
+Failed to fetch PRs for OpenHands/OpenHands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getRecentlyMergedPRsWithReviews (lib/github.ts:327:37)
+    at async (app/api/dashboard/route.ts:120:35)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-CLI...
+Failed to fetch PRs for OpenHands/litellm: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getCommunityPRReviewStats (lib/github.ts:491:40)
+    at async (app/api/dashboard/route.ts:127:36)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/skills...
+Failed to fetch PRs for OpenHands/OpenHands-CLI: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/benchmarks...
+Failed to fetch PRs for OpenHands/skills: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-index-results...
+Failed to fetch PRs for OpenHands/benchmarks: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/community-pr-dashboard...
+Failed to fetch PRs for OpenHands/openhands-index-results: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-chrome-extension...
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Failed to fetch PRs for OpenHands/community-pr-dashboard: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/typescript-client...
+Failed to fetch PRs for OpenHands/openhands-chrome-extension: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/homebrew-openhands...
+Failed to fetch PRs for OpenHands/typescript-client: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/docs...
+Failed to fetch PRs for OpenHands/homebrew-openhands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/terraform-gcp-datadog-integration...
+Failed to fetch PRs for OpenHands/OpenHands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getCommunityPRReviewStats (lib/github.ts:491:40)
+    at async (app/api/dashboard/route.ts:127:36)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-CLI...
+Failed to fetch PRs for OpenHands/docs: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agentic-code-search-oss...
+Failed to fetch PRs for OpenHands/terraform-gcp-datadog-integration: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/cve-demo...
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Failed to fetch PRs for OpenHands/OpenHands-CLI: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/benchmarks...
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Failed to fetch PRs for OpenHands/agentic-code-search-oss: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/trajectory-visualizer...
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Failed to fetch PRs for OpenHands/cve-demo: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/java-refactor-example...
+Failed to fetch PRs for OpenHands/benchmarks: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/community-pr-dashboard...
+Failed to fetch PRs for OpenHands/trajectory-visualizer: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/ToM-SWE...
+Failed to fetch PRs for OpenHands/java-refactor-example: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-Server...
+Failed to fetch PRs for OpenHands/community-pr-dashboard: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/typescript-client...
+Failed to fetch PRs for OpenHands/ToM-SWE: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/open-operator...
+Failed to fetch PRs for OpenHands/OpenHands-Server: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/liteLLM-proxy...
+Failed to fetch PRs for OpenHands/typescript-client: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/docs...
+Failed to fetch PRs for OpenHands/open-operator: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/litellm...
+Failed to fetch PRs for OpenHands/liteLLM-proxy: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/BrowserGym...
+Failed to fetch PRs for OpenHands/docs: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agentic-code-search-oss...
+Failed to fetch PRs for OpenHands/litellm: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/skills...
+Failed to fetch PRs for OpenHands/BrowserGym: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agent-analysis...
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1763ms (compile: 241ms, render: 1522ms)
+Failed to fetch PRs for OpenHands/agentic-code-search-oss: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/trajectory-visualizer...
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1845ms (compile: 243ms, render: 1601ms)
+Failed to fetch PRs for OpenHands/skills: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-index-results...
+Failed to fetch PRs for OpenHands/agent-analysis: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rubric...
+Failed to fetch PRs for OpenHands/trajectory-visualizer: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/ToM-SWE...
+Failed to fetch PRs for OpenHands/openhands-index-results: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-chrome-extension...
+Failed to fetch PRs for OpenHands/rubric: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-agent-monitor...
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 2.2s (compile: 233ms, render: 1935ms)
+Failed to fetch PRs for OpenHands/ToM-SWE: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/open-operator...
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 2.2s (compile: 255ms, render: 1985ms)
+Failed to fetch PRs for OpenHands/openhands-chrome-extension: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/homebrew-openhands...
+Failed to fetch PRs for OpenHands/openhands-agent-monitor: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/critic-rubrics...
+Failed to fetch PRs for OpenHands/open-operator: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/litellm...
+Failed to fetch PRs for OpenHands/homebrew-openhands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/terraform-gcp-datadog-integration...
+Failed to fetch PRs for OpenHands/critic-rubrics: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rbren-sdk-experiments...
+Failed to fetch PRs for OpenHands/litellm: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/skills...
+Failed to fetch PRs for OpenHands/terraform-gcp-datadog-integration: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/cve-demo...
+Failed to fetch PRs for OpenHands/rbren-sdk-experiments: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/test-owner-change...
+Failed to fetch PRs for OpenHands/skills: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-index-results...
+Failed to fetch PRs for OpenHands/cve-demo: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/java-refactor-example...
+Failed to fetch PRs for OpenHands/test-owner-change: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Failed to fetch PRs for OpenHands/openhands-index-results: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-chrome-extension...
+Failed to fetch PRs for OpenHands/java-refactor-example: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-Server...
+Failed to fetch PRs for OpenHands/openhands-chrome-extension: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/homebrew-openhands...
+Failed to fetch PRs for OpenHands/OpenHands-Server: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/liteLLM-proxy...
+Failed to fetch PRs for OpenHands/homebrew-openhands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/terraform-gcp-datadog-integration...
+Failed to fetch PRs for OpenHands/liteLLM-proxy: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/BrowserGym...
+Failed to fetch PRs for OpenHands/terraform-gcp-datadog-integration: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/cve-demo...
+Failed to fetch PRs for OpenHands/BrowserGym: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agent-analysis...
+Failed to fetch PRs for OpenHands/cve-demo: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/java-refactor-example...
+Failed to fetch PRs for OpenHands/agent-analysis: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rubric...
+Failed to fetch PRs for OpenHands/java-refactor-example: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-Server...
+Failed to fetch PRs for OpenHands/rubric: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-agent-monitor...
+Failed to fetch PRs for OpenHands/OpenHands-Server: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/liteLLM-proxy...
+Failed to fetch PRs for OpenHands/liteLLM-proxy: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/BrowserGym...
+Failed to fetch PRs for OpenHands/BrowserGym: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agent-analysis...
+Failed to fetch PRs for OpenHands/openhands-agent-monitor: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/critic-rubrics...
+Failed to fetch PRs for OpenHands/agent-analysis: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rubric...
+Failed to fetch PRs for OpenHands/critic-rubrics: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rbren-sdk-experiments...
+Failed to fetch PRs for OpenHands/rubric: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-agent-monitor...
+Failed to fetch PRs for OpenHands/rbren-sdk-experiments: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/test-owner-change...
+Failed to fetch PRs for OpenHands/openhands-agent-monitor: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/critic-rubrics...
+Failed to fetch PRs for OpenHands/test-owner-change: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+ GET /api/dashboard? 200 in 38.0s (compile: 3ms, render: 38.0s)
+Failed to fetch PRs for OpenHands/critic-rubrics: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rbren-sdk-experiments...
+Failed to fetch PRs for OpenHands/rbren-sdk-experiments: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/test-owner-change...
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Failed to fetch PRs for OpenHands/test-owner-change: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+ GET /api/dashboard? 200 in 51s (compile: 5ms, render: 51s)
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1414ms (compile: 2ms, render: 1412ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1846ms (compile: 1751µs, render: 1844ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1486ms (compile: 1652µs, render: 1484ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1374ms (compile: 1653µs, render: 1373ms)
+ GET / 200 in 45ms (compile: 3ms, render: 43ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 9ms (compile: 4ms, render: 6ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1549ms (compile: 2ms, render: 1547ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1310ms (compile: 1660µs, render: 1308ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1363ms (compile: 2ms, render: 1361ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1372ms (compile: 1593µs, render: 1371ms)
+ ✓ Compiled in 89ms
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 7ms (compile: 1882µs, render: 5ms)
+ ✓ Compiled in 95ms
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 9ms (compile: 2ms, render: 7ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 7ms (compile: 1817µs, render: 5ms)
+ GET / 200 in 140ms (compile: 74ms, render: 66ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 7ms (compile: 3ms, render: 4ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1525ms (compile: 5ms, render: 1521ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1460ms (compile: 2ms, render: 1457ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1185ms (compile: 1619µs, render: 1183ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1563ms (compile: 1666µs, render: 1562ms)
+ ✓ Compiled in 111ms
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 10ms (compile: 3ms, render: 7ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 13ms (compile: 7ms, render: 7ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 8ms (compile: 1696µs, render: 6ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 7ms (compile: 1640µs, render: 5ms)
+ GET / 200 in 131ms (compile: 72ms, render: 60ms)
+ GET / 200 in 24ms (compile: 1776µs, render: 22ms)
+ GET / 200 in 39ms (compile: 1740µs, render: 37ms)
+ GET / 200 in 22ms (compile: 2ms, render: 20ms)
+ GET / 200 in 26ms (compile: 1669µs, render: 24ms)
+ GET / 200 in 30ms (compile: 3ms, render: 28ms)
+ GET / 200 in 27ms (compile: 2ms, render: 25ms)
+ GET / 200 in 27ms (compile: 1937µs, render: 25ms)
+ GET / 200 in 25ms (compile: 1943µs, render: 23ms)
+ GET / 200 in 35ms (compile: 1843µs, render: 33ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+Building employees set...
+ GET / 200 in 43ms (compile: 2ms, render: 41ms)
+GraphQL failed for org all-hands-ai, falling back to REST: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+GraphQL failed for org openhands, falling back to REST: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOrgMembersGraphQL (lib/github.ts:95:38)
+    at async (lib/employees.ts:31:21)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async (app/api/dashboard/route.ts:61:28)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Found 2 employees
+No specific repos provided, fetching all repos from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for organization: all-hands-ai
+Found 1 active repositories for all-hands-ai
+Fetching repositories for organization: openhands
+Found 28 active repositories for openhands
+Dynamically discovered 29 repositories from organizations
+Target repos: []
+Repos to fetch: [
+  'All-Hands-AI/OpenHands-Cloud',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/benchmarks',
+  'OpenHands/community-pr-dashboard',
+  'OpenHands/typescript-client',
+  'OpenHands/docs',
+  'OpenHands/agentic-code-search-oss',
+  'OpenHands/trajectory-visualizer',
+  'OpenHands/ToM-SWE',
+  'OpenHands/open-operator',
+  'OpenHands/litellm',
+  'OpenHands/skills',
+  'OpenHands/openhands-index-results',
+  'OpenHands/openhands-chrome-extension',
+  'OpenHands/homebrew-openhands',
+  'OpenHands/terraform-gcp-datadog-integration',
+  'OpenHands/cve-demo',
+  'OpenHands/java-refactor-example',
+  'OpenHands/OpenHands-Server',
+  'OpenHands/liteLLM-proxy',
+  'OpenHands/BrowserGym',
+  'OpenHands/agent-analysis',
+  'OpenHands/rubric',
+  'OpenHands/openhands-agent-monitor',
+  'OpenHands/critic-rubrics',
+  'OpenHands/rbren-sdk-experiments',
+  'OpenHands/test-owner-change'
+]
+Fetching PRs for All-Hands-AI/OpenHands-Cloud...
+Failed to fetch PRs for All-Hands-AI/OpenHands-Cloud: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/software-agent-sdk...
+Failed to fetch PRs for OpenHands/software-agent-sdk: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands...
+ GET / 200 in 21ms (compile: 2ms, render: 19ms)
+Failed to fetch PRs for OpenHands/OpenHands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-CLI...
+Failed to fetch PRs for OpenHands/OpenHands-CLI: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/benchmarks...
+Failed to fetch PRs for OpenHands/benchmarks: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/community-pr-dashboard...
+Failed to fetch PRs for OpenHands/community-pr-dashboard: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/typescript-client...
+Failed to fetch PRs for OpenHands/typescript-client: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/docs...
+Failed to fetch PRs for OpenHands/docs: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agentic-code-search-oss...
+Failed to fetch PRs for OpenHands/agentic-code-search-oss: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/trajectory-visualizer...
+Failed to fetch PRs for OpenHands/trajectory-visualizer: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/ToM-SWE...
+Failed to fetch PRs for OpenHands/ToM-SWE: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/open-operator...
+Failed to fetch PRs for OpenHands/open-operator: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/litellm...
+Failed to fetch PRs for OpenHands/litellm: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/skills...
+Failed to fetch PRs for OpenHands/skills: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-index-results...
+Failed to fetch PRs for OpenHands/openhands-index-results: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-chrome-extension...
+Failed to fetch PRs for OpenHands/openhands-chrome-extension: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/homebrew-openhands...
+Failed to fetch PRs for OpenHands/homebrew-openhands: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/terraform-gcp-datadog-integration...
+Failed to fetch PRs for OpenHands/terraform-gcp-datadog-integration: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/cve-demo...
+Failed to fetch PRs for OpenHands/cve-demo: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/java-refactor-example...
+Failed to fetch PRs for OpenHands/java-refactor-example: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/OpenHands-Server...
+ GET / 200 in 25ms (compile: 2ms, render: 23ms)
+Failed to fetch PRs for OpenHands/OpenHands-Server: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/liteLLM-proxy...
+Failed to fetch PRs for OpenHands/liteLLM-proxy: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/BrowserGym...
+Failed to fetch PRs for OpenHands/BrowserGym: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/agent-analysis...
+Failed to fetch PRs for OpenHands/agent-analysis: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rubric...
+Failed to fetch PRs for OpenHands/rubric: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/openhands-agent-monitor...
+Failed to fetch PRs for OpenHands/openhands-agent-monitor: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/critic-rubrics...
+Failed to fetch PRs for OpenHands/critic-rubrics: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/rbren-sdk-experiments...
+Failed to fetch PRs for OpenHands/rbren-sdk-experiments: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+Fetching PRs for OpenHands/test-owner-change...
+Failed to fetch PRs for OpenHands/test-owner-change: Error: GraphQL error: API rate limit already exceeded for user ID 13136.
+    at graphql (lib/github.ts:56:11)
+    at async getOpenPRsGraphQL (lib/github.ts:179:35)
+    at async (app/api/dashboard/route.ts:108:26)
+    at async InMemoryCache.withCache (lib/cache.ts:36:18)
+    at async GET (app/api/dashboard/route.ts:58:20)
+  54 |   
+  55 |   if (result.errors) {
+> 56 |     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
+     |           ^
+  57 |   }
+  58 |
+  59 |   // Extract rate limit info if present
+ GET /api/dashboard? 200 in 7.8s (compile: 3ms, render: 7.8s)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+ GET / 200 in 24ms (compile: 1737µs, render: 22ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1663ms (compile: 1630µs, render: 1662ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1474ms (compile: 1858µs, render: 1472ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1348ms (compile: 1669µs, render: 1346ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+ GET / 200 in 18ms (compile: 1208µs, render: 17ms)
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1893ms (compile: 1645µs, render: 1892ms)
+ GET / 200 in 22ms (compile: 1806µs, render: 20ms)
+ GET / 200 in 20ms (compile: 1862µs, render: 18ms)
+ GET / 200 in 26ms (compile: 3ms, render: 23ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 7ms (compile: 2ms, render: 5ms)
+ GET / 200 in 23ms (compile: 1624µs, render: 22ms)
+ GET / 200 in 22ms (compile: 1702µs, render: 20ms)
+ GET / 200 in 28ms (compile: 1823µs, render: 26ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 5ms (compile: 1761µs, render: 3ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1404ms (compile: 4ms, render: 1400ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1465ms (compile: 2ms, render: 1463ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1632ms (compile: 1634µs, render: 1630ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1701ms (compile: 1998µs, render: 1699ms)
+ GET / 200 in 22ms (compile: 1891µs, render: 20ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 5ms (compile: 1508µs, render: 3ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1393ms (compile: 6ms, render: 1387ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1434ms (compile: 3ms, render: 1431ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1555ms (compile: 6ms, render: 1549ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1629ms (compile: 8ms, render: 1621ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 5ms (compile: 1539µs, render: 4ms)
+ GET / 200 in 19ms (compile: 1872µs, render: 17ms)
+ GET / 200 in 31ms (compile: 1724µs, render: 30ms)
+ GET / 200 in 21ms (compile: 1987µs, render: 19ms)
+ GET / 200 in 20ms (compile: 1884µs, render: 18ms)
+ GET / 200 in 22ms (compile: 1955µs, render: 20ms)
+ GET / 200 in 25ms (compile: 2ms, render: 23ms)
+ GET / 200 in 19ms (compile: 1733µs, render: 17ms)
+ GET / 200 in 23ms (compile: 1896µs, render: 21ms)
+ GET / 200 in 27ms (compile: 1974µs, render: 25ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 5ms (compile: 1661µs, render: 4ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+ GET /api/repositories 200 in 1173ms (compile: 2ms, render: 1171ms)
+ GET /api/repositories 200 in 1174ms (compile: 5ms, render: 1169ms)
+ GET /api/repositories 200 in 1174ms (compile: 8ms, render: 1165ms)
+ GET /api/repositories 200 in 1184ms (compile: 3ms, render: 1180ms)
+ GET / 200 in 19ms (compile: 1717µs, render: 17ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 30 repositories for openhands
+Total formatted repositories: 29
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 5ms (compile: 1584µs, render: 3ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+ GET /api/repositories 200 in 676ms (compile: 1198µs, render: 674ms)
+ GET /api/repositories 200 in 671ms (compile: 4ms, render: 668ms)
+ GET /api/repositories 200 in 672ms (compile: 1690µs, render: 670ms)
+ GET /api/repositories 200 in 671ms (compile: 7ms, render: 664ms)
+ GET / 200 in 35ms (compile: 1568µs, render: 34ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 5ms (compile: 1599µs, render: 3ms)
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Fetching repositories from organizations: [ 'all-hands-ai', 'openhands' ]
+Fetching repositories for org: all-hands-ai
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 7 repositories for all-hands-ai
+Fetching repositories for org: openhands
+Found 30 repositories for openhands
+Total formatted repositories: 29
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1304ms (compile: 1760µs, render: 1302ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1464ms (compile: 4ms, render: 1460ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1487ms (compile: 4ms, render: 1483ms)
+Found 30 repositories for openhands
+Total formatted repositories: 29
+ GET /api/repositories 200 in 1533ms (compile: 1211µs, render: 1532ms)
+ GET / 200 in 18ms (compile: 1679µs, render: 17ms)
+ GET / 200 in 27ms (compile: 3ms, render: 25ms)
+ GET / 200 in 22ms (compile: 1723µs, render: 21ms)
+ GET / 200 in 30ms (compile: 4ms, render: 27ms)
+ GET / 200 in 25ms (compile: 2ms, render: 23ms)
+ GET / 200 in 57ms (compile: 3ms, render: 55ms)
+ GET / 200 in 23ms (compile: 2ms, render: 21ms)
+ GET / 200 in 22ms (compile: 1644µs, render: 20ms)
+ GET / 200 in 20ms (compile: 2ms, render: 18ms)
+ GET / 200 in 26ms (compile: 2ms, render: 24ms)
+ GET / 200 in 22ms (compile: 1935µs, render: 20ms)
+ GET / 200 in 43ms (compile: 2ms, render: 41ms)
+=== Dashboard API called ===
+GitHub token available: true
+Config orgs: [ 'all-hands-ai', 'openhands' ]
+Search params: {}
+ GET /api/dashboard? 200 in 7ms (compile: 2ms, render: 5ms)
+ GET / 200 in 19ms (compile: 1831µs, render: 18ms)
+ GET / 200 in 21ms (compile: 1897µs, render: 20ms)
+ GET / 200 in 20ms (compile: 1933µs, render: 18ms)
+ GET / 200 in 32ms (compile: 1930µs, render: 30ms)
+ GET / 200 in 19ms (compile: 2ms, render: 17ms)
+ GET / 200 in 20ms (compile: 1722µs, render: 18ms)
+ GET / 200 in 20ms (compile: 1849µs, render: 18ms)
+ GET / 200 in 24ms (compile: 2ms, render: 22ms)
+ GET / 200 in 18ms (compile: 1904µs, render: 16ms)
+ GET / 200 in 20ms (compile: 1695µs, render: 18ms)
+ GET / 200 in 26ms (compile: 1990µs, render: 24ms)
+ GET / 200 in 18ms (compile: 1891µs, render: 16ms)
+ GET / 200 in 20ms (compile: 1784µs, render: 18ms)
+ GET / 200 in 31ms (compile: 1921µs, render: 29ms)
+ GET / 200 in 21ms (compile: 2ms, render: 19ms)
+[?25h
