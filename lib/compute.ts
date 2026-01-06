@@ -157,8 +157,8 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
   return {
     openCommunityPrs: communityPrs.length,
     pctCommunityPrs: allPrs.length > 0 ? communityPrs.length / allPrs.length : 0,
-    medianTffrHours: median(tffrTimes),
-    medianTtfrHours: median(ttfrTimes),
+    medianTffrHours: median(tffrTimes) ?? undefined,
+    medianTtfrHours: median(ttfrTimes) ?? undefined,
     assignedReviewerCompliancePct,
     reviewerLoad,
   };
