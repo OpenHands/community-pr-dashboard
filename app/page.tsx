@@ -312,7 +312,7 @@ export default function Dashboard() {
                     <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <Tooltip 
-                        content="Number of unique community PRs reviewed (external contributors without write access). Median shows time from PR creation to this reviewer's first review. Only counts merged PRs."
+                        content="Number of unique community PRs reviewed (external contributors without write access). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
                         darkMode={darkMode}
                       >
                         <span>Community PRs</span>
@@ -322,7 +322,7 @@ export default function Dashboard() {
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <Tooltip 
-                        content="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from PR creation to this reviewer's first review. Only counts merged PRs."
+                        content="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
                         darkMode={darkMode}
                       >
                         <span>Org Member PRs</span>
@@ -332,7 +332,7 @@ export default function Dashboard() {
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <Tooltip 
-                        content="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from PR creation to this reviewer's first review. Only counts merged PRs."
+                        content="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
                         darkMode={darkMode}
                       >
                         <span>Bot PRs</span>
@@ -342,7 +342,7 @@ export default function Dashboard() {
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <Tooltip 
-                        content="Total review actions submitted on merged PRs. Format: total / requested / unrequested. Includes multiple reviews on the same PR. 'Requested' means you were explicitly asked to review. 'Unrequested' means you reviewed voluntarily."
+                        content="Total review actions submitted on merged PRs. Format: total / requested / unrequested. Includes multiple reviews on the same PR. 'Requested' means the reviewer was explicitly asked. 'Unrequested' means the reviewer acted voluntarily."
                         darkMode={darkMode}
                       >
                         <span>Completed Reviews</span>
@@ -352,7 +352,7 @@ export default function Dashboard() {
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <Tooltip 
-                        content="Total review requests received in the last 30 days. This counts how many times you were explicitly asked to review a PR."
+                        content="Total review requests received in the last 30 days. Counts how many times this reviewer was explicitly asked to review a PR."
                         darkMode={darkMode}
                       >
                         <span>Requested</span>
@@ -361,7 +361,7 @@ export default function Dashboard() {
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                       <Tooltip 
-                        content="Percentage of review requests that were completed. Calculated as: (Completed Requested / Requested) × 100. Shows how often you complete reviews when explicitly asked."
+                        content="Percentage of review requests that were completed. Calculated as: (Completed Requested / Requested) × 100. Shows how often reviews are completed when explicitly requested."
                         darkMode={darkMode}
                       >
                         <span>Completion %</span>
