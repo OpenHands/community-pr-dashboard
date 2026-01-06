@@ -6,6 +6,7 @@ import RepositorySelector from '@/components/RepositorySelector'
 import CustomDropdown from '@/components/CustomDropdown'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import WhatsNew from '@/components/WhatsNew'
+import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
 
 export default function Dashboard() {
@@ -307,50 +308,71 @@ export default function Dashboard() {
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
                     <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Number of unique community PRs reviewed (external contributors without write access). Median shows time from PR creation to this reviewer's first review. Only counts merged PRs."
+                        darkMode={darkMode}
+                      >
                         <span>Community PRs</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of unique community PRs reviewed (external contributors without write access). Median shows time from PR ready-for-review to this reviewer's first review. Only counts merged PRs.">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from PR creation to this reviewer's first review. Only counts merged PRs."
+                        darkMode={darkMode}
+                      >
                         <span>Org Member PRs</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from PR ready-for-review to this reviewer's first review. Only counts merged PRs.">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from PR creation to this reviewer's first review. Only counts merged PRs."
+                        darkMode={darkMode}
+                      >
                         <span>Bot PRs</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from PR ready-for-review to this reviewer's first review. Only counts merged PRs.">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Total review actions submitted on merged PRs. Format: total / requested / unrequested. Includes multiple reviews on the same PR. 'Requested' means you were explicitly asked to review. 'Unrequested' means you reviewed voluntarily."
+                        darkMode={darkMode}
+                      >
                         <span>Completed Reviews</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Total review actions submitted on merged PRs. Includes multiple reviews on the same PR (comments, changes requested, approvals). Counts all author types including bots.">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(total / requested / unrequested)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Total review requests received in the last 30 days. This counts how many times you were explicitly asked to review a PR."
+                        darkMode={darkMode}
+                      >
                         <span>Requested</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Total review requests received in the last 30 days.">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Percentage of review requests that were completed. Calculated as: (Completed Requested / Requested) × 100. Shows how often you complete reviews when explicitly asked."
+                        darkMode={darkMode}
+                      >
                         <span>Completion %</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Percentage of review requests that were completed (Completed Requested / Requested Total).">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div className="flex items-center justify-center gap-1">
+                      <Tooltip 
+                        content="Number of open PRs currently awaiting review from this person. These are active review requests that haven't been completed yet."
+                        darkMode={darkMode}
+                      >
                         <span>Pending</span>
-                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of open PRs currently awaiting review from this person.">ⓘ</span>
-                      </div>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                     </th>
                   </tr>
                 </thead>
