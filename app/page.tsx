@@ -307,23 +307,57 @@ export default function Dashboard() {
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
                     <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div>Completed</div>
-                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(total / requested / unrequested)</div>
-                    </th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Requested</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Completion %</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} title="Median time from review request to review submission (requested reviews only)">Median Time</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div title="Median time from PR ready-for-review to first review (community PRs only). More meaningful for measuring responsiveness to external contributors.">Community PRs</div>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Community PRs</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of unique community PRs reviewed (external contributors without write access). Median shows time from PR ready-for-review to this reviewer's first review. Only counts merged PRs.">ⓘ</span>
+                      </div>
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Pending</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Org Member PRs</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from PR ready-for-review to this reviewer's first review. Only counts merged PRs.">ⓘ</span>
+                      </div>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Bot PRs</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from PR ready-for-review to this reviewer's first review. Only counts merged PRs.">ⓘ</span>
+                      </div>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Completed Reviews</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Total review actions submitted on merged PRs. Includes multiple reviews on the same PR (comments, changes requested, approvals). Counts all author types including bots.">ⓘ</span>
+                      </div>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(total / requested / unrequested)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Requested</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Total review requests received in the last 30 days.">ⓘ</span>
+                      </div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Completion %</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Percentage of review requests that were completed (Completed Requested / Requested Total).">ⓘ</span>
+                      </div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Pending</span>
+                        <span className={`cursor-help ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} title="Number of open PRs currently awaiting review from this person.">ⓘ</span>
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {(showAllReviewers ? data?.reviewers : data?.reviewers?.slice(0, 5))?.map((reviewer, index) => {
-                    const formatMedianTime = (hours: number | null) => {
-                      if (hours === null) return 'N/A';
+                    const formatMedianTime = (hours: number | null | undefined) => {
+                      if (hours === null || hours === undefined) return 'N/A';
                       if (hours < 1) {
                         const minutes = Math.round(hours * 60);
                         return `${minutes}m`;
@@ -338,8 +372,41 @@ export default function Dashboard() {
                     return (
                       <tr key={index} className={`border-b last:border-b-0 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <td className={`py-2 px-2 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reviewer.name}</td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {reviewer.communityPRsReviewed !== undefined && reviewer.communityPRsReviewed > 0 ? (
+                            <>
+                              <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-semibold">{reviewer.communityPRsReviewed}</span>
+                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
+                              <span>{formatMedianTime(reviewer.medianCommunityReviewTimeHours)}</span>
+                            </>
+                          ) : (
+                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
+                          )}
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {reviewer.orgMemberPRsReviewed !== undefined && reviewer.orgMemberPRsReviewed > 0 ? (
+                            <>
+                              <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-semibold">{reviewer.orgMemberPRsReviewed}</span>
+                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
+                              <span>{formatMedianTime(reviewer.medianOrgMemberReviewTimeHours)}</span>
+                            </>
+                          ) : (
+                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
+                          )}
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {reviewer.botPRsReviewed !== undefined && reviewer.botPRsReviewed > 0 ? (
+                            <>
+                              <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-semibold">{reviewer.botPRsReviewed}</span>
+                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
+                              <span>{formatMedianTime(reviewer.medianBotReviewTimeHours)}</span>
+                            </>
+                          ) : (
+                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
+                          )}
+                        </td>
                         <td className="py-2 px-2 text-center">
-                          <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                             {reviewer.completedTotal}
                           </span>
                           <span className={`text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -351,20 +418,6 @@ export default function Dashboard() {
                         </td>
                         <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                           {formatCompletionRate(reviewer.completionRate)}
-                        </td>
-                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {formatMedianTime(reviewer.medianReviewTimeHours)}
-                        </td>
-                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {reviewer.communityPRsReviewed !== undefined ? (
-                            <>
-                              <span className="font-medium">{reviewer.communityPRsReviewed}</span>
-                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
-                              <span>{formatMedianTime(reviewer.medianCommunityReviewTimeHours ?? null)}</span>
-                            </>
-                          ) : (
-                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
-                          )}
                         </td>
                         <td className="py-2 px-2 text-center">
                           {reviewer.pendingCount > 0 ? (
@@ -379,7 +432,7 @@ export default function Dashboard() {
                     );
                   }) || (
                     <tr>
-                      <td colSpan={7} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td colSpan={8} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         No reviewer data available
                       </td>
                     </tr>

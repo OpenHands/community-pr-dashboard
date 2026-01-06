@@ -585,3 +585,336 @@ export async function getCommunityPRReviewStats(
 
   return communityReviews;
 }
+
+export type OrgMemberPRReviewData = {
+  reviewerLogin: string;
+  prNumber: number;
+  prUrl: string;
+  prAuthor: string;
+  prAuthorAssociation: string;
+  readyForReviewAt: string;
+  firstReviewAt: string;
+  reviewTimeHours: number;
+};
+
+/**
+ * Fetch review stats for org member PRs (authored by org members/employees).
+ * Measures time from PR ready-for-review to first review.
+ * This metric complements the community PR metric by tracking internal review responsiveness.
+ */
+export async function getOrgMemberPRReviewStats(
+  owner: string,
+  repo: string,
+  daysBack: number = 30,
+  employeesSet: Set<string>
+): Promise<OrgMemberPRReviewData[]> {
+  if (daysBack <= 0) {
+    throw new Error('daysBack must be a positive number');
+  }
+
+  const sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - daysBack);
+
+  const query = `
+    query OrgMemberPRReviews($owner: String!, $name: String!, $cursor: String) {
+      repository(owner: $owner, name: $name) {
+        pullRequests(states: MERGED, first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            number
+            url
+            createdAt
+            mergedAt
+            isDraft
+            author { login }
+            authorAssociation
+            timelineItems(first: 100, itemTypes: [READY_FOR_REVIEW_EVENT, PULL_REQUEST_REVIEW]) {
+              nodes {
+                __typename
+                ... on ReadyForReviewEvent {
+                  createdAt
+                }
+                ... on PullRequestReview {
+                  author { login }
+                  authorAssociation
+                  submittedAt
+                  state
+                }
+              }
+            }
+          }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+  `;
+
+  const orgMemberReviews: OrgMemberPRReviewData[] = [];
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  let pageCount = 0;
+  const maxPages = 5;
+
+  while (hasNextPage && pageCount < maxPages) {
+    type OrgMemberPRsResult = {
+      repository: {
+        pullRequests: {
+          pageInfo: { hasNextPage: boolean; endCursor: string | null };
+          nodes: any[];
+        };
+      };
+    };
+
+    const result: OrgMemberPRsResult = await graphql<OrgMemberPRsResult>(query, { owner, name: repo, cursor });
+    const prData = result.repository.pullRequests;
+
+    for (const pr of prData.nodes) {
+      // Skip PRs merged before our date range
+      if (pr.mergedAt && new Date(pr.mergedAt) < sinceDate) {
+        hasNextPage = false;
+        break;
+      }
+
+      const authorLogin = pr.author?.login;
+      const authorAssociation = pr.authorAssociation || 'NONE';
+
+      // Skip if no author (ghost users)
+      if (!authorLogin) continue;
+
+      // Skip bots
+      const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+      if (isBot) continue;
+
+      // Filter to org member PRs only:
+      // - Is an employee (org member) OR has write access (collaborator/member/owner)
+      const isEmployee = employeesSet.has(authorLogin);
+      const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(authorAssociation);
+
+      if (!isEmployee && !hasWriteAccess) continue;
+
+      // Determine when PR became ready for review
+      // If PR was never a draft, use createdAt
+      // Otherwise, use the ReadyForReviewEvent timestamp
+      let readyForReviewAt: string | null = null;
+
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'ReadyForReviewEvent') {
+          readyForReviewAt = item.createdAt;
+          break; // Use first ready event
+        }
+      }
+
+      // If no ReadyForReviewEvent, PR was created as non-draft
+      if (!readyForReviewAt) {
+        readyForReviewAt = pr.createdAt;
+      }
+
+      // Find first review (by any reviewer)
+      // Group by reviewer to track who gave the first review
+      const reviewerFirstReview: Record<string, string> = {};
+
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
+          // Only count substantive reviews
+          if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
+            const reviewerLogin = item.author.login;
+            // Keep only the first review from each reviewer
+            if (!reviewerFirstReview[reviewerLogin]) {
+              reviewerFirstReview[reviewerLogin] = item.submittedAt;
+            }
+          }
+        }
+      }
+
+      // For each reviewer who reviewed this org member PR, calculate their response time
+      for (const [reviewerLogin, firstReviewAt] of Object.entries(reviewerFirstReview)) {
+        // readyForReviewAt is guaranteed non-null here (fallback to createdAt above)
+        const readyTime = new Date(readyForReviewAt!).getTime();
+        const reviewTime = new Date(firstReviewAt).getTime();
+        const reviewTimeHours = (reviewTime - readyTime) / (1000 * 60 * 60);
+
+        // Safety check: only include positive review times
+        // (review must come after PR was ready)
+        if (reviewTimeHours <= 0) {
+          console.warn(`Skipping invalid review time for org member PR #${pr.number}: ${reviewTimeHours} hours (readyAt: ${readyForReviewAt}, reviewAt: ${firstReviewAt})`);
+          continue;
+        }
+
+        // Only include reviews within our date range
+        if (new Date(firstReviewAt) >= sinceDate) {
+          orgMemberReviews.push({
+            reviewerLogin,
+            prNumber: pr.number,
+            prUrl: pr.url,
+            prAuthor: authorLogin,
+            prAuthorAssociation: authorAssociation,
+            readyForReviewAt: readyForReviewAt!, // guaranteed non-null
+            firstReviewAt,
+            reviewTimeHours,
+          });
+        }
+      }
+    }
+
+    hasNextPage = prData.pageInfo.hasNextPage && hasNextPage;
+    cursor = prData.pageInfo.endCursor;
+    pageCount++;
+  }
+
+  return orgMemberReviews;
+}
+
+// Type for bot PR review data (reviews on PRs authored by bots)
+export type BotPRReviewData = {
+  reviewerLogin: string;
+  prNumber: number;
+  prUrl: string;
+  prAuthor: string;
+  readyForReviewAt: string;
+  firstReviewAt: string;
+  reviewTimeHours: number;
+};
+
+/**
+ * Get review stats for bot-authored PRs (dependabot, renovate, etc.)
+ * Measures time from PR ready-for-review to first review for each reviewer
+ */
+export async function getBotPRReviewStats(
+  owner: string,
+  repo: string,
+  daysBack: number = 30
+): Promise<BotPRReviewData[]> {
+  const sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - daysBack);
+
+  const query = `
+    query BotPRReviews($owner: String!, $name: String!, $cursor: String) {
+      repository(owner: $owner, name: $name) {
+        pullRequests(states: MERGED, first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            number
+            url
+            createdAt
+            mergedAt
+            isDraft
+            author { login }
+            timelineItems(first: 100, itemTypes: [READY_FOR_REVIEW_EVENT, PULL_REQUEST_REVIEW]) {
+              nodes {
+                __typename
+                ... on ReadyForReviewEvent {
+                  createdAt
+                }
+                ... on PullRequestReview {
+                  author { login }
+                  authorAssociation
+                  submittedAt
+                  state
+                }
+              }
+            }
+          }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+  `;
+
+  const botReviews: BotPRReviewData[] = [];
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  let pageCount = 0;
+  const maxPages = 5;
+
+  while (hasNextPage && pageCount < maxPages) {
+    type BotPRsResult = {
+      repository: {
+        pullRequests: {
+          pageInfo: { hasNextPage: boolean; endCursor: string | null };
+          nodes: any[];
+        };
+      };
+    };
+
+    const result: BotPRsResult = await graphql<BotPRsResult>(query, { owner, name: repo, cursor });
+    const prData = result.repository.pullRequests;
+
+    for (const pr of prData.nodes) {
+      // Skip PRs merged before our date range
+      if (pr.mergedAt && new Date(pr.mergedAt) < sinceDate) {
+        hasNextPage = false;
+        break;
+      }
+
+      const authorLogin = pr.author?.login;
+
+      // Skip if no author (ghost users)
+      if (!authorLogin) continue;
+
+      // Filter to bot PRs only
+      const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+      if (!isBot) continue;
+
+      // Determine when PR became ready for review
+      let readyForReviewAt: string | null = null;
+
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'ReadyForReviewEvent') {
+          readyForReviewAt = item.createdAt;
+          break;
+        }
+      }
+
+      // If no ReadyForReviewEvent, PR was created as non-draft
+      if (!readyForReviewAt) {
+        readyForReviewAt = pr.createdAt;
+      }
+
+      // Find first review by each reviewer
+      const reviewerFirstReview: Record<string, string> = {};
+
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
+          if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
+            const reviewerLogin = item.author.login;
+            // Only record the first review
+            if (!reviewerFirstReview[reviewerLogin]) {
+              reviewerFirstReview[reviewerLogin] = item.submittedAt;
+            }
+          }
+        }
+      }
+
+      // Create review data for each reviewer's first review
+      for (const [reviewerLogin, firstReviewAt] of Object.entries(reviewerFirstReview)) {
+        const readyTime = new Date(readyForReviewAt!).getTime();
+        const reviewTime = new Date(firstReviewAt).getTime();
+        const reviewTimeHours = (reviewTime - readyTime) / (1000 * 60 * 60);
+
+        // Skip invalid times (review before ready)
+        if (reviewTimeHours < 0) {
+          continue;
+        }
+
+        // Only include reviews within our date range
+        if (new Date(firstReviewAt) >= sinceDate) {
+          botReviews.push({
+            reviewerLogin,
+            prNumber: pr.number,
+            prUrl: pr.url,
+            prAuthor: authorLogin,
+            readyForReviewAt: readyForReviewAt!,
+            firstReviewAt,
+            reviewTimeHours,
+          });
+        }
+      }
+    }
+
+    hasNextPage = prData.pageInfo.hasNextPage && hasNextPage;
+    cursor = prData.pageInfo.endCursor;
+    pageCount++;
+  }
+
+  return botReviews;
+}

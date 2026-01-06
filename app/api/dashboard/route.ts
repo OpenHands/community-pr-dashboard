@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { config, validateConfig } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getCommunityPRReviewStats, ReviewStatsData, CommunityPRReviewData } from '@/lib/github';
-import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats } from '@/lib/compute';
+import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getCommunityPRReviewStats, getOrgMemberPRReviewStats, getBotPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
+import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -94,6 +94,10 @@ export async function GET(request: NextRequest) {
       const allReviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] };
       // Fetch community PR review stats (time from ready to first review)
       const allCommunityReviews: CommunityPRReviewData[] = [];
+      // Fetch org member PR review stats (time from ready to first review)
+      const allOrgMemberReviews: OrgMemberPRReviewData[] = [];
+      // Fetch bot PR review stats (time from ready to first review)
+      const allBotReviews: BotPRReviewData[] = [];
       
       for (const repoPath of reposToFetch) {
         const [owner, repo] = repoPath.split('/');
@@ -123,6 +127,18 @@ export async function GET(request: NextRequest) {
           const communityReviews = await getCommunityPRReviewStats(owner, repo, 30, employeesSet);
           console.log(`Found ${communityReviews.length} community PR reviews for ${repoPath}`);
           allCommunityReviews.push(...communityReviews);
+          
+          // Fetch org member PR review stats
+          console.log(`Fetching org member PR review stats for ${repoPath}...`);
+          const orgMemberReviews = await getOrgMemberPRReviewStats(owner, repo, 30, employeesSet);
+          console.log(`Found ${orgMemberReviews.length} org member PR reviews for ${repoPath}`);
+          allOrgMemberReviews.push(...orgMemberReviews);
+          
+          // Fetch bot PR review stats
+          console.log(`Fetching bot PR review stats for ${repoPath}...`);
+          const botReviews = await getBotPRReviewStats(owner, repo, 30);
+          console.log(`Found ${botReviews.length} bot PR reviews for ${repoPath}`);
+          allBotReviews.push(...botReviews);
         } catch (error) {
           console.error(`Failed to fetch PRs for ${repoPath}:`, error);
           // Continue with other repos
@@ -225,11 +241,21 @@ export async function GET(request: NextRequest) {
       
       // Compute community reviewer stats and merge into existing reviewer data
       const communityReviewerStats = computeCommunityReviewerStats(allCommunityReviews);
+      // Compute org member reviewer stats
+      const orgMemberReviewerStats = computeOrgMemberReviewerStats(allOrgMemberReviews);
+      // Compute bot reviewer stats
+      const botReviewerStats = computeBotReviewerStats(allBotReviews);
       
-      // Merge community stats into existing reviewers
+      // Merge community, org member, and bot stats into existing reviewers
       if (dashboardData.reviewers) {
         const communityStatsMap = new Map(
           communityReviewerStats.map(s => [s.name, s])
+        );
+        const orgMemberStatsMap = new Map(
+          orgMemberReviewerStats.map(s => [s.name, s])
+        );
+        const botStatsMap = new Map(
+          botReviewerStats.map(s => [s.name, s])
         );
         
         for (const reviewer of dashboardData.reviewers) {
@@ -238,22 +264,44 @@ export async function GET(request: NextRequest) {
             reviewer.communityPRsReviewed = communityStats.communityPRsReviewed;
             reviewer.medianCommunityReviewTimeHours = communityStats.medianCommunityReviewTimeHours;
           }
+          const orgMemberStats = orgMemberStatsMap.get(reviewer.name);
+          if (orgMemberStats) {
+            reviewer.orgMemberPRsReviewed = orgMemberStats.orgMemberPRsReviewed;
+            reviewer.medianOrgMemberReviewTimeHours = orgMemberStats.medianOrgMemberReviewTimeHours;
+          }
+          const botStats = botStatsMap.get(reviewer.name);
+          if (botStats) {
+            reviewer.botPRsReviewed = botStats.botPRsReviewed;
+            reviewer.medianBotReviewTimeHours = botStats.medianBotReviewTimeHours;
+          }
         }
         
-        // Add any reviewers who only have community reviews (not in the original list)
-        for (const communityStats of communityReviewerStats) {
-          if (!dashboardData.reviewers.find(r => r.name === communityStats.name)) {
+        // Add any reviewers who only have community, org member, or bot reviews (not in the original list)
+        const allNewReviewerNames = new Set([
+          ...communityReviewerStats.map(s => s.name),
+          ...orgMemberReviewerStats.map(s => s.name),
+          ...botReviewerStats.map(s => s.name),
+        ]);
+        
+        for (const name of allNewReviewerNames) {
+          if (!dashboardData.reviewers.find(r => r.name === name)) {
+            const communityStats = communityStatsMap.get(name);
+            const orgMemberStats = orgMemberStatsMap.get(name);
+            const botStats = botStatsMap.get(name);
             dashboardData.reviewers.push({
-              name: communityStats.name,
+              name,
               pendingCount: 0,
               completedTotal: 0,
               completedRequested: 0,
               completedUnrequested: 0,
               requestedTotal: 0,
               completionRate: null,
-              medianReviewTimeHours: null,
-              communityPRsReviewed: communityStats.communityPRsReviewed,
-              medianCommunityReviewTimeHours: communityStats.medianCommunityReviewTimeHours,
+              communityPRsReviewed: communityStats?.communityPRsReviewed,
+              medianCommunityReviewTimeHours: communityStats?.medianCommunityReviewTimeHours,
+              orgMemberPRsReviewed: orgMemberStats?.orgMemberPRsReviewed,
+              medianOrgMemberReviewTimeHours: orgMemberStats?.medianOrgMemberReviewTimeHours,
+              botPRsReviewed: botStats?.botPRsReviewed,
+              medianBotReviewTimeHours: botStats?.medianBotReviewTimeHours,
             });
           }
         }
