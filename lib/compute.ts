@@ -3,6 +3,22 @@ import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
 import { CompletedReviewData, ReviewRequestData, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
 
+// Minimum number of data points required for a meaningful median
+const MIN_REVIEWS_FOR_MEDIAN = 3;
+
+/**
+ * Calculate the median of an array of numbers.
+ * @param arr - Array of numbers (will be sorted internally)
+ * @param minCount - Minimum number of elements required (returns null if not met)
+ * @returns The median value, or null if array is empty or below minCount
+ */
+export function median(arr: number[], minCount: number = 0): number | null {
+  if (arr.length === 0 || arr.length < minCount) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
 export function computeFirsts(pr: any, employeesSet: Set<string>): {
   firstHumanResponseAt?: string;
   firstReviewAt?: string;
@@ -122,13 +138,7 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
     const readyAt = new Date(pr.readyForReviewAt).getTime();
     const reviewed = new Date(pr.firstReviewAt!).getTime();
     return (reviewed - readyAt) / (1000 * 60 * 60); // hours
-  }).filter(t => t >= 0).sort((a, b) => a - b);
-  
-  const median = (arr: number[]) => {
-    if (arr.length === 0) return undefined;
-    const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 === 0 ? (arr[mid - 1] + arr[mid]) / 2 : arr[mid];
-  };
+  }).filter(t => t >= 0);
   
   // Calculate reviewer load
   const reviewerLoad: Record<string, number> = {};
@@ -243,14 +253,6 @@ export function computeReviewerStats(
     isEmployee(login, employeesSet) || maintainersSet.has(login)
   );
   
-  // Helper function to calculate median
-  const median = (arr: number[]): number | null => {
-    if (arr.length === 0) return null;
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-  };
-  
   // Build reviewer objects
   const reviewers: Reviewer[] = filteredLogins.map(login => {
     const stats = reviewerStats[login] || { completedTotal: 0, completedRequested: 0, completedUnrequested: 0, reviewTimes: [] };
@@ -301,22 +303,16 @@ export function computeDashboardData(
     const readyAt = new Date(pr.readyForReviewAt).getTime();
     const responded = new Date(pr.firstHumanResponseAt!).getTime();
     return (responded - readyAt) / (1000 * 60 * 60); // hours
-  }).filter(t => t >= 0).sort((a, b) => a - b);
+  }).filter(t => t >= 0);
   
   const ttfrTimes = communityPrsWithReview.map(pr => {
     const readyAt = new Date(pr.readyForReviewAt).getTime();
     const reviewed = new Date(pr.firstReviewAt!).getTime();
     return (reviewed - readyAt) / (1000 * 60 * 60); // hours
-  }).filter(t => t >= 0).sort((a, b) => a - b);
+  }).filter(t => t >= 0);
   
-  const median = (arr: number[]) => {
-    if (arr.length === 0) return undefined;
-    const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 === 0 ? (arr[mid - 1] + arr[mid]) / 2 : arr[mid];
-  };
-  
-  const formatTime = (hours?: number) => {
-    if (!hours) return 'N/A';
+  const formatTime = (hours: number | null | undefined) => {
+    if (hours === null || hours === undefined) return 'N/A';
     if (hours < 24) return `${Math.round(hours)}h`;
     return `${Math.round(hours / 24)}d`;
   };
@@ -381,9 +377,6 @@ export function computeReviewStats(allPrs: PR[]): ReviewStatsResponse {
   };
 }
 
-// Minimum number of PR reviews required to calculate a meaningful median
-const MIN_REVIEWS_FOR_MEDIAN = 3;
-
 /**
  * Compute community PR review stats per reviewer.
  * This measures time from PR ready-for-review to first review,
@@ -411,21 +404,11 @@ export function computeCommunityReviewerStats(
     reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
   }
 
-  // Helper function to calculate median
-  const median = (arr: number[]): number | null => {
-    if (arr.length < MIN_REVIEWS_FOR_MEDIAN) {
-      return null; // Not enough data for meaningful median
-    }
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-  };
-
   // Build stats for each reviewer
   const stats: CommunityReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
     name,
     communityPRsReviewed: times.length,
-    medianCommunityReviewTimeHours: median(times),
+    medianCommunityReviewTimeHours: median(times, MIN_REVIEWS_FOR_MEDIAN),
   }));
 
   // Sort by number of community PRs reviewed (descending)
@@ -461,21 +444,11 @@ export function computeOrgMemberReviewerStats(
     reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
   }
 
-  // Helper function to calculate median
-  const median = (arr: number[]): number | null => {
-    if (arr.length < MIN_REVIEWS_FOR_MEDIAN) {
-      return null; // Not enough data for meaningful median
-    }
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-  };
-
   // Build stats for each reviewer
   const stats: OrgMemberReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
     name,
     orgMemberPRsReviewed: times.length,
-    medianOrgMemberReviewTimeHours: median(times),
+    medianOrgMemberReviewTimeHours: median(times, MIN_REVIEWS_FOR_MEDIAN),
   }));
 
   // Sort by number of org member PRs reviewed (descending)
@@ -506,21 +479,11 @@ export function computeBotReviewerStats(
     reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
   }
 
-  // Helper function to calculate median
-  const median = (arr: number[]): number | null => {
-    if (arr.length < MIN_REVIEWS_FOR_MEDIAN) {
-      return null; // Not enough data for meaningful median
-    }
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-  };
-
   // Build stats for each reviewer
   const stats: BotReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
     name,
     botPRsReviewed: times.length,
-    medianBotReviewTimeHours: median(times),
+    medianBotReviewTimeHours: median(times, MIN_REVIEWS_FOR_MEDIAN),
   }));
 
   // Sort by number of bot PRs reviewed (descending)
