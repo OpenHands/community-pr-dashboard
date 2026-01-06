@@ -1,22 +1,12 @@
-// Default repos to monitor - these are the most active/important repos
-const DEFAULT_REPOS = [
-  'OpenHands/OpenHands',
-  'All-Hands-AI/OpenHands-Cloud',
-  'OpenHands/docs',
-  'OpenHands/software-agent-sdk',
-  'OpenHands/benchmarks',
-  'OpenHands/infra',
-];
-
 export const config = {
   github: {
     token: process.env.GITHUB_TOKEN || '',
   },
   orgs: (process.env.ORGS || 'all-hands-ai,openhands').split(',').map(s => s.trim()),
   repos: {
-    include: process.env.REPOS_INCLUDE 
+    include: process.env.REPOS_INCLUDE
       ? process.env.REPOS_INCLUDE.split(',').map(s => s.trim())
-      : DEFAULT_REPOS,
+      : [],
     exclude: process.env.REPOS_EXCLUDE 
       ? process.env.REPOS_EXCLUDE.split(',').map(s => s.trim())
       : [],
