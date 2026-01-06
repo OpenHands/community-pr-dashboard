@@ -918,3 +918,191 @@ export async function getBotPRReviewStats(
 
   return botReviews;
 }
+
+/**
+ * Combined result type for all PR review stats by author type
+ */
+export type AllPRReviewStatsResult = {
+  communityReviews: CommunityPRReviewData[];
+  orgMemberReviews: OrgMemberPRReviewData[];
+  botReviews: BotPRReviewData[];
+};
+
+/**
+ * Fetch review stats for ALL merged PRs in a single query, then categorize by author type.
+ * This reduces the number of API calls from 3 to 1 per repository.
+ * 
+ * Categorizes PRs into:
+ * - Community PRs: authored by non-org-members without write access
+ * - Org Member PRs: authored by org members or users with write access  
+ * - Bot PRs: authored by bots (dependabot, renovate, etc.)
+ */
+export async function getAllPRReviewStats(
+  owner: string,
+  repo: string,
+  daysBack: number = 30,
+  employeesSet: Set<string>
+): Promise<AllPRReviewStatsResult> {
+  if (daysBack <= 0) {
+    throw new Error('daysBack must be a positive number');
+  }
+
+  const sinceDate = new Date();
+  sinceDate.setDate(sinceDate.getDate() - daysBack);
+
+  const query = `
+    query AllMergedPRReviews($owner: String!, $name: String!, $cursor: String) {
+      repository(owner: $owner, name: $name) {
+        pullRequests(states: MERGED, first: 50, after: $cursor, orderBy: {field: UPDATED_AT, direction: DESC}) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            number
+            url
+            createdAt
+            mergedAt
+            isDraft
+            author { login }
+            authorAssociation
+            timelineItems(first: 100, itemTypes: [READY_FOR_REVIEW_EVENT, PULL_REQUEST_REVIEW]) {
+              nodes {
+                __typename
+                ... on ReadyForReviewEvent {
+                  createdAt
+                }
+                ... on PullRequestReview {
+                  author { login }
+                  authorAssociation
+                  submittedAt
+                  state
+                }
+              }
+            }
+          }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+  `;
+
+  const communityReviews: CommunityPRReviewData[] = [];
+  const orgMemberReviews: OrgMemberPRReviewData[] = [];
+  const botReviews: BotPRReviewData[] = [];
+  
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  let pageCount = 0;
+  const maxPages = 5;
+
+  while (hasNextPage && pageCount < maxPages) {
+    type MergedPRsResult = {
+      repository: {
+        pullRequests: {
+          pageInfo: { hasNextPage: boolean; endCursor: string | null };
+          nodes: any[];
+        };
+      };
+    };
+
+    const result: MergedPRsResult = await graphql<MergedPRsResult>(query, { owner, name: repo, cursor });
+    const prData = result.repository.pullRequests;
+
+    for (const pr of prData.nodes) {
+      // Skip PRs merged before our date range
+      if (pr.mergedAt && new Date(pr.mergedAt) < sinceDate) {
+        hasNextPage = false;
+        break;
+      }
+
+      const authorLogin = pr.author?.login;
+      const authorAssociation = pr.authorAssociation || 'NONE';
+
+      // Skip if no author (ghost users)
+      if (!authorLogin) continue;
+
+      // Determine author type
+      const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+      const isEmployee = employeesSet.has(authorLogin);
+      const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(authorAssociation);
+
+      // Determine when PR became ready for review
+      let readyForReviewAt: string | null = null;
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'ReadyForReviewEvent') {
+          readyForReviewAt = item.createdAt;
+          break;
+        }
+      }
+      // If no ReadyForReviewEvent, PR was created as non-draft
+      if (!readyForReviewAt) {
+        readyForReviewAt = pr.createdAt;
+      }
+
+      // Find first review by each reviewer
+      const reviewerFirstReview: Record<string, string> = {};
+      for (const item of pr.timelineItems?.nodes || []) {
+        if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
+          if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
+            const reviewerLogin = item.author.login;
+            if (!reviewerFirstReview[reviewerLogin]) {
+              reviewerFirstReview[reviewerLogin] = item.submittedAt;
+            }
+          }
+        }
+      }
+
+      // Create review data for each reviewer
+      for (const [reviewerLogin, firstReviewAt] of Object.entries(reviewerFirstReview)) {
+        const readyTime = new Date(readyForReviewAt!).getTime();
+        const reviewTime = new Date(firstReviewAt).getTime();
+        const reviewTimeHours = (reviewTime - readyTime) / (1000 * 60 * 60);
+
+        // Skip invalid times
+        if (reviewTimeHours <= 0) continue;
+
+        // Only include reviews within our date range
+        if (new Date(firstReviewAt) < sinceDate) continue;
+
+        // Categorize by author type and add to appropriate array
+        if (isBot) {
+          botReviews.push({
+            reviewerLogin,
+            prNumber: pr.number,
+            prUrl: pr.url,
+            prAuthor: authorLogin,
+            readyForReviewAt: readyForReviewAt!,
+            firstReviewAt,
+            reviewTimeHours,
+          });
+        } else if (isEmployee || hasWriteAccess) {
+          orgMemberReviews.push({
+            reviewerLogin,
+            prNumber: pr.number,
+            prUrl: pr.url,
+            prAuthor: authorLogin,
+            prAuthorAssociation: authorAssociation,
+            readyForReviewAt: readyForReviewAt!,
+            firstReviewAt,
+            reviewTimeHours,
+          });
+        } else {
+          communityReviews.push({
+            reviewerLogin,
+            prNumber: pr.number,
+            prUrl: pr.url,
+            prAuthor: authorLogin,
+            prAuthorAssociation: authorAssociation,
+            readyForReviewAt: readyForReviewAt!,
+            firstReviewAt,
+            reviewTimeHours,
+          });
+        }
+      }
+    }
+
+    hasNextPage = prData.pageInfo.hasNextPage && hasNextPage;
+    cursor = prData.pageInfo.endCursor;
+    pageCount++;
+  }
+
+  return { communityReviews, orgMemberReviews, botReviews };
+}

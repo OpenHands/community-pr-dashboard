@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { config, validateConfig } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getCommunityPRReviewStats, getOrgMemberPRReviewStats, getBotPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
+import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
 import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
 
@@ -122,23 +122,13 @@ export async function GET(request: NextRequest) {
           allReviewStatsData.completedReviews.push(...reviewStatsData.completedReviews);
           allReviewStatsData.reviewRequests.push(...reviewStatsData.reviewRequests);
           
-          // Fetch community PR review stats
-          console.log(`Fetching community PR review stats for ${repoPath}...`);
-          const communityReviews = await getCommunityPRReviewStats(owner, repo, 30, employeesSet);
-          console.log(`Found ${communityReviews.length} community PR reviews for ${repoPath}`);
-          allCommunityReviews.push(...communityReviews);
-          
-          // Fetch org member PR review stats
-          console.log(`Fetching org member PR review stats for ${repoPath}...`);
-          const orgMemberReviews = await getOrgMemberPRReviewStats(owner, repo, 30, employeesSet);
-          console.log(`Found ${orgMemberReviews.length} org member PR reviews for ${repoPath}`);
-          allOrgMemberReviews.push(...orgMemberReviews);
-          
-          // Fetch bot PR review stats
-          console.log(`Fetching bot PR review stats for ${repoPath}...`);
-          const botReviews = await getBotPRReviewStats(owner, repo, 30);
-          console.log(`Found ${botReviews.length} bot PR reviews for ${repoPath}`);
-          allBotReviews.push(...botReviews);
+          // Fetch all PR review stats in one combined query (reduces API calls from 3 to 1)
+          console.log(`Fetching all PR review stats for ${repoPath}...`);
+          const allReviewStats = await getAllPRReviewStats(owner, repo, 30, employeesSet);
+          console.log(`Found ${allReviewStats.communityReviews.length} community, ${allReviewStats.orgMemberReviews.length} org member, ${allReviewStats.botReviews.length} bot PR reviews for ${repoPath}`);
+          allCommunityReviews.push(...allReviewStats.communityReviews);
+          allOrgMemberReviews.push(...allReviewStats.orgMemberReviews);
+          allBotReviews.push(...allReviewStats.botReviews);
         } catch (error) {
           console.error(`Failed to fetch PRs for ${repoPath}:`, error);
           // Continue with other repos
