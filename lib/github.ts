@@ -154,6 +154,12 @@ export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<an
                 submittedAt 
               }
             }
+            timelineItems(first: 10, itemTypes: [READY_FOR_REVIEW_EVENT]) {
+              nodes {
+                __typename
+                ... on ReadyForReviewEvent { createdAt }
+              }
+            }
           }
         }
       }

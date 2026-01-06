@@ -23,6 +23,7 @@ export type PR = {
   isDraft: boolean;
   createdAt: string;
   updatedAt: string;
+  readyForReviewAt: string;  // When PR became ready for review (or createdAt if never a draft)
   labels: string[];
   requestedReviewers: RequestedReviewers;
   reviews: Review[];

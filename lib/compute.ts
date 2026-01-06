@@ -73,6 +73,12 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
     submittedAt: review.submittedAt,
   })) || [];
   
+  // Extract readyForReviewAt from timeline items, fallback to createdAt
+  const readyForReviewEvent = rawPR.timelineItems?.nodes?.find(
+    (item: any) => item.__typename === 'ReadyForReviewEvent'
+  );
+  const readyForReviewAt = readyForReviewEvent?.createdAt || rawPR.createdAt;
+  
   const authorLogin = rawPR.author?.login || 'unknown';
   const authorAssociation = rawPR.authorAssociation;
   
@@ -88,6 +94,7 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
     isDraft: rawPR.isDraft,
     createdAt: rawPR.createdAt,
     updatedAt: rawPR.updatedAt,
+    readyForReviewAt,
     labels: rawPR.labels?.nodes?.map((label: any) => label.name) || [],
     requestedReviewers,
     reviews,
@@ -101,21 +108,21 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
   const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
-  // Calculate medians
+  // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)
   const communityPrsWithResponse = communityPrs.filter(pr => pr.firstHumanResponseAt);
   const communityPrsWithReview = communityPrs.filter(pr => pr.firstReviewAt);
   
   const tffrTimes = communityPrsWithResponse.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const responded = new Date(pr.firstHumanResponseAt!).getTime();
-    return (responded - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (responded - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0).sort((a, b) => a - b);
   
   const ttfrTimes = communityPrsWithReview.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const reviewed = new Date(pr.firstReviewAt!).getTime();
-    return (reviewed - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (reviewed - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0).sort((a, b) => a - b);
   
   const median = (arr: number[]) => {
     if (arr.length === 0) return undefined;
@@ -286,21 +293,21 @@ export function computeDashboardData(
   const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
-  // Calculate medians
+  // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)
   const communityPrsWithResponse = communityPrs.filter(pr => pr.firstHumanResponseAt);
   const communityPrsWithReview = communityPrs.filter(pr => pr.firstReviewAt);
   
   const tffrTimes = communityPrsWithResponse.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const responded = new Date(pr.firstHumanResponseAt!).getTime();
-    return (responded - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (responded - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0).sort((a, b) => a - b);
   
   const ttfrTimes = communityPrsWithReview.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const reviewed = new Date(pr.firstReviewAt!).getTime();
-    return (reviewed - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (reviewed - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0).sort((a, b) => a - b);
   
   const median = (arr: number[]) => {
     if (arr.length === 0) return undefined;
