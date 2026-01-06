@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [darkMode, setDarkMode] = useState(false)
   const [showAllReviewers, setShowAllReviewers] = useState(false)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [allReviewers, setAllReviewers] = useState<string[]>([])
   
   const [filters, setFilters] = useState<FilterState>({
     repositories: [],
@@ -82,6 +83,20 @@ export default function Dashboard() {
       
       const result = await response.json()
       setData(result)
+      
+      // Update the list of all reviewers when no reviewer filter is applied
+      // This ensures the dropdown always shows all available reviewers
+      if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
+        const reviewerSet = new Set<string>()
+        result.prs?.forEach((pr: any) => {
+          pr.requestedReviewers?.users?.forEach((reviewer: string) => {
+            reviewerSet.add(reviewer)
+          })
+        })
+        setAllReviewers(Array.from(reviewerSet).sort((a, b) => 
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        ))
+      }
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -137,25 +152,13 @@ export default function Dashboard() {
   }
 
   // Compute unique reviewers from all PRs for the filter dropdown
+  // Uses allReviewers state which is captured when no reviewer filter is applied
   const reviewerOptions = useMemo(() => {
-    if (!data?.prs) return [{ value: 'all', label: 'All Reviewers' }]
-    
-    const reviewerSet = new Set<string>()
-    data.prs.forEach(pr => {
-      pr.requestedReviewers.users.forEach(reviewer => {
-        reviewerSet.add(reviewer)
-      })
-    })
-    
-    const sortedReviewers = Array.from(reviewerSet).sort((a, b) => 
-      a.toLowerCase().localeCompare(b.toLowerCase())
-    )
-    
     return [
       { value: 'all', label: 'All Reviewers' },
-      ...sortedReviewers.map(reviewer => ({ value: reviewer, label: reviewer }))
+      ...allReviewers.map(reviewer => ({ value: reviewer, label: reviewer }))
     ]
-  }, [data?.prs])
+  }, [allReviewers])
 
   if (loading && !data) {
     return (
