@@ -4,7 +4,7 @@ export const config = {
   },
   orgs: (process.env.ORGS || 'all-hands-ai,openhands').split(',').map(s => s.trim()),
   repos: {
-    include: process.env.REPOS_INCLUDE 
+    include: process.env.REPOS_INCLUDE
       ? process.env.REPOS_INCLUDE.split(',').map(s => s.trim())
       : [],
     exclude: process.env.REPOS_EXCLUDE 

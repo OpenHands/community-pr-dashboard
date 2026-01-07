@@ -6,6 +6,7 @@ import RepositorySelector from '@/components/RepositorySelector'
 import CustomDropdown from '@/components/CustomDropdown'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import WhatsNew from '@/components/WhatsNew'
+import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
 
 export default function Dashboard() {
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const [darkMode, setDarkMode] = useState(false)
   const [showAllReviewers, setShowAllReviewers] = useState(false)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [allReviewers, setAllReviewers] = useState<string[]>([])
   
   const [filters, setFilters] = useState<FilterState>({
     repositories: [],
@@ -81,6 +83,20 @@ export default function Dashboard() {
       
       const result = await response.json()
       setData(result)
+      
+      // Update the list of all reviewers when no reviewer filter is applied
+      // This ensures the dropdown always shows all available reviewers
+      if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
+        const reviewerSet = new Set<string>()
+        result.prs?.forEach((pr: any) => {
+          pr.requestedReviewers?.users?.forEach((reviewer: string) => {
+            reviewerSet.add(reviewer)
+          })
+        })
+        setAllReviewers(Array.from(reviewerSet).sort((a, b) => 
+          a.toLowerCase().localeCompare(b.toLowerCase())
+        ))
+      }
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -136,25 +152,13 @@ export default function Dashboard() {
   }
 
   // Compute unique reviewers from all PRs for the filter dropdown
+  // Uses allReviewers state which is captured when no reviewer filter is applied
   const reviewerOptions = useMemo(() => {
-    if (!data?.prs) return [{ value: 'all', label: 'All Reviewers' }]
-    
-    const reviewerSet = new Set<string>()
-    data.prs.forEach(pr => {
-      pr.requestedReviewers.users.forEach(reviewer => {
-        reviewerSet.add(reviewer)
-      })
-    })
-    
-    const sortedReviewers = Array.from(reviewerSet).sort((a, b) => 
-      a.toLowerCase().localeCompare(b.toLowerCase())
-    )
-    
     return [
       { value: 'all', label: 'All Reviewers' },
-      ...sortedReviewers.map(reviewer => ({ value: reviewer, label: reviewer }))
+      ...allReviewers.map(reviewer => ({ value: reviewer, label: reviewer }))
     ]
-  }, [data?.prs])
+  }, [allReviewers])
 
   if (loading && !data) {
     return (
@@ -288,7 +292,7 @@ export default function Dashboard() {
 
         {/* Reviewer Stats Section - New enhanced section */}
         <section className="py-6">
-          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
+          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm overflow-visible`}>
             <div className="flex justify-between items-center mb-4">
               <div>
                 <h3 className={`text-sm font-semibold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviewer Statistics (Last 30 Days)</h3>
@@ -301,25 +305,84 @@ export default function Dashboard() {
                 {showAllReviewers ? 'Show Top 5' : `Show All (${data?.reviewers?.length || 0})`}
               </button>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-visible">
               <table className="w-full">
                 <thead>
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
                     <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <div>Completed</div>
+                      <Tooltip 
+                        content="Number of unique community PRs reviewed (external contributors without write access). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
+                        darkMode={darkMode}
+                      >
+                        <span>Community PRs</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Tooltip 
+                        content="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
+                        darkMode={darkMode}
+                      >
+                        <span>Org Member PRs</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Tooltip 
+                        content="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
+                        darkMode={darkMode}
+                      >
+                        <span>Bot PRs</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
+                      <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Tooltip 
+                        content="Total review actions submitted on merged PRs. Format: total / requested / unrequested. Includes multiple reviews on the same PR. 'Requested' means the reviewer was explicitly asked. 'Unrequested' means the reviewer acted voluntarily."
+                        darkMode={darkMode}
+                      >
+                        <span>Completed Reviews</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(total / requested / unrequested)</div>
                     </th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Requested</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Completion %</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Median Time</th>
-                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Pending</th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Tooltip 
+                        content="Total review requests received in the last 30 days. Counts how many times this reviewer was explicitly asked to review a PR."
+                        darkMode={darkMode}
+                      >
+                        <span>Requested</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Tooltip 
+                        content="Percentage of review requests that were completed. Calculated as: (Completed Requested / Requested) × 100. Shows how often reviews are completed when explicitly requested."
+                        darkMode={darkMode}
+                      >
+                        <span>Completion %</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
+                    </th>
+                    <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Tooltip 
+                        content="Number of open PRs currently awaiting review from this person. These are active review requests that haven't been completed yet."
+                        darkMode={darkMode}
+                      >
+                        <span>Pending</span>
+                        <span className={`${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>ⓘ</span>
+                      </Tooltip>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {(showAllReviewers ? data?.reviewers : data?.reviewers?.slice(0, 5))?.map((reviewer, index) => {
-                    const formatMedianTime = (hours: number | null) => {
-                      if (hours === null) return 'N/A';
+                    const formatMedianTime = (hours: number | null | undefined) => {
+                      if (hours === null || hours === undefined) return 'N/A';
                       if (hours < 1) {
                         const minutes = Math.round(hours * 60);
                         return `${minutes}m`;
@@ -334,8 +397,41 @@ export default function Dashboard() {
                     return (
                       <tr key={index} className={`border-b last:border-b-0 ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                         <td className={`py-2 px-2 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{reviewer.name}</td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {reviewer.communityPRsReviewed !== undefined && reviewer.communityPRsReviewed > 0 ? (
+                            <>
+                              <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-semibold">{reviewer.communityPRsReviewed}</span>
+                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
+                              <span>{formatMedianTime(reviewer.medianCommunityReviewTimeHours)}</span>
+                            </>
+                          ) : (
+                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
+                          )}
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {reviewer.orgMemberPRsReviewed !== undefined && reviewer.orgMemberPRsReviewed > 0 ? (
+                            <>
+                              <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-semibold">{reviewer.orgMemberPRsReviewed}</span>
+                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
+                              <span>{formatMedianTime(reviewer.medianOrgMemberReviewTimeHours)}</span>
+                            </>
+                          ) : (
+                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
+                          )}
+                        </td>
+                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {reviewer.botPRsReviewed !== undefined && reviewer.botPRsReviewed > 0 ? (
+                            <>
+                              <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-semibold">{reviewer.botPRsReviewed}</span>
+                              <span className={`mx-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>/</span>
+                              <span>{formatMedianTime(reviewer.medianBotReviewTimeHours)}</span>
+                            </>
+                          ) : (
+                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>-</span>
+                          )}
+                        </td>
                         <td className="py-2 px-2 text-center">
-                          <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                          <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                             {reviewer.completedTotal}
                           </span>
                           <span className={`text-xs ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -347,9 +443,6 @@ export default function Dashboard() {
                         </td>
                         <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                           {formatCompletionRate(reviewer.completionRate)}
-                        </td>
-                        <td className={`py-2 px-2 text-center text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                          {formatMedianTime(reviewer.medianReviewTimeHours)}
                         </td>
                         <td className="py-2 px-2 text-center">
                           {reviewer.pendingCount > 0 ? (
@@ -364,7 +457,7 @@ export default function Dashboard() {
                     );
                   }) || (
                     <tr>
-                      <td colSpan={6} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <td colSpan={8} className={`py-4 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         No reviewer data available
                       </td>
                     </tr>
@@ -586,6 +679,20 @@ export default function Dashboard() {
                 />
               </div>
             </div>
+            {/* Loading Banner - Below table header */}
+            {loading && (
+              <div className={`${darkMode ? 'bg-blue-900/90 border-blue-700' : 'bg-blue-50 border-blue-200'} border-b px-5 py-3`}>
+                <div className="flex items-center justify-center gap-2">
+                  <svg className={`animate-spin h-4 w-4 ${darkMode ? 'text-blue-300' : 'text-blue-700'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span className={`font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                    Querying {filters.repositories.length > 0 ? `${filters.repositories.length} repositories` : 'repositories'}...
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <PrTable prs={data?.prs || []} darkMode={darkMode} totalPrs={data?.totalPrs} />
             </div>

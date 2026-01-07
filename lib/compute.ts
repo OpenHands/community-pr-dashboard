@@ -1,7 +1,23 @@
-import { PR, Review, KPIs, ReviewStatsResponse, Reviewer } from './types';
+import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats } from './types';
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
-import { CompletedReviewData, ReviewRequestData, ReviewStatsData } from './github';
+import { CompletedReviewData, ReviewRequestData, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
+
+// Minimum number of data points required for a meaningful median
+const MIN_REVIEWS_FOR_MEDIAN = 3;
+
+/**
+ * Calculate the median of an array of numbers.
+ * @param arr - Array of numbers (will be sorted internally)
+ * @param minCount - Minimum number of elements required (returns null if not met)
+ * @returns The median value, or null if array is empty or below minCount
+ */
+export function median(arr: number[], minCount: number = 0): number | null {
+  if (arr.length === 0 || arr.length < minCount) return null;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
 
 export function computeFirsts(pr: any, employeesSet: Set<string>): {
   firstHumanResponseAt?: string;
@@ -73,6 +89,12 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
     submittedAt: review.submittedAt,
   })) || [];
   
+  // Extract readyForReviewAt from timeline items, fallback to createdAt
+  const readyForReviewEvent = rawPR.timelineItems?.nodes?.find(
+    (item: any) => item.__typename === 'ReadyForReviewEvent'
+  );
+  const readyForReviewAt = readyForReviewEvent?.createdAt || rawPR.createdAt;
+  
   const authorLogin = rawPR.author?.login || 'unknown';
   const authorAssociation = rawPR.authorAssociation;
   
@@ -88,6 +110,7 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
     isDraft: rawPR.isDraft,
     createdAt: rawPR.createdAt,
     updatedAt: rawPR.updatedAt,
+    readyForReviewAt,
     labels: rawPR.labels?.nodes?.map((label: any) => label.name) || [],
     requestedReviewers,
     reviews,
@@ -101,27 +124,21 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
   const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
-  // Calculate medians
+  // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)
   const communityPrsWithResponse = communityPrs.filter(pr => pr.firstHumanResponseAt);
   const communityPrsWithReview = communityPrs.filter(pr => pr.firstReviewAt);
   
   const tffrTimes = communityPrsWithResponse.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const responded = new Date(pr.firstHumanResponseAt!).getTime();
-    return (responded - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (responded - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0).sort((a, b) => a - b);
   
   const ttfrTimes = communityPrsWithReview.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const reviewed = new Date(pr.firstReviewAt!).getTime();
-    return (reviewed - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
-  
-  const median = (arr: number[]) => {
-    if (arr.length === 0) return undefined;
-    const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 === 0 ? (arr[mid - 1] + arr[mid]) / 2 : arr[mid];
-  };
+    return (reviewed - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0);
   
   // Calculate reviewer load
   const reviewerLoad: Record<string, number> = {};
@@ -140,8 +157,8 @@ export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
   return {
     openCommunityPrs: communityPrs.length,
     pctCommunityPrs: allPrs.length > 0 ? communityPrs.length / allPrs.length : 0,
-    medianTffrHours: median(tffrTimes),
-    medianTtfrHours: median(ttfrTimes),
+    medianTffrHours: median(tffrTimes) ?? undefined,
+    medianTtfrHours: median(ttfrTimes) ?? undefined,
     assignedReviewerCompliancePct,
     reviewerLoad,
   };
@@ -236,14 +253,6 @@ export function computeReviewerStats(
     isEmployee(login, employeesSet) || maintainersSet.has(login)
   );
   
-  // Helper function to calculate median
-  const median = (arr: number[]): number | null => {
-    if (arr.length === 0) return null;
-    const sorted = [...arr].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
-  };
-  
   // Build reviewer objects
   const reviewers: Reviewer[] = filteredLogins.map(login => {
     const stats = reviewerStats[login] || { completedTotal: 0, completedRequested: 0, completedUnrequested: 0, reviewTimes: [] };
@@ -286,30 +295,24 @@ export function computeDashboardData(
   const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
-  // Calculate medians
+  // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)
   const communityPrsWithResponse = communityPrs.filter(pr => pr.firstHumanResponseAt);
   const communityPrsWithReview = communityPrs.filter(pr => pr.firstReviewAt);
   
   const tffrTimes = communityPrsWithResponse.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const responded = new Date(pr.firstHumanResponseAt!).getTime();
-    return (responded - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (responded - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0);
   
   const ttfrTimes = communityPrsWithReview.map(pr => {
-    const created = new Date(pr.createdAt).getTime();
+    const readyAt = new Date(pr.readyForReviewAt).getTime();
     const reviewed = new Date(pr.firstReviewAt!).getTime();
-    return (reviewed - created) / (1000 * 60 * 60); // hours
-  }).sort((a, b) => a - b);
+    return (reviewed - readyAt) / (1000 * 60 * 60); // hours
+  }).filter(t => t >= 0);
   
-  const median = (arr: number[]) => {
-    if (arr.length === 0) return undefined;
-    const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 === 0 ? (arr[mid - 1] + arr[mid]) / 2 : arr[mid];
-  };
-  
-  const formatTime = (hours?: number) => {
-    if (!hours) return 'N/A';
+  const formatTime = (hours: number | null | undefined) => {
+    if (hours === null || hours === undefined) return 'N/A';
     if (hours < 24) return `${Math.round(hours)}h`;
     return `${Math.round(hours / 24)}d`;
   };
@@ -372,4 +375,119 @@ export function computeReviewStats(allPrs: PR[]): ReviewStatsResponse {
     topPendingReviewers,
     uniqueReviewersWithPending,
   };
+}
+
+/**
+ * Compute community PR review stats per reviewer.
+ * This measures time from PR ready-for-review to first review,
+ * only for PRs authored by non-org-members.
+ * 
+ * Safety checks:
+ * - Only includes positive review times (review after PR ready)
+ * - Returns null median if reviewer has fewer than MIN_REVIEWS_FOR_MEDIAN reviews
+ */
+export function computeCommunityReviewerStats(
+  communityReviews: CommunityPRReviewData[]
+): CommunityReviewerStats[] {
+  // Group reviews by reviewer
+  const reviewerData: Record<string, number[]> = {};
+
+  for (const review of communityReviews) {
+    // Safety check: skip any invalid review times (should already be filtered, but double-check)
+    if (review.reviewTimeHours <= 0) {
+      continue;
+    }
+
+    if (!reviewerData[review.reviewerLogin]) {
+      reviewerData[review.reviewerLogin] = [];
+    }
+    reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
+  }
+
+  // Build stats for each reviewer
+  const stats: CommunityReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
+    name,
+    communityPRsReviewed: times.length,
+    medianCommunityReviewTimeHours: median(times, MIN_REVIEWS_FOR_MEDIAN),
+  }));
+
+  // Sort by number of community PRs reviewed (descending)
+  stats.sort((a, b) => b.communityPRsReviewed - a.communityPRsReviewed);
+
+  return stats;
+}
+
+/**
+ * Compute org member PR review stats per reviewer.
+ * This measures time from PR ready-for-review to first review,
+ * only for PRs authored by org members/employees.
+ * 
+ * Safety checks:
+ * - Only includes positive review times (review after PR ready)
+ * - Returns null median if reviewer has fewer than MIN_REVIEWS_FOR_MEDIAN reviews
+ */
+export function computeOrgMemberReviewerStats(
+  orgMemberReviews: OrgMemberPRReviewData[]
+): OrgMemberReviewerStats[] {
+  // Group reviews by reviewer
+  const reviewerData: Record<string, number[]> = {};
+
+  for (const review of orgMemberReviews) {
+    // Safety check: skip any invalid review times (should already be filtered, but double-check)
+    if (review.reviewTimeHours <= 0) {
+      continue;
+    }
+
+    if (!reviewerData[review.reviewerLogin]) {
+      reviewerData[review.reviewerLogin] = [];
+    }
+    reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
+  }
+
+  // Build stats for each reviewer
+  const stats: OrgMemberReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
+    name,
+    orgMemberPRsReviewed: times.length,
+    medianOrgMemberReviewTimeHours: median(times, MIN_REVIEWS_FOR_MEDIAN),
+  }));
+
+  // Sort by number of org member PRs reviewed (descending)
+  stats.sort((a, b) => b.orgMemberPRsReviewed - a.orgMemberPRsReviewed);
+
+  return stats;
+}
+
+/**
+ * Compute per-reviewer stats for bot-authored PRs (dependabot, renovate, etc.)
+ * This uses the same approach as community/org member stats: time from PR ready to first review
+ */
+export function computeBotReviewerStats(
+  botReviews: BotPRReviewData[]
+): BotReviewerStats[] {
+  // Group review times by reviewer
+  const reviewerData: Record<string, number[]> = {};
+
+  for (const review of botReviews) {
+    // Safety check: skip any invalid review times (should already be filtered, but double-check)
+    if (review.reviewTimeHours <= 0) {
+      continue;
+    }
+
+    if (!reviewerData[review.reviewerLogin]) {
+      reviewerData[review.reviewerLogin] = [];
+    }
+    reviewerData[review.reviewerLogin].push(review.reviewTimeHours);
+  }
+
+  // Build stats for each reviewer
+  const stats: BotReviewerStats[] = Object.entries(reviewerData).map(([name, times]) => ({
+    name,
+    botPRsReviewed: times.length,
+    medianBotReviewTimeHours: median(times, MIN_REVIEWS_FOR_MEDIAN),
+  }));
+
+  // Sort by number of bot PRs reviewed (descending)
+  stats.sort((a, b) => b.botPRsReviewed - a.botPRsReviewed);
+
+  return stats;
 }

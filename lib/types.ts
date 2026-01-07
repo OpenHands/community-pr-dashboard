@@ -23,6 +23,7 @@ export type PR = {
   isDraft: boolean;
   createdAt: string;
   updatedAt: string;
+  readyForReviewAt: string;  // When PR became ready for review (or createdAt if never a draft)
   labels: string[];
   requestedReviewers: RequestedReviewers;
   reviews: Review[];
@@ -90,7 +91,15 @@ export type Reviewer = {
   // Request tracking
   requestedTotal: number;           // Total review requests received
   completionRate: number | null;    // completedRequested / requestedTotal * 100
-  medianReviewTimeHours: number | null;  // Median time from request to completion
+  // Community PR metrics (time from PR ready to first review, for non-org-member PRs)
+  communityPRsReviewed?: number;    // Number of community PRs reviewed
+  medianCommunityReviewTimeHours?: number | null;  // Median time from PR ready to first review (community PRs only)
+  // Org Member PR metrics (time from PR ready to first review, for org-member PRs)
+  orgMemberPRsReviewed?: number;    // Number of org member PRs reviewed
+  medianOrgMemberReviewTimeHours?: number | null;  // Median time from PR ready to first review (org member PRs only)
+  // Bot PR metrics (reviews on PRs authored by bots like dependabot)
+  botPRsReviewed?: number;          // Number of bot PRs reviewed
+  medianBotReviewTimeHours?: number | null;  // Median time from PR ready to first review (bot PRs only)
 };
 
 export type DashboardKPIs = {
@@ -110,4 +119,35 @@ export type DashboardData = {
   reviewers?: Reviewer[];
   lastUpdated?: string;
   totalPrs?: number;
+};
+
+// Community PR review metrics - measures time from PR ready to first review
+// Only for PRs authored by non-org-members
+export type CommunityReviewData = {
+  reviewerLogin: string;
+  prNumber: number;
+  prUrl: string;
+  prAuthor: string;
+  prAuthorAssociation: string;
+  readyForReviewAt: string;    // When PR became ready (or createdAt if never draft)
+  firstReviewAt: string;       // First review submission by this reviewer
+  reviewTimeHours: number;     // Computed: firstReviewAt - readyForReviewAt
+};
+
+export type CommunityReviewerStats = {
+  name: string;
+  communityPRsReviewed: number;
+  medianCommunityReviewTimeHours: number | null;  // null if below minimum sample size
+};
+
+export type OrgMemberReviewerStats = {
+  name: string;
+  orgMemberPRsReviewed: number;
+  medianOrgMemberReviewTimeHours: number | null;  // null if below minimum sample size
+};
+
+export type BotReviewerStats = {
+  name: string;
+  botPRsReviewed: number;
+  medianBotReviewTimeHours: number | null;  // null if below minimum sample size
 };
