@@ -226,8 +226,42 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // Compute dashboard data based on all PRs (not just filtered ones)
-      const dashboardData = computeDashboardData(allPrs, employeesSet, allReviewStatsData);
+      // Apply status and draft filters to the PRs used for reviewer statistics
+      // This ensures the Reviewer Statistics table reflects the same filters as the PR table
+      let prsForReviewerStats = allPrs;
+      
+      // Apply status filter for reviewer stats (approved, changes-requested, needs-review)
+      if (statusParam && statusParam !== 'all') {
+        prsForReviewerStats = prsForReviewerStats.filter(pr => {
+          switch (statusParam) {
+            case 'needs-review':
+              return pr.needsFirstResponse || (!pr.firstReviewAt && !pr.isDraft);
+            case 'changes-requested':
+              return pr.reviews.some(review => review.state === 'CHANGES_REQUESTED');
+            case 'approved':
+              return pr.reviews.some(review => review.state === 'APPROVED');
+            default:
+              return true;
+          }
+        });
+      }
+      
+      // Apply draft status filter for reviewer stats
+      if (draftStatusParam && draftStatusParam !== 'all') {
+        prsForReviewerStats = prsForReviewerStats.filter(pr => {
+          switch (draftStatusParam) {
+            case 'drafts':
+              return pr.isDraft;
+            case 'final':
+              return !pr.isDraft;
+            default:
+              return true;
+          }
+        });
+      }
+      
+      // Compute dashboard data based on filtered PRs for reviewer stats
+      const dashboardData = computeDashboardData(prsForReviewerStats, employeesSet, allReviewStatsData);
       
       // Compute community reviewer stats and merge into existing reviewer data
       const communityReviewerStats = computeCommunityReviewerStats(allCommunityReviews);
