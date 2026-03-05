@@ -544,7 +544,7 @@ export async function getAllPRReviewStats(
       if (!authorLogin) continue;
 
       // Determine author type
-      const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+      const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
       const isEmployee = employeesSet.has(authorLogin);
       const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(authorAssociation);
 
