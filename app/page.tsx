@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import PrTable from '@/components/PrTable'
 import RepositorySelector from '@/components/RepositorySelector'
 import CustomDropdown from '@/components/CustomDropdown'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import DashboardSkeleton from '@/components/DashboardSkeleton'
 import WhatsNew from '@/components/WhatsNew'
 import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
@@ -66,47 +66,33 @@ export default function Dashboard() {
       if (targetFilters.reviewer && targetFilters.reviewer !== 'all') sharedParams.append('reviewer', targetFilters.reviewer)
       if (cacheBust) sharedParams.append('cacheBust', String(Date.now()))
 
-      // Fetch repos with at most 3 in-flight at once; each retries on 429.
-      // Call setData after every resolved response so the UI renders
-      // progressively rather than waiting for all repos to finish.
-      const allResponses: any[] = []
-
-      await concurrentMap(
+      // Fetch repos with at most 3 in-flight at once; each retries on 429
+      const responses = await concurrentMap(
         reposToFetch,
-        async (repo) => {
-          const response = await fetchWithRetry(
-            `/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`
-          )
-          allResponses.push(response)
-
-          const good = allResponses.filter((r: any) => !r.error)
-          if (good.length > 0) {
-            const merged = mergeDashboardResponses(good)
-            setData(merged)
-
-            if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
-              const reviewerSet = new Set<string>()
-              merged.prs?.forEach((pr: any) => {
-                pr.requestedReviewers?.users?.forEach((reviewer: string) => reviewerSet.add(reviewer))
-              })
-              setAllReviewers(Array.from(reviewerSet).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())))
-            }
-          }
-          return response
-        },
+        repo => fetchWithRetry(`/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`),
         3,
       )
 
-      // Rate-limit banner — shown once, after all requests complete
-      const rateLimitResets = allResponses
+      const rateLimitResets = responses
         .filter((r: any) => r.error === 'rate_limited' && r.resetAt)
         .map((r: any) => new Date(r.resetAt).getTime())
         .sort((a: number, b: number) => a - b)
 
       if (rateLimitResets.length > 0) {
         const resetTime = new Date(rateLimitResets[0]).toLocaleTimeString()
-        const partial = allResponses.some((r: any) => !r.error)
+        const partial = responses.some((r: any) => !r.error)
         setError(`GitHub rate limit exceeded — resets at ${resetTime}${partial ? ' (showing partial results)' : ''}`)
+      }
+
+      const merged = mergeDashboardResponses(responses.filter((r: any) => !r.error))
+      setData(merged)
+
+      if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
+        const reviewerSet = new Set<string>()
+        merged.prs?.forEach((pr: any) => {
+          pr.requestedReviewers?.users?.forEach((reviewer: string) => reviewerSet.add(reviewer))
+        })
+        setAllReviewers(Array.from(reviewerSet).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())))
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
@@ -173,14 +159,6 @@ export default function Dashboard() {
     ]
   }, [allReviewers])
 
-  if (loading && !data) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    )
-  }
-
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header - Matching wireframe exactly */}
@@ -246,6 +224,10 @@ export default function Dashboard() {
           </div>
         )}
 
+        {loading && !data ? (
+          <DashboardSkeleton darkMode={darkMode} />
+        ) : (
+        <>
         {/* KPI Section - Matching wireframe layout */}
         <section className="py-6">
           <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -734,6 +716,8 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
+        </>
+        )}
 
         {/* Footer */}
         <footer className={`py-6 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
