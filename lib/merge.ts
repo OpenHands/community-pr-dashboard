@@ -22,7 +22,7 @@ function formatTime(hours: number | null | undefined): string {
   return hours < 24 ? `${Math.round(hours)}h` : `${Math.round(hours / 24)}d`;
 }
 
-function computeKPIsFromPRs(prs: PR[]): DashboardKPIs {
+export function computeKPIsFromPRs(prs: PR[]): DashboardKPIs {
   const communityPrs = prs.filter(pr => pr.authorType === 'community');
   const nonDraftPrs = prs.filter(pr => !pr.isDraft);
 
@@ -57,7 +57,7 @@ function computeKPIsFromPRs(prs: PR[]): DashboardKPIs {
   };
 }
 
-function mergeReviewers(reviewerArrays: (Reviewer[] | undefined)[]): Reviewer[] {
+export function mergeReviewers(reviewerArrays: (Reviewer[] | undefined)[]): Reviewer[] {
   const merged = new Map<string, Reviewer>();
 
   for (const reviewers of reviewerArrays) {
