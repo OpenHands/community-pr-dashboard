@@ -66,33 +66,47 @@ export default function Dashboard() {
       if (targetFilters.reviewer && targetFilters.reviewer !== 'all') sharedParams.append('reviewer', targetFilters.reviewer)
       if (cacheBust) sharedParams.append('cacheBust', String(Date.now()))
 
-      // Fetch repos with at most 3 in-flight at once; each retries on 429
-      const responses = await concurrentMap(
+      // Fetch repos with at most 3 in-flight at once; each retries on 429.
+      // Call setData after every resolved response so the UI renders
+      // progressively rather than waiting for all repos to finish.
+      const allResponses: any[] = []
+
+      await concurrentMap(
         reposToFetch,
-        repo => fetchWithRetry(`/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`),
+        async (repo) => {
+          const response = await fetchWithRetry(
+            `/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`
+          )
+          allResponses.push(response)
+
+          const good = allResponses.filter((r: any) => !r.error)
+          if (good.length > 0) {
+            const merged = mergeDashboardResponses(good)
+            setData(merged)
+
+            if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
+              const reviewerSet = new Set<string>()
+              merged.prs?.forEach((pr: any) => {
+                pr.requestedReviewers?.users?.forEach((reviewer: string) => reviewerSet.add(reviewer))
+              })
+              setAllReviewers(Array.from(reviewerSet).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())))
+            }
+          }
+          return response
+        },
         3,
       )
 
-      const rateLimitResets = responses
-        .filter(r => r.error === 'rate_limited' && r.resetAt)
+      // Rate-limit banner — shown once, after all requests complete
+      const rateLimitResets = allResponses
+        .filter((r: any) => r.error === 'rate_limited' && r.resetAt)
         .map((r: any) => new Date(r.resetAt).getTime())
         .sort((a: number, b: number) => a - b)
 
       if (rateLimitResets.length > 0) {
         const resetTime = new Date(rateLimitResets[0]).toLocaleTimeString()
-        const partial = responses.some((r: any) => !r.error)
+        const partial = allResponses.some((r: any) => !r.error)
         setError(`GitHub rate limit exceeded — resets at ${resetTime}${partial ? ' (showing partial results)' : ''}`)
-      }
-
-      const merged = mergeDashboardResponses(responses.filter(r => !r.error))
-      setData(merged)
-
-      if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
-        const reviewerSet = new Set<string>()
-        merged.prs?.forEach((pr: any) => {
-          pr.requestedReviewers?.users?.forEach((reviewer: string) => reviewerSet.add(reviewer))
-        })
-        setAllReviewers(Array.from(reviewerSet).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())))
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
