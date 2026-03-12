@@ -60,7 +60,7 @@ export function isEmployee(login: string, employeesSet: Set<string>): boolean {
 
 export function isCommunityPR(authorLogin: string, employeesSet: Set<string>, authorAssociation?: string): boolean {
   // Exclude bots (including Dependabot - note: dependabot shows as "dependabot", not "dependabot[bot]")
-  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
   
   // Exclude employees
   const isEmployeeUser = isEmployee(authorLogin, employeesSet);
@@ -78,7 +78,7 @@ export type AuthorType = 'employee' | 'maintainer' | 'community' | 'bot';
 
 export function getAuthorType(authorLogin: string, employeesSet: Set<string>, authorAssociation?: string): AuthorType {
   // Check for bots first (including Dependabot)
-  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
   if (isBot) return 'bot';
   
   // Check for employees (org members)
