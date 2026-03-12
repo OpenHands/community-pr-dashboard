@@ -10,7 +10,7 @@ function loadEmployeeOverrides(): EmployeeOverrides {
     const filePath = join(process.cwd(), 'config', 'employees.json');
     const fileContent = readFileSync(filePath, 'utf-8');
     return JSON.parse(fileContent);
-  } catch (error) {
+  } catch {
     // If file doesn't exist or is invalid, return empty overrides
     return { allowlist: [], denylist: [] };
   }

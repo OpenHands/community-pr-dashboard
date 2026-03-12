@@ -13,7 +13,7 @@ import { DEFAULT_REPOS } from '@/lib/defaults'
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [_error, setError] = useState<string | null>(null)
   const [darkMode, setDarkMode] = useState(false)
   const [showAllReviewers, setShowAllReviewers] = useState(false)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)

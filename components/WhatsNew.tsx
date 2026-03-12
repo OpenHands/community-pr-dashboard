@@ -18,7 +18,7 @@ export default function WhatsNew({ darkMode }: WhatsNewProps) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        ✨ What's New?
+        ✨ What&apos;s New?
       </span>
       
       {isHovered && (

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateConfig } from '@/lib/config';
-import { graphql, getRateLimit } from '@/lib/github';
+import { graphql } from '@/lib/github';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Validate configuration
     validateConfig();

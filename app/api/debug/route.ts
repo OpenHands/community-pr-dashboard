@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { config, validateConfig } from '@/lib/config';
+import { config } from '@/lib/config';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const hasToken = !!process.env.GITHUB_TOKEN;
     const tokenLength = process.env.GITHUB_TOKEN?.length || 0;
