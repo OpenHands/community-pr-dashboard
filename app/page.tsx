@@ -9,6 +9,7 @@ import WhatsNew from '@/components/WhatsNew'
 import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
 import { DEFAULT_REPOS, mergeDashboardResponses } from '@/lib/merge'
+import { fetchWithRetry, concurrentMap } from '@/lib/fetchWithRetry'
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -65,12 +66,11 @@ export default function Dashboard() {
       if (targetFilters.reviewer && targetFilters.reviewer !== 'all') sharedParams.append('reviewer', targetFilters.reviewer)
       if (cacheBust) sharedParams.append('cacheBust', String(Date.now()))
 
-      // Fetch all repos in parallel
-      const responses = await Promise.all(
-        reposToFetch.map(repo =>
-          fetch(`/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`)
-            .then(r => r.json())
-        )
+      // Fetch repos with at most 3 in-flight at once; each retries on 429
+      const responses = await concurrentMap(
+        reposToFetch,
+        repo => fetchWithRetry(`/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`),
+        3,
       )
 
       const rateLimitResets = responses
@@ -212,6 +212,26 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-5">
+        {/* Error banner */}
+        {error && (
+          <div className={`mt-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${
+            error.includes('rate limit')
+              ? darkMode
+                ? 'bg-yellow-900/30 border-yellow-700 text-yellow-200'
+                : 'bg-yellow-50 border-yellow-300 text-yellow-800'
+              : darkMode
+                ? 'bg-red-900/30 border-red-700 text-red-200'
+                : 'bg-red-50 border-red-300 text-red-800'
+          }`}>
+            <span>⚠️ {error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+              aria-label="Dismiss"
+            >✕</button>
+          </div>
+        )}
+
         {/* KPI Section - Matching wireframe layout */}
         <section className="py-6">
           <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
