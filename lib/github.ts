@@ -12,6 +12,13 @@ export class GitHubAPIError extends Error {
   }
 }
 
+export class RateLimitError extends Error {
+  constructor(public readonly resetAt: string) {
+    super('GitHub API rate limit exceeded');
+    this.name = 'RateLimitError';
+  }
+}
+
 async function fetchGitHub(url: string, options: RequestInit = {}): Promise<Response> {
   const response = await fetch(url, {
     ...options,
@@ -24,12 +31,18 @@ async function fetchGitHub(url: string, options: RequestInit = {}): Promise<Resp
   });
 
   if (!response.ok) {
-    const rateLimit = response.headers.get('x-ratelimit-remaining')
+    const remainingHeader = response.headers.get('x-ratelimit-remaining');
+    const resetHeader     = response.headers.get('x-ratelimit-reset');
+    const rateLimit = remainingHeader != null
       ? {
-          remaining: parseInt(response.headers.get('x-ratelimit-remaining') || '0'),
-          resetAt: new Date(parseInt(response.headers.get('x-ratelimit-reset') || '0') * 1000).toISOString(),
+          remaining: parseInt(remainingHeader),
+          resetAt: new Date(parseInt(resetHeader ?? '0') * 1000).toISOString(),
         }
       : undefined;
+
+    if ((response.status === 403 || response.status === 429) && rateLimit?.remaining === 0) {
+      throw new RateLimitError(rateLimit.resetAt);
+    }
 
     throw new GitHubAPIError(
       `GitHub API error: ${response.status} ${response.statusText}`,
@@ -53,6 +66,16 @@ export async function graphql<T>(query: string, variables: Record<string, any> =
   const result = await response.json();
   
   if (result.errors) {
+    const isRateLimit = result.errors.some(
+      (e: any) => e.type === 'RATE_LIMITED' || /rate limit/i.test(e.message ?? '')
+    );
+    if (isRateLimit) {
+      const resetHeader = response.headers.get('x-ratelimit-reset');
+      const resetAt = resetHeader
+        ? new Date(parseInt(resetHeader) * 1000).toISOString()
+        : new Date(Date.now() + 3_600_000).toISOString();
+      throw new RateLimitError(resetAt);
+    }
     throw new Error(`GraphQL error: ${result.errors.map((e: any) => e.message).join(', ')}`);
   }
 

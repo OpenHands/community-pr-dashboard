@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import PrTable from '@/components/PrTable'
 import RepositorySelector from '@/components/RepositorySelector'
 import CustomDropdown from '@/components/CustomDropdown'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import DashboardSkeleton from '@/components/DashboardSkeleton'
 import WhatsNew from '@/components/WhatsNew'
 import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
+import { DEFAULT_REPOS } from '@/lib/defaults'
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -17,9 +18,9 @@ export default function Dashboard() {
   const [showAllReviewers, setShowAllReviewers] = useState(false)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [allReviewers, setAllReviewers] = useState<string[]>([])
-  
+
   const [filters, setFilters] = useState<FilterState>({
-    repositories: [],
+    repositories: DEFAULT_REPOS,
     labels: [],
     ageRange: 'all', // Default to All Time - no filtering
     status: 'all',
@@ -30,7 +31,7 @@ export default function Dashboard() {
     reviewer: 'all'
   })
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
-    repositories: [],
+    repositories: DEFAULT_REPOS,
     labels: [],
     ageRange: 'all', // Default to All Time - no filtering
     status: 'all',
@@ -41,13 +42,14 @@ export default function Dashboard() {
     reviewer: 'all'
   })
 
-  const fetchData = useCallback(async (filtersToApply?: FilterState) => {
+  const fetchData = useCallback(async (filtersToApply?: FilterState, { cacheBust = false } = {}) => {
     const targetFilters = filtersToApply || appliedFilters
     try {
       setLoading(true)
       setError(null)
-      
+
       const params = new URLSearchParams()
+      if (cacheBust) params.append('cacheBust', String(Date.now()))
       if (targetFilters.repositories.length > 0) {
         params.append('repos', targetFilters.repositories.join(','))
       }
@@ -77,13 +79,18 @@ export default function Dashboard() {
       }
 
       const response = await fetch(`/api/dashboard?${params}`)
+      if (response.status === 429) {
+        const body = await response.json()
+        const resetTime = body.resetAt ? new Date(body.resetAt).toLocaleTimeString() : 'soon'
+        throw new Error(`GitHub rate limit exceeded — resets at ${resetTime}`)
+      }
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard data')
       }
-      
+
       const result = await response.json()
       setData(result)
-      
+
       // Update the list of all reviewers when no reviewer filter is applied
       // This ensures the dropdown always shows all available reviewers
       if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
@@ -93,7 +100,7 @@ export default function Dashboard() {
             reviewerSet.add(reviewer)
           })
         })
-        setAllReviewers(Array.from(reviewerSet).sort((a, b) => 
+        setAllReviewers(Array.from(reviewerSet).sort((a, b) =>
           a.toLowerCase().localeCompare(b.toLowerCase())
         ))
       }
@@ -109,19 +116,19 @@ export default function Dashboard() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
-  
+
   // Set up auto-refresh interval
   useEffect(() => {
     // Clear any existing interval
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current)
     }
-    
+
     // Set up new interval
     refreshIntervalRef.current = setInterval(() => {
       fetchData()
     }, 120000) // 2 minutes
-    
+
     // Cleanup on unmount
     return () => {
       if (refreshIntervalRef.current) {
@@ -147,8 +154,8 @@ export default function Dashboard() {
     fetchData(clearedFilters)
   }
 
-  const handleRefresh = () => {
-    fetchData()
+  const handleRefresh = (e: React.MouseEvent) => {
+    fetchData(undefined, { cacheBust: e.shiftKey })
   }
 
   // Compute unique reviewers from all PRs for the filter dropdown
@@ -162,8 +169,10 @@ export default function Dashboard() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className="max-w-7xl mx-auto px-5">
+          <DashboardSkeleton darkMode={darkMode} />
+        </div>
       </div>
     )
   }
@@ -187,18 +196,18 @@ export default function Dashboard() {
                   setAppliedFilters(newFilters)
                   fetchData(newFilters)
                 }}
-                className="min-w-[200px]"
+                className="w-[300px]"
                 darkMode={darkMode}
               />
-              <button 
+              <button
                 onClick={handleRefresh}
                 disabled={loading}
                 className={`px-3 py-1 text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white disabled:bg-gray-800' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:bg-gray-50'} rounded border transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-                title="Refresh data"
+                title="Refresh data (Shift+click to bypass cache)"
               >
                 {loading ? '⟳ Refreshing...' : '🔄 Refresh'}
               </button>
-              <button 
+              <button
                 onClick={() => setDarkMode(!darkMode)}
                 className={`px-3 py-1 text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded border transition-colors`}
               >
@@ -225,7 +234,7 @@ export default function Dashboard() {
               </div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Non-employee authored</div>
             </div>
-            
+
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
               <h3 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 % Community PRs
@@ -235,7 +244,7 @@ export default function Dashboard() {
               </div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Of all open PRs</div>
             </div>
-            
+
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
               <h3 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 Median Time to First Response
@@ -245,7 +254,7 @@ export default function Dashboard() {
               </div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Target: ≤72h</div>
             </div>
-            
+
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
               <h3 className={`text-xs font-semibold uppercase tracking-wide mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 Assigned Reviewer Compliance
@@ -271,7 +280,7 @@ export default function Dashboard() {
               </div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total pending review requests</div>
             </div>
-            
+
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
               <h3 className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Reviews Completed (Last 30 Days)</h3>
               <div className={`text-3xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -279,7 +288,7 @@ export default function Dashboard() {
               </div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total reviews by team</div>
             </div>
-            
+
             <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg p-5 shadow-sm`}>
               <h3 className={`text-sm font-semibold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>PRs Without Reviewers</h3>
               <div className={`text-3xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -311,7 +320,7 @@ export default function Dashboard() {
                   <tr className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
                     <th className={`text-left py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reviewer</th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Number of unique community PRs reviewed (external contributors without write access). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
                         darkMode={darkMode}
                       >
@@ -321,7 +330,7 @@ export default function Dashboard() {
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Number of unique org member PRs reviewed (employees and collaborators with write access). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
                         darkMode={darkMode}
                       >
@@ -331,7 +340,7 @@ export default function Dashboard() {
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Number of unique bot PRs reviewed (dependabot, renovate, etc.). Median shows time from ready-for-review to first review. For draft PRs, this is when marked ready; otherwise, when created. Only counts merged PRs."
                         darkMode={darkMode}
                       >
@@ -341,7 +350,7 @@ export default function Dashboard() {
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(count / median)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Total review actions submitted on merged PRs. Format: total / requested / unrequested. Includes multiple reviews on the same PR. 'Requested' means the reviewer was explicitly asked. 'Unrequested' means the reviewer acted voluntarily."
                         darkMode={darkMode}
                       >
@@ -351,7 +360,7 @@ export default function Dashboard() {
                       <div className={`text-[10px] font-normal ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>(total / requested / unrequested)</div>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Total review requests received in the last 30 days. Counts how many times this reviewer was explicitly asked to review a PR."
                         darkMode={darkMode}
                       >
@@ -360,7 +369,7 @@ export default function Dashboard() {
                       </Tooltip>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Percentage of review requests that were completed. Calculated as: (Completed Requested / Requested) × 100. Shows how often reviews are completed when explicitly requested."
                         darkMode={darkMode}
                       >
@@ -369,7 +378,7 @@ export default function Dashboard() {
                       </Tooltip>
                     </th>
                     <th className={`text-center py-2 px-2 text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      <Tooltip 
+                      <Tooltip
                         content="Number of open PRs currently awaiting review from this person. These are active review requests that haven't been completed yet."
                         darkMode={darkMode}
                       >
@@ -487,7 +496,7 @@ export default function Dashboard() {
                   darkMode={darkMode}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Age</label>
                 <CustomDropdown
@@ -510,14 +519,14 @@ export default function Dashboard() {
                   darkMode={darkMode}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Labels</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className={`px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                    darkMode 
-                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    darkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                   }`}
                   placeholder="needs-review, bug, feature"
@@ -531,7 +540,7 @@ export default function Dashboard() {
                   }}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Status</label>
                 <CustomDropdown
@@ -552,7 +561,7 @@ export default function Dashboard() {
                   darkMode={darkMode}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Draft Status</label>
                 <CustomDropdown
@@ -572,7 +581,7 @@ export default function Dashboard() {
                   darkMode={darkMode}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Author Type</label>
                 <CustomDropdown
@@ -594,7 +603,7 @@ export default function Dashboard() {
                   darkMode={darkMode}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Reviewer</label>
                 <CustomDropdown
@@ -610,7 +619,7 @@ export default function Dashboard() {
                   darkMode={darkMode}
                 />
               </div>
-              
+
               <div className="flex flex-col">
                 <label className={`text-sm font-medium mb-1.5 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>No Reviewer</label>
                 <div className="flex items-center h-[38px]">
@@ -626,8 +635,8 @@ export default function Dashboard() {
                     }}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label 
-                    htmlFor="noReviewers" 
+                  <label
+                    htmlFor="noReviewers"
                     className={`ml-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
                   >
                     None assigned
@@ -635,7 +644,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            
+
             {/* Filter Action Buttons */}
             <div className="flex gap-3 pt-2">
               <button
@@ -701,7 +710,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <footer className={`py-6 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-          Data refreshed every 2 minutes • 
+          Data refreshed every 2 minutes •
           <span className="ml-1">
             Last updated: {data?.lastUpdated ? new Date(data.lastUpdated).toLocaleString() : 'Never'}
           </span>

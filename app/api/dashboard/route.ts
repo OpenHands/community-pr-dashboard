@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { config, validateConfig } from '@/lib/config';
+import { config } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
+import { RateLimitError, getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
 import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
+import { DEFAULT_REPOS } from '@/lib/defaults';
 
 export const dynamic = 'force-dynamic';
 
+function resolveRepos(targetRepos: string[]): string[] {
+  return targetRepos.length > 0 ? targetRepos : DEFAULT_REPOS;
+}
+
 export async function GET(request: NextRequest) {
-  console.log('=== Dashboard API called ===');
   try {
-    // Debug: Check if GitHub token is available
-    console.log('GitHub token available:', !!process.env.GITHUB_TOKEN);
-    console.log('Config orgs:', config.orgs);
-    // validateConfig(); // Temporarily disabled for debugging
-    
     const { searchParams } = new URL(request.url);
-    console.log('Search params:', Object.fromEntries(searchParams.entries()));
     const debug = searchParams.get('debug') === 'true';
     const reposParam = searchParams.get('repos');
     const labelsParam = searchParams.get('labels');
@@ -28,131 +26,112 @@ export async function GET(request: NextRequest) {
     const draftStatusParam = searchParams.get('draftStatus');
     const authorTypeParam = searchParams.get('authorType');
     const reviewerParam = searchParams.get('reviewer');
-    
+
     // Parse filters
-    const targetRepos = reposParam 
+    const targetRepos = reposParam
       ? reposParam.split(',').map(r => r.trim())
-      : config.repos.include.length > 0 
-        ? config.repos.include 
+      : config.repos.include.length > 0
+        ? config.repos.include
         : []; // Will auto-discover if empty
-    
-    const labelFilters = labelsParam 
+
+    const labelFilters = labelsParam
       ? labelsParam.split(',').map(l => l.trim().toLowerCase())
       : [];
-    
+
+    const cacheBustParam = searchParams.get('cacheBust');
+
     // Create cache key based on filters
-    const cacheKey = `dashboard:${JSON.stringify({ 
-      orgs: config.orgs, 
-      repos: targetRepos, 
-      labels: labelFilters, 
+    const cacheKey = `dashboard:${JSON.stringify({
+      orgs: config.orgs,
+      repos: targetRepos,
+      labels: labelFilters,
       age: ageParam,
       status: statusParam,
       noReviewers: noReviewersParam,
       limit: limitParam,
       draftStatus: draftStatusParam,
       authorType: authorTypeParam,
-      reviewer: reviewerParam
+      reviewer: reviewerParam,
+      ...(cacheBustParam && { cacheBust: cacheBustParam }),
     })}`;
-    
-    // Use cache to improve performance
+
     const result = await cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
-      // Build employees set
-      console.log('Building employees set...');
+      const reposToFetch = resolveRepos(targetRepos);
       const employeesSet = await buildEmployeesSet();
-      console.log(`Found ${employeesSet.size} employees`);
-      
-      // Get all PRs from target repositories
+
+      // Phase 2: for every repo, run its three fetches in parallel; run all repos in parallel.
+      type RepoData = {
+        prs: PR[];
+        reviewStatsData: ReviewStatsData;
+        communityReviews: CommunityPRReviewData[];
+        orgMemberReviews: OrgMemberPRReviewData[];
+        botReviews: BotPRReviewData[];
+      };
+
+      const repoResults = await Promise.all(
+        reposToFetch
+          .map(r => r.trim().split('/'))
+          .filter(([owner, repo]) => owner && repo)
+          .map(([owner, repo]) =>
+            Promise.all([
+              getOpenPRsGraphQL(owner, repo),
+              getRecentlyMergedPRsWithReviews(owner, repo, 30),
+              getAllPRReviewStats(owner, repo, 30, employeesSet),
+            ])
+              .then(([rawPrs, reviewStatsData, allReviewStats]): RepoData => ({
+                prs: rawPrs.map(rawPr => {
+                  rawPr.repository = { owner: { login: owner }, name: repo };
+                  return transformPR(rawPr, employeesSet);
+                }),
+                reviewStatsData,
+                communityReviews: allReviewStats.communityReviews,
+                orgMemberReviews: allReviewStats.orgMemberReviews,
+                botReviews:       allReviewStats.botReviews,
+              }))
+              .catch(err => {
+                // Rate limit errors propagate — all other per-repo errors are isolated.
+                if (err instanceof RateLimitError) throw err;
+                console.error(`Failed to fetch ${owner}/${repo}:`, err);
+                return null;
+              })
+          )
+      );
+
+      // Flatten results.
       const allPrs: PR[] = [];
-      
-      // If no specific repos provided, dynamically fetch from configured organizations
-      let reposToFetch = targetRepos;
-      
-      if (targetRepos.length === 0) {
-        console.log('No specific repos provided, fetching all repos from organizations:', config.orgs);
-        try {
-          const allOrgRepos = await getAllRepositoriesFromOrgs(config.orgs);
-          reposToFetch = allOrgRepos;
-          console.log(`Dynamically discovered ${allOrgRepos.length} repositories from organizations`);
-        } catch (error) {
-          console.error('Failed to fetch repositories dynamically, using fallback list:', error);
-          // Fallback to hardcoded list if dynamic fetching fails
-          reposToFetch = [
-            'all-hands-ai/OpenHands',
-            'all-hands-ai/agent-sdk',
-            'all-hands-ai/SWE-bench',
-            'all-hands-ai/OpenHands-Cloud',
-            'openhands/OpenHands',
-            'openhands/agent-sdk',
-          ];
-        }
-      }
-      
-      console.log('Target repos:', targetRepos);
-      console.log('Repos to fetch:', reposToFetch);
-      
-      // Fetch completed reviews from last month for reviewer stats
       const allReviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] };
-      // Fetch community PR review stats (time from ready to first review)
       const allCommunityReviews: CommunityPRReviewData[] = [];
-      // Fetch org member PR review stats (time from ready to first review)
       const allOrgMemberReviews: OrgMemberPRReviewData[] = [];
-      // Fetch bot PR review stats (time from ready to first review)
       const allBotReviews: BotPRReviewData[] = [];
-      
-      for (const repoPath of reposToFetch) {
-        const [owner, repo] = repoPath.split('/');
-        if (!owner || !repo) continue;
-        
-        try {
-          console.log(`Fetching PRs for ${repoPath}...`);
-          const rawPrs = await getOpenPRsGraphQL(owner, repo);
-          console.log(`Found ${rawPrs.length} PRs for ${repoPath}`);
-          const transformedPrs = rawPrs.map(rawPr => {
-            // Add repo info to raw PR for transformation
-            rawPr.repository = { owner: { login: owner }, name: repo };
-            return transformPR(rawPr, employeesSet);
-          });
-          
-          allPrs.push(...transformedPrs);
-          
-          // Fetch completed reviews from merged PRs
-          console.log(`Fetching completed reviews for ${repoPath}...`);
-          const reviewStatsData = await getRecentlyMergedPRsWithReviews(owner, repo, 30);
-          console.log(`Found ${reviewStatsData.completedReviews.length} completed reviews and ${reviewStatsData.reviewRequests.length} review requests for ${repoPath}`);
-          allReviewStatsData.completedReviews.push(...reviewStatsData.completedReviews);
-          allReviewStatsData.reviewRequests.push(...reviewStatsData.reviewRequests);
-          
-          // Fetch all PR review stats in one combined query (reduces API calls from 3 to 1)
-          console.log(`Fetching all PR review stats for ${repoPath}...`);
-          const allReviewStats = await getAllPRReviewStats(owner, repo, 30, employeesSet);
-          console.log(`Found ${allReviewStats.communityReviews.length} community, ${allReviewStats.orgMemberReviews.length} org member, ${allReviewStats.botReviews.length} bot PR reviews for ${repoPath}`);
-          allCommunityReviews.push(...allReviewStats.communityReviews);
-          allOrgMemberReviews.push(...allReviewStats.orgMemberReviews);
-          allBotReviews.push(...allReviewStats.botReviews);
-        } catch (error) {
-          console.error(`Failed to fetch PRs for ${repoPath}:`, error);
-          // Continue with other repos
-        }
+
+      for (const rd of repoResults) {
+        if (!rd) continue;
+        allPrs.push(...rd.prs);
+        allReviewStatsData.completedReviews.push(...rd.reviewStatsData.completedReviews);
+        allReviewStatsData.reviewRequests.push(...rd.reviewStatsData.reviewRequests);
+        allCommunityReviews.push(...rd.communityReviews);
+        allOrgMemberReviews.push(...rd.orgMemberReviews);
+        allBotReviews.push(...rd.botReviews);
       }
-      
+
       // Apply filters
       let filteredPrs = allPrs;
-      
+
       // Don't filter to community PRs by default - show all PRs
       // Community PR filtering is handled in the compute functions
-      
+
       // Apply label filters if provided
       if (labelFilters.length > 0) {
-        filteredPrs = filteredPrs.filter(pr => 
+        filteredPrs = filteredPrs.filter(pr =>
           pr.labels.some(label => labelFilters.includes(label.toLowerCase()))
         );
       }
-      
+
       // Apply author type filter if provided
       if (authorTypeParam && authorTypeParam !== 'all') {
         filteredPrs = filteredPrs.filter(pr => pr.authorType === authorTypeParam);
       }
-      
+
       // Apply age filter if provided
       if (ageParam && ageParam !== 'all') {
         const ageRanges = {
@@ -162,15 +141,15 @@ export async function GET(request: NextRequest) {
           '7-days': [0, 168],        // Last 7 days (0-168 hours)
           '30-days': [0, 720],       // Last 30 days (0-720 hours)
         };
-        
+
         const range = ageRanges[ageParam as keyof typeof ageRanges];
         if (range) {
-          filteredPrs = filteredPrs.filter(pr => 
+          filteredPrs = filteredPrs.filter(pr =>
             pr.ageHours >= range[0] && pr.ageHours < range[1]
           );
         }
       }
-      
+
       // Apply status filter if provided
       if (statusParam && statusParam !== 'all') {
         filteredPrs = filteredPrs.filter(pr => {
@@ -186,7 +165,7 @@ export async function GET(request: NextRequest) {
           }
         });
       }
-      
+
       // Apply no reviewers filter if provided
       if (noReviewersParam === 'true') {
         filteredPrs = filteredPrs.filter(pr => {
@@ -195,7 +174,7 @@ export async function GET(request: NextRequest) {
           return !hasRequestedReviewers;
         });
       }
-      
+
       // Apply reviewer filter if provided
       if (reviewerParam && reviewerParam !== 'all') {
         filteredPrs = filteredPrs.filter(pr => {
@@ -203,7 +182,7 @@ export async function GET(request: NextRequest) {
           return pr.requestedReviewers.users.includes(reviewerParam);
         });
       }
-      
+
       // Apply draft status filter if provided
       if (draftStatusParam && draftStatusParam !== 'all') {
         filteredPrs = filteredPrs.filter(pr => {
@@ -217,7 +196,7 @@ export async function GET(request: NextRequest) {
           }
         });
       }
-      
+
       // Apply limit filter if provided (should be last to limit final results)
       if (limitParam && limitParam !== 'all') {
         const limit = parseInt(limitParam, 10);
@@ -225,17 +204,17 @@ export async function GET(request: NextRequest) {
           filteredPrs = filteredPrs.slice(0, limit);
         }
       }
-      
+
       // Compute dashboard data based on all PRs (not just filtered ones)
       const dashboardData = computeDashboardData(allPrs, employeesSet, allReviewStatsData);
-      
+
       // Compute community reviewer stats and merge into existing reviewer data
       const communityReviewerStats = computeCommunityReviewerStats(allCommunityReviews);
       // Compute org member reviewer stats
       const orgMemberReviewerStats = computeOrgMemberReviewerStats(allOrgMemberReviews);
       // Compute bot reviewer stats
       const botReviewerStats = computeBotReviewerStats(allBotReviews);
-      
+
       // Merge community, org member, and bot stats into existing reviewers
       if (dashboardData.reviewers) {
         const communityStatsMap = new Map(
@@ -247,7 +226,7 @@ export async function GET(request: NextRequest) {
         const botStatsMap = new Map(
           botReviewerStats.map(s => [s.name, s])
         );
-        
+
         for (const reviewer of dashboardData.reviewers) {
           const communityStats = communityStatsMap.get(reviewer.name);
           if (communityStats) {
@@ -265,14 +244,14 @@ export async function GET(request: NextRequest) {
             reviewer.medianBotReviewTimeHours = botStats.medianBotReviewTimeHours;
           }
         }
-        
+
         // Add any reviewers who only have community, org member, or bot reviews (not in the original list)
         const allNewReviewerNames = new Set([
           ...communityReviewerStats.map(s => s.name),
           ...orgMemberReviewerStats.map(s => s.name),
           ...botReviewerStats.map(s => s.name),
         ]);
-        
+
         for (const name of allNewReviewerNames) {
           if (!dashboardData.reviewers.find(r => r.name === name)) {
             const communityStats = communityStatsMap.get(name);
@@ -296,7 +275,7 @@ export async function GET(request: NextRequest) {
           }
         }
       }
-      
+
       // But return filtered PRs for the table
       return {
         ...dashboardData,
@@ -305,12 +284,10 @@ export async function GET(request: NextRequest) {
         employeeCount: employeesSet.size,
       };
     });
-    
+
     const response = result;
-    
-    // Add debug info if requested
+
     if (debug) {
-      (response as any).rateLimit = { remaining: 5000, resetAt: new Date().toISOString() }; // Placeholder
       (response as any).debug = {
         totalPrs: result.totalPrs,
         employeeCount: result.employeeCount,
@@ -318,18 +295,23 @@ export async function GET(request: NextRequest) {
         filters: { repos: targetRepos, labels: labelFilters, age: ageParam },
       };
     }
-    
+
     return NextResponse.json(response);
-    
+
   } catch (error) {
-    console.error('=== Dashboard API error ===', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
-    
+    if (error instanceof RateLimitError) {
+      const retryAfter = Math.max(0, Math.ceil((new Date(error.resetAt).getTime() - Date.now()) / 1000));
+      return NextResponse.json(
+        { error: 'rate_limited', resetAt: error.resetAt },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
+    console.error('Dashboard API error:', error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch dashboard data',
         message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack',
       },
       { status: 500 }
     );
