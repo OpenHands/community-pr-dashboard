@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
       ? labelsParam.split(',').map(l => l.trim().toLowerCase())
       : [];
 
+    const cacheBustParam = searchParams.get('cacheBust');
+
     // Create cache key based on filters
     const cacheKey = `dashboard:${JSON.stringify({
       orgs: config.orgs,
@@ -56,7 +58,8 @@ export async function GET(request: NextRequest) {
       limit: limitParam,
       draftStatus: draftStatusParam,
       authorType: authorTypeParam,
-      reviewer: reviewerParam
+      reviewer: reviewerParam,
+      ...(cacheBustParam && { cacheBust: cacheBustParam }),
     })}`;
 
     const result = await cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
