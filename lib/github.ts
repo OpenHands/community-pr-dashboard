@@ -127,40 +127,47 @@ export async function getOrgMembersREST(org: string): Promise<string[]> {
   return members;
 }
 
-export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<any[]> {
+// Shared PR fields used by both the repository and search queries
+const PR_FIELDS = `
+  number title url createdAt updatedAt isDraft authorAssociation state
+  author { login }
+  mergeable
+  labels(first: 20) { nodes { name } }
+  reviewRequests(first: 20) {
+    nodes {
+      requestedReviewer {
+        __typename
+        ... on User { login }
+        ... on Team { slug }
+      }
+    }
+  }
+  reviews(first: 50) {
+    nodes {
+      author { login }
+      state
+      submittedAt
+    }
+  }
+  timelineItems(first: 10, itemTypes: [READY_FOR_REVIEW_EVENT]) {
+    nodes {
+      __typename
+      ... on ReadyForReviewEvent { createdAt }
+    }
+  }
+`;
+
+export async function getOpenPRsGraphQL(owner: string, repo: string, excludeDrafts = false): Promise<any[]> {
+  if (excludeDrafts) {
+    return getOpenPRsViaSearch(owner, repo);
+  }
+
   const query = `
     query OpenPRs($owner: String!, $name: String!, $cursor: String) {
       repository(owner: $owner, name: $name) {
         pullRequests(states: OPEN, first: 50, after: $cursor, orderBy: {field: CREATED_AT, direction: DESC}) {
           pageInfo { hasNextPage endCursor }
-          nodes {
-            number title url createdAt updatedAt isDraft authorAssociation state
-            author { login }
-            mergeable
-            labels(first: 20) { nodes { name } }
-            reviewRequests(first: 20) {
-              nodes { 
-                requestedReviewer { 
-                  __typename 
-                  ... on User { login } 
-                  ... on Team { slug } 
-                } 
-              }
-            }
-            reviews(first: 50) {
-              nodes { 
-                author { login } 
-                state 
-                submittedAt 
-              }
-            }
-            timelineItems(first: 10, itemTypes: [READY_FOR_REVIEW_EVENT]) {
-              nodes {
-                __typename
-                ... on ReadyForReviewEvent { createdAt }
-              }
-            }
-          }
+          nodes { ${PR_FIELDS} }
         }
       }
       rateLimit { remaining resetAt }
@@ -181,16 +188,56 @@ export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<an
         };
       };
     };
-    
+
     const result: OpenPRsResult = await graphql<OpenPRsResult>(query, { owner, name: repo, cursor });
 
     const prData = result.repository.pullRequests;
-    // Filter to ensure only OPEN PRs are included
-    const openPrs = prData.nodes.filter((pr: any) => pr.state === 'OPEN');
-    prs.push(...openPrs);
-    
+    prs.push(...prData.nodes.filter((pr: any) => pr.state === 'OPEN'));
+
     hasNextPage = prData.pageInfo.hasNextPage;
     cursor = prData.pageInfo.endCursor;
+    pageCount++;
+  }
+
+  return prs;
+}
+
+async function getOpenPRsViaSearch(owner: string, repo: string): Promise<any[]> {
+  const searchQuery = `repo:${owner}/${repo} is:pr is:open -is:draft`;
+
+  const query = `
+    query SearchOpenPRs($searchQuery: String!, $cursor: String) {
+      search(query: $searchQuery, type: ISSUE, first: 50, after: $cursor) {
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          ... on PullRequest { ${PR_FIELDS} }
+        }
+      }
+      rateLimit { remaining resetAt }
+    }
+  `;
+
+  const prs: any[] = [];
+  let cursor: string | null = null;
+  let hasNextPage = true;
+  let pageCount = 0;
+
+  while (hasNextPage && pageCount < config.limits.maxPrPagesPerRepo) {
+    type SearchResult = {
+      search: {
+        pageInfo: { hasNextPage: boolean; endCursor: string | null };
+        nodes: any[];
+      };
+    };
+
+    const result: SearchResult = await graphql<SearchResult>(query, { searchQuery, cursor });
+
+    const searchData = result.search;
+    // search(type: ISSUE) can return Issues too despite is:pr; guard with state check
+    prs.push(...searchData.nodes.filter((node: any) => node.state === 'OPEN'));
+
+    hasNextPage = searchData.pageInfo.hasNextPage;
+    cursor = searchData.pageInfo.endCursor;
     pageCount++;
   }
 

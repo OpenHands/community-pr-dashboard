@@ -8,6 +8,7 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import WhatsNew from '@/components/WhatsNew'
 import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
+import { DEFAULT_REPOS, mergeDashboardResponses } from '@/lib/merge'
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -17,85 +18,70 @@ export default function Dashboard() {
   const [showAllReviewers, setShowAllReviewers] = useState(false)
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [allReviewers, setAllReviewers] = useState<string[]>([])
-  
-  const [filters, setFilters] = useState<FilterState>({
-    repositories: [],
-    labels: [],
-    ageRange: 'all', // Default to All Time - no filtering
-    status: 'all',
-    noReviewers: false,
-    limit: 'all',
-    draftStatus: 'all',
-    authorType: 'all',
-    reviewer: 'all'
-  })
-  const [appliedFilters, setAppliedFilters] = useState<FilterState>({
-    repositories: [],
-    labels: [],
-    ageRange: 'all', // Default to All Time - no filtering
-    status: 'all',
-    noReviewers: false,
-    limit: 'all',
-    draftStatus: 'all',
-    authorType: 'all',
-    reviewer: 'all'
-  })
 
-  const fetchData = useCallback(async (filtersToApply?: FilterState) => {
+  // Repository list for the selector (fetched once on mount)
+  const [allRepositories, setAllRepositories] = useState<{ id: number; name: string; full_name: string; description: string | null; stargazers_count: number; language: string | null }[]>([])
+  const [reposLoading, setReposLoading] = useState(true)
+  // Stable ref so fetchData can read the list without re-creating the callback
+  const allRepositoriesRef = useRef<string[]>([])
+
+  const defaultFilters: FilterState = {
+    repositories: DEFAULT_REPOS,
+    labels: [],
+    ageRange: 'all',
+    status: 'all',
+    noReviewers: false,
+    limit: 'all',
+    draftStatus: 'final',
+    authorType: 'all',
+    reviewer: 'all',
+  }
+
+  const [filters, setFilters] = useState<FilterState>(defaultFilters)
+  const [appliedFilters, setAppliedFilters] = useState<FilterState>(defaultFilters)
+
+  const fetchData = useCallback(async (filtersToApply?: FilterState, { cacheBust = false } = {}) => {
     const targetFilters = filtersToApply || appliedFilters
     try {
       setLoading(true)
       setError(null)
-      
-      const params = new URLSearchParams()
-      if (targetFilters.repositories.length > 0) {
-        params.append('repos', targetFilters.repositories.join(','))
-      }
-      if (targetFilters.labels.length > 0) {
-        params.append('labels', targetFilters.labels.join(','))
-      }
-      if (targetFilters.ageRange !== 'all') {
-        params.append('age', targetFilters.ageRange)
-      }
-      if (targetFilters.status && targetFilters.status !== 'all') {
-        params.append('status', targetFilters.status)
-      }
-      if (targetFilters.noReviewers) {
-        params.append('noReviewers', 'true')
-      }
-      if (targetFilters.limit && targetFilters.limit !== 'all') {
-        params.append('limit', targetFilters.limit)
-      }
-      if (targetFilters.draftStatus && targetFilters.draftStatus !== 'all') {
-        params.append('draftStatus', targetFilters.draftStatus)
-      }
-      if (targetFilters.authorType && targetFilters.authorType !== 'all') {
-        params.append('authorType', targetFilters.authorType)
-      }
-      if (targetFilters.reviewer && targetFilters.reviewer !== 'all') {
-        params.append('reviewer', targetFilters.reviewer)
-      }
 
-      const response = await fetch(`/api/dashboard?${params}`)
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard data')
-      }
-      
-      const result = await response.json()
-      setData(result)
-      
-      // Update the list of all reviewers when no reviewer filter is applied
-      // This ensures the dropdown always shows all available reviewers
+      // When no repos explicitly selected fall back to the full discovered list
+      const reposToFetch = targetFilters.repositories.length > 0
+        ? targetFilters.repositories
+        : allRepositoriesRef.current
+
+      if (reposToFetch.length === 0) return
+
+      // Shared query params (everything except repos)
+      const sharedParams = new URLSearchParams()
+      if (targetFilters.labels.length > 0) sharedParams.append('labels', targetFilters.labels.join(','))
+      if (targetFilters.ageRange !== 'all') sharedParams.append('age', targetFilters.ageRange)
+      if (targetFilters.status && targetFilters.status !== 'all') sharedParams.append('status', targetFilters.status)
+      if (targetFilters.noReviewers) sharedParams.append('noReviewers', 'true')
+      if (targetFilters.limit && targetFilters.limit !== 'all') sharedParams.append('limit', targetFilters.limit)
+      if (targetFilters.draftStatus && targetFilters.draftStatus !== 'all') sharedParams.append('draftStatus', targetFilters.draftStatus)
+      if (targetFilters.authorType && targetFilters.authorType !== 'all') sharedParams.append('authorType', targetFilters.authorType)
+      if (targetFilters.reviewer && targetFilters.reviewer !== 'all') sharedParams.append('reviewer', targetFilters.reviewer)
+      if (cacheBust) sharedParams.append('cacheBust', String(Date.now()))
+
+      // Fetch all repos in parallel
+      const responses = await Promise.all(
+        reposToFetch.map(repo =>
+          fetch(`/api/dashboard?repos=${encodeURIComponent(repo)}&${sharedParams}`)
+            .then(r => r.json())
+        )
+      )
+
+      const merged = mergeDashboardResponses(responses.filter(r => !r.error))
+      setData(merged)
+
       if (!targetFilters.reviewer || targetFilters.reviewer === 'all') {
         const reviewerSet = new Set<string>()
-        result.prs?.forEach((pr: any) => {
-          pr.requestedReviewers?.users?.forEach((reviewer: string) => {
-            reviewerSet.add(reviewer)
-          })
+        merged.prs?.forEach((pr: any) => {
+          pr.requestedReviewers?.users?.forEach((reviewer: string) => reviewerSet.add(reviewer))
         })
-        setAllReviewers(Array.from(reviewerSet).sort((a, b) => 
-          a.toLowerCase().localeCompare(b.toLowerCase())
-        ))
+        setAllReviewers(Array.from(reviewerSet).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())))
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err)
@@ -104,6 +90,19 @@ export default function Dashboard() {
       setLoading(false)
     }
   }, [appliedFilters])
+
+  // Fetch full repository list once on mount
+  useEffect(() => {
+    fetch('/api/repositories')
+      .then(r => r.json())
+      .then(data => {
+        const repos = data.repositories || []
+        setAllRepositories(repos)
+        allRepositoriesRef.current = repos.map((r: any) => r.full_name)
+      })
+      .catch(console.error)
+      .finally(() => setReposLoading(false))
+  }, [])
 
   // Initial load
   useEffect(() => {
@@ -131,24 +130,13 @@ export default function Dashboard() {
   }, [fetchData])
 
   const handleClearFilters = () => {
-    const clearedFilters = {
-      repositories: [],
-      labels: [],
-      ageRange: 'all', // Default to All Time - no filtering
-      status: 'all',
-      noReviewers: false,
-      limit: 'all',
-      draftStatus: 'all',
-      authorType: 'all',
-      reviewer: 'all'
-    }
-    setFilters(clearedFilters)
-    setAppliedFilters(clearedFilters)
-    fetchData(clearedFilters)
+    setFilters(defaultFilters)
+    setAppliedFilters(defaultFilters)
+    fetchData(defaultFilters)
   }
 
-  const handleRefresh = () => {
-    fetchData()
+  const handleRefresh = (e: React.MouseEvent) => {
+    fetchData(undefined, { cacheBust: e.shiftKey })
   }
 
   // Compute unique reviewers from all PRs for the filter dropdown
@@ -187,14 +175,17 @@ export default function Dashboard() {
                   setAppliedFilters(newFilters)
                   fetchData(newFilters)
                 }}
-                className="min-w-[200px]"
+                repositories={allRepositories}
+                repositoriesLoading={reposLoading}
+                pinnedRepos={DEFAULT_REPOS}
+                className="min-w-[320px]"
                 darkMode={darkMode}
               />
               <button 
                 onClick={handleRefresh}
                 disabled={loading}
                 className={`px-3 py-1 text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white disabled:bg-gray-800' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:bg-gray-50'} rounded border transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-                title="Refresh data"
+                title="Refresh data (Shift+click to bust cache)"
               >
                 {loading ? '⟳ Refreshing...' : '🔄 Refresh'}
               </button>
@@ -688,7 +679,7 @@ export default function Dashboard() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span className={`font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
-                    Querying {filters.repositories.length > 0 ? `${filters.repositories.length} repositories` : 'repositories'}...
+                    Querying {filters.repositories.length} {filters.repositories.length === 1 ? 'repository' : 'repositories'}...
                   </span>
                 </div>
               </div>

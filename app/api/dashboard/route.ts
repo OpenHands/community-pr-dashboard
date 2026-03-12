@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { config, validateConfig } from '@/lib/config';
+import { config } from '@/lib/config';
 import { cache } from '@/lib/cache';
-import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
-import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
-import { DashboardResponse, PR } from '@/lib/types';
+import { buildEmployeesSet } from '@/lib/employees';
+import { getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
+import { transformPR, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
+import { PR } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +17,16 @@ export async function GET(request: NextRequest) {
     // validateConfig(); // Temporarily disabled for debugging
     
     const { searchParams } = new URL(request.url);
-    console.log('Search params:', Object.fromEntries(searchParams.entries()));
+    const repoParam = searchParams.get('repos');
+    if (!repoParam) {
+      return NextResponse.json({ error: 'repos parameter is required (format: owner/repo)' }, { status: 400 });
+    }
+    const [owner, repo] = repoParam.trim().split('/');
+    if (!owner || !repo) {
+      return NextResponse.json({ error: 'repos must be in owner/repo format' }, { status: 400 });
+    }
+
     const debug = searchParams.get('debug') === 'true';
-    const reposParam = searchParams.get('repos');
     const labelsParam = searchParams.get('labels');
     const ageParam = searchParams.get('age');
     const statusParam = searchParams.get('status');
@@ -28,112 +35,49 @@ export async function GET(request: NextRequest) {
     const draftStatusParam = searchParams.get('draftStatus');
     const authorTypeParam = searchParams.get('authorType');
     const reviewerParam = searchParams.get('reviewer');
-    
-    // Parse filters
-    const targetRepos = reposParam 
-      ? reposParam.split(',').map(r => r.trim())
-      : config.repos.include.length > 0 
-        ? config.repos.include 
-        : []; // Will auto-discover if empty
-    
-    const labelFilters = labelsParam 
+
+    const labelFilters = labelsParam
       ? labelsParam.split(',').map(l => l.trim().toLowerCase())
       : [];
-    
-    // Create cache key based on filters
-    const cacheKey = `dashboard:${JSON.stringify({ 
-      orgs: config.orgs, 
-      repos: targetRepos, 
-      labels: labelFilters, 
+
+    const cacheBustParam = searchParams.get('cacheBust');
+    const cacheKey = `dashboard:${JSON.stringify({
+      repo: repoParam.trim(),
+      labels: labelFilters,
       age: ageParam,
       status: statusParam,
       noReviewers: noReviewersParam,
       limit: limitParam,
       draftStatus: draftStatusParam,
       authorType: authorTypeParam,
-      reviewer: reviewerParam
+      reviewer: reviewerParam,
+      ...(cacheBustParam && { cacheBust: cacheBustParam }),
     })}`;
-    
-    // Use cache to improve performance
+
     const result = await cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
-      // Build employees set
-      console.log('Building employees set...');
       const employeesSet = await buildEmployeesSet();
-      console.log(`Found ${employeesSet.size} employees`);
-      
-      // Get all PRs from target repositories
+
       const allPrs: PR[] = [];
-      
-      // If no specific repos provided, dynamically fetch from configured organizations
-      let reposToFetch = targetRepos;
-      
-      if (targetRepos.length === 0) {
-        console.log('No specific repos provided, fetching all repos from organizations:', config.orgs);
-        try {
-          const allOrgRepos = await getAllRepositoriesFromOrgs(config.orgs);
-          reposToFetch = allOrgRepos;
-          console.log(`Dynamically discovered ${allOrgRepos.length} repositories from organizations`);
-        } catch (error) {
-          console.error('Failed to fetch repositories dynamically, using fallback list:', error);
-          // Fallback to hardcoded list if dynamic fetching fails
-          reposToFetch = [
-            'all-hands-ai/OpenHands',
-            'all-hands-ai/agent-sdk',
-            'all-hands-ai/SWE-bench',
-            'all-hands-ai/OpenHands-Cloud',
-            'openhands/OpenHands',
-            'openhands/agent-sdk',
-          ];
-        }
-      }
-      
-      console.log('Target repos:', targetRepos);
-      console.log('Repos to fetch:', reposToFetch);
-      
-      // Fetch completed reviews from last month for reviewer stats
       const allReviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] };
-      // Fetch community PR review stats (time from ready to first review)
       const allCommunityReviews: CommunityPRReviewData[] = [];
-      // Fetch org member PR review stats (time from ready to first review)
       const allOrgMemberReviews: OrgMemberPRReviewData[] = [];
-      // Fetch bot PR review stats (time from ready to first review)
       const allBotReviews: BotPRReviewData[] = [];
-      
-      for (const repoPath of reposToFetch) {
-        const [owner, repo] = repoPath.split('/');
-        if (!owner || !repo) continue;
-        
-        try {
-          console.log(`Fetching PRs for ${repoPath}...`);
-          const rawPrs = await getOpenPRsGraphQL(owner, repo);
-          console.log(`Found ${rawPrs.length} PRs for ${repoPath}`);
-          const transformedPrs = rawPrs.map(rawPr => {
-            // Add repo info to raw PR for transformation
-            rawPr.repository = { owner: { login: owner }, name: repo };
-            return transformPR(rawPr, employeesSet);
-          });
-          
-          allPrs.push(...transformedPrs);
-          
-          // Fetch completed reviews from merged PRs
-          console.log(`Fetching completed reviews for ${repoPath}...`);
-          const reviewStatsData = await getRecentlyMergedPRsWithReviews(owner, repo, 30);
-          console.log(`Found ${reviewStatsData.completedReviews.length} completed reviews and ${reviewStatsData.reviewRequests.length} review requests for ${repoPath}`);
-          allReviewStatsData.completedReviews.push(...reviewStatsData.completedReviews);
-          allReviewStatsData.reviewRequests.push(...reviewStatsData.reviewRequests);
-          
-          // Fetch all PR review stats in one combined query (reduces API calls from 3 to 1)
-          console.log(`Fetching all PR review stats for ${repoPath}...`);
-          const allReviewStats = await getAllPRReviewStats(owner, repo, 30, employeesSet);
-          console.log(`Found ${allReviewStats.communityReviews.length} community, ${allReviewStats.orgMemberReviews.length} org member, ${allReviewStats.botReviews.length} bot PR reviews for ${repoPath}`);
-          allCommunityReviews.push(...allReviewStats.communityReviews);
-          allOrgMemberReviews.push(...allReviewStats.orgMemberReviews);
-          allBotReviews.push(...allReviewStats.botReviews);
-        } catch (error) {
-          console.error(`Failed to fetch PRs for ${repoPath}:`, error);
-          // Continue with other repos
-        }
-      }
+
+      console.log(`Fetching PRs for ${owner}/${repo}...`);
+      const rawPrs = await getOpenPRsGraphQL(owner, repo, draftStatusParam === 'final');
+      rawPrs.forEach(rawPr => {
+        rawPr.repository = { owner: { login: owner }, name: repo };
+        allPrs.push(transformPR(rawPr, employeesSet));
+      });
+
+      const reviewStatsData = await getRecentlyMergedPRsWithReviews(owner, repo, 30);
+      allReviewStatsData.completedReviews.push(...reviewStatsData.completedReviews);
+      allReviewStatsData.reviewRequests.push(...reviewStatsData.reviewRequests);
+
+      const allReviewStats = await getAllPRReviewStats(owner, repo, 30, employeesSet);
+      allCommunityReviews.push(...allReviewStats.communityReviews);
+      allOrgMemberReviews.push(...allReviewStats.orgMemberReviews);
+      allBotReviews.push(...allReviewStats.botReviews);
       
       // Apply filters
       let filteredPrs = allPrs;
@@ -297,25 +241,20 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      // But return filtered PRs for the table
       return {
         ...dashboardData,
         prs: filteredPrs,
         totalPrs: allPrs.length,
-        employeeCount: employeesSet.size,
       };
     });
     
     const response = result;
     
-    // Add debug info if requested
     if (debug) {
-      (response as any).rateLimit = { remaining: 5000, resetAt: new Date().toISOString() }; // Placeholder
       (response as any).debug = {
         totalPrs: result.totalPrs,
-        employeeCount: result.employeeCount,
         cacheKey,
-        filters: { repos: targetRepos, labels: labelFilters, age: ageParam },
+        filters: { repo: repoParam, labels: labelFilters, age: ageParam },
       };
     }
     
