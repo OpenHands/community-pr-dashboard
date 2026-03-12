@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { RateLimitError } from '@/lib/github';
 import { config } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet } from '@/lib/employees';
@@ -263,11 +264,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
     
   } catch (error) {
+    if (error instanceof RateLimitError) {
+      const retryAfter = Math.max(0, Math.ceil((new Date(error.resetAt).getTime() - Date.now()) / 1000));
+      return NextResponse.json(
+        { error: 'rate_limited', resetAt: error.resetAt },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     console.error('=== Dashboard API error ===', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to fetch dashboard data',
         message: error instanceof Error ? error.message : 'Unknown error',
         stack: error instanceof Error ? error.stack : 'No stack',

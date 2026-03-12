@@ -73,6 +73,17 @@ export default function Dashboard() {
         )
       )
 
+      const rateLimitResets = responses
+        .filter(r => r.error === 'rate_limited' && r.resetAt)
+        .map((r: any) => new Date(r.resetAt).getTime())
+        .sort((a: number, b: number) => a - b)
+
+      if (rateLimitResets.length > 0) {
+        const resetTime = new Date(rateLimitResets[0]).toLocaleTimeString()
+        const partial = responses.some((r: any) => !r.error)
+        setError(`GitHub rate limit exceeded — resets at ${resetTime}${partial ? ' (showing partial results)' : ''}`)
+      }
+
       const merged = mergeDashboardResponses(responses.filter(r => !r.error))
       setData(merged)
 
