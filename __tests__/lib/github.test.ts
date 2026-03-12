@@ -1,4 +1,4 @@
-import { getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews } from '@/lib/github';
+import { getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, RateLimitError, GitHubAPIError } from '@/lib/github';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -786,3 +786,176 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     expect(result.completedReviews[0].requestedAt).toBeNull();
   });
 });
+
+// ─── RateLimitError ──────────────────────────────────────────────────────────
+
+describe('RateLimitError', () => {
+  it('sets name, message, and resetAt', () => {
+    const resetAt = '2025-06-01T00:00:00.000Z';
+    const err = new RateLimitError(resetAt);
+
+    expect(err).toBeInstanceOf(Error);
+    expect(err).toBeInstanceOf(RateLimitError);
+    expect(err.name).toBe('RateLimitError');
+    expect(err.message).toBe('GitHub API rate limit exceeded');
+    expect(err.resetAt).toBe(resetAt);
+  });
+});
+
+// ─── Rate limit detection via HTTP status (fetchGitHub) ──────────────────────
+// fetchGitHub is private; exercised here through getOpenPRsGraphQL → graphql.
+
+describe('rate limit detection via HTTP status', () => {
+  const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+
+  beforeEach(() => jest.clearAllMocks());
+
+  function makeErrorResponse(
+    status: number,
+    headers: Record<string, string> = {},
+  ): Response {
+    return {
+      ok: false,
+      status,
+      statusText: 'Error',
+      headers: new Headers(headers),
+    } as Response;
+  }
+
+  it('throws RateLimitError on 403 with x-ratelimit-remaining: 0', async () => {
+    const resetEpoch = Math.floor(Date.now() / 1000) + 3600;
+    mockFetch.mockResolvedValueOnce(
+      makeErrorResponse(403, {
+        'x-ratelimit-remaining': '0',
+        'x-ratelimit-reset': String(resetEpoch),
+      }),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(RateLimitError);
+    expect(err.resetAt).toBe(new Date(resetEpoch * 1000).toISOString());
+  });
+
+  it('throws RateLimitError on 429 with x-ratelimit-remaining: 0', async () => {
+    const resetEpoch = Math.floor(Date.now() / 1000) + 3600;
+    mockFetch.mockResolvedValueOnce(
+      makeErrorResponse(429, {
+        'x-ratelimit-remaining': '0',
+        'x-ratelimit-reset': String(resetEpoch),
+      }),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(RateLimitError);
+  });
+
+  it('throws GitHubAPIError (not RateLimitError) on 403 when remaining > 0', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeErrorResponse(403, {
+        'x-ratelimit-remaining': '100',
+        'x-ratelimit-reset': '9999999999',
+      }),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(GitHubAPIError);
+    expect(err).not.toBeInstanceOf(RateLimitError);
+    expect(err.status).toBe(403);
+  });
+
+  it('throws GitHubAPIError (not RateLimitError) on 403 with no rate-limit headers', async () => {
+    mockFetch.mockResolvedValueOnce(makeErrorResponse(403));
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(GitHubAPIError);
+    expect(err).not.toBeInstanceOf(RateLimitError);
+  });
+
+  it('throws GitHubAPIError on 404', async () => {
+    mockFetch.mockResolvedValueOnce(makeErrorResponse(404));
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(GitHubAPIError);
+    expect(err.status).toBe(404);
+  });
+});
+
+// ─── Rate limit detection via GraphQL error body (graphql) ───────────────────
+
+describe('rate limit detection via GraphQL error body', () => {
+  const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+
+  beforeEach(() => jest.clearAllMocks());
+
+  function makeGraphQLErrorResponse(
+    errors: object[],
+    headers: Record<string, string> = {},
+  ): Response {
+    return {
+      ok: true,
+      status: 200,
+      headers: new Headers(headers),
+      json: async () => ({ errors }),
+    } as Response;
+  }
+
+  it('throws RateLimitError for error type RATE_LIMITED', async () => {
+    const resetEpoch = Math.floor(Date.now() / 1000) + 3600;
+    mockFetch.mockResolvedValueOnce(
+      makeGraphQLErrorResponse(
+        [{ type: 'RATE_LIMITED', message: 'API rate limit exceeded' }],
+        { 'x-ratelimit-reset': String(resetEpoch) },
+      ),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(RateLimitError);
+    expect(err.resetAt).toBe(new Date(resetEpoch * 1000).toISOString());
+  });
+
+  it('throws RateLimitError when error message matches /rate limit/i', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeGraphQLErrorResponse([
+        { message: 'You have exceeded a secondary rate limit and have been temporarily blocked.' },
+      ]),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(RateLimitError);
+  });
+
+  it('falls back to now+1h for resetAt when x-ratelimit-reset header is absent', async () => {
+    const before = Date.now();
+    mockFetch.mockResolvedValueOnce(
+      makeGraphQLErrorResponse([{ type: 'RATE_LIMITED', message: 'rate limit' }]),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+    const after = Date.now();
+
+    expect(err).toBeInstanceOf(RateLimitError);
+    const resetMs = new Date(err.resetAt).getTime();
+    expect(resetMs).toBeGreaterThanOrEqual(before + 3_600_000 - 50);
+    expect(resetMs).toBeLessThanOrEqual(after  + 3_600_000 + 50);
+  });
+
+  it('throws a plain Error for non-rate-limit GraphQL errors', async () => {
+    mockFetch.mockResolvedValueOnce(
+      makeGraphQLErrorResponse([{ message: 'Field does not exist on type' }]),
+    );
+
+    const err = await getOpenPRsGraphQL('o', 'r').catch(e => e);
+
+    expect(err).toBeInstanceOf(Error);
+    expect(err).not.toBeInstanceOf(RateLimitError);
+    expect(err.message).toContain('Field does not exist on type');
+  });
+});
+
