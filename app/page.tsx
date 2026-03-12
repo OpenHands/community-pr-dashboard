@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import PrTable from '@/components/PrTable'
 import RepositorySelector from '@/components/RepositorySelector'
 import CustomDropdown from '@/components/CustomDropdown'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import DashboardSkeleton from '@/components/DashboardSkeleton'
 import WhatsNew from '@/components/WhatsNew'
 import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
@@ -77,6 +77,11 @@ export default function Dashboard() {
       }
 
       const response = await fetch(`/api/dashboard?${params}`)
+      if (response.status === 429) {
+        const body = await response.json()
+        const resetTime = body.resetAt ? new Date(body.resetAt).toLocaleTimeString() : 'soon'
+        throw new Error(`GitHub rate limit exceeded — resets at ${resetTime}`)
+      }
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard data')
       }
@@ -162,8 +167,10 @@ export default function Dashboard() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner />
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div className="max-w-7xl mx-auto px-5">
+          <DashboardSkeleton darkMode={darkMode} />
+        </div>
       </div>
     )
   }
