@@ -52,7 +52,6 @@ jest.mock('@/lib/github', () => {
     getOpenPRsGraphQL: jest.fn(),
     getRecentlyMergedPRsWithReviews: jest.fn(),
     getAllPRReviewStats: jest.fn(),
-    getAllRepositoriesFromOrgs: jest.fn(),
   };
 });
 
@@ -71,7 +70,6 @@ import {
   getOpenPRsGraphQL,
   getRecentlyMergedPRsWithReviews,
   getAllPRReviewStats,
-  getAllRepositoriesFromOrgs,
 } from '@/lib/github';
 import { buildEmployeesSet } from '@/lib/employees';
 import {
@@ -82,11 +80,10 @@ import {
   computeBotReviewerStats,
 } from '@/lib/compute';
 
-const mockGetOpenPRs              = getOpenPRsGraphQL              as jest.MockedFunction<typeof getOpenPRsGraphQL>;
-const mockGetMergedPRs            = getRecentlyMergedPRsWithReviews as jest.MockedFunction<typeof getRecentlyMergedPRsWithReviews>;
-const mockGetAllReviewStats       = getAllPRReviewStats             as jest.MockedFunction<typeof getAllPRReviewStats>;
-const mockGetAllRepositories      = getAllRepositoriesFromOrgs      as jest.MockedFunction<typeof getAllRepositoriesFromOrgs>;
-const mockBuildEmployeesSet       = buildEmployeesSet              as jest.MockedFunction<typeof buildEmployeesSet>;
+const mockGetOpenPRs        = getOpenPRsGraphQL              as jest.MockedFunction<typeof getOpenPRsGraphQL>;
+const mockGetMergedPRs      = getRecentlyMergedPRsWithReviews as jest.MockedFunction<typeof getRecentlyMergedPRsWithReviews>;
+const mockGetAllReviewStats = getAllPRReviewStats             as jest.MockedFunction<typeof getAllPRReviewStats>;
+const mockBuildEmployeesSet = buildEmployeesSet              as jest.MockedFunction<typeof buildEmployeesSet>;
 const mockTransformPR             = transformPR                    as jest.MockedFunction<typeof transformPR>;
 const mockComputeDashboardData    = computeDashboardData           as jest.MockedFunction<typeof computeDashboardData>;
 const mockComputeCommunityStats   = computeCommunityReviewerStats  as jest.MockedFunction<typeof computeCommunityReviewerStats>;
@@ -166,26 +163,18 @@ describe('GET /api/dashboard — resolveRepos', () => {
     expect(mockGetOpenPRs).toHaveBeenCalledWith('owner', 'beta');
   });
 
-  it('calls getAllRepositoriesFromOrgs when no repos param is supplied', async () => {
-    mockGetAllRepositories.mockResolvedValue(['org/repo-a', 'org/repo-b']);
-
+  it('uses DEFAULT_REPOS when no repos param is supplied', async () => {
     const res = await GET(makeRequest());
 
     expect(res.status).toBe(200);
-    expect(mockGetAllRepositories).toHaveBeenCalledWith(['test-org']);
-    expect(mockGetOpenPRs).toHaveBeenCalledWith('org', 'repo-a');
-    expect(mockGetOpenPRs).toHaveBeenCalledWith('org', 'repo-b');
-  });
-
-  it('falls back to FALLBACK_REPOS when org discovery throws', async () => {
-    mockGetAllRepositories.mockRejectedValue(new Error('network error'));
-
-    const res = await GET(makeRequest());
-
-    expect(res.status).toBe(200);
-    // The fallback list is always fetched on failure; spot-check one entry.
-    const calledWithArgs = mockGetOpenPRs.mock.calls.map(([owner, repo]) => `${owner}/${repo}`);
-    expect(calledWithArgs).toContain('all-hands-ai/OpenHands');
+    const fetched = mockGetOpenPRs.mock.calls.map(([owner, repo]) => `${owner}/${repo}`);
+    expect(fetched).toEqual([
+      'OpenHands/OpenHands',
+      'OpenHands/software-agent-sdk',
+      'OpenHands/OpenHands-CLI',
+      'OpenHands/docs',
+      'OpenHands/benchmarks',
+    ]);
   });
 });
 

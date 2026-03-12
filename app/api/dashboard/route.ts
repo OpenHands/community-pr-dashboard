@@ -2,29 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 import { cache } from '@/lib/cache';
 import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
-import { RateLimitError, getOpenPRsGraphQL, getAllRepositoriesFromOrgs, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
+import { RateLimitError, getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
 import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-const FALLBACK_REPOS = [
-  'all-hands-ai/OpenHands',
-  'all-hands-ai/agent-sdk',
-  'all-hands-ai/SWE-bench',
-  'all-hands-ai/OpenHands-Cloud',
-  'openhands/OpenHands',
-  'openhands/agent-sdk',
+const DEFAULT_REPOS = [
+  'OpenHands/OpenHands',
+  'OpenHands/software-agent-sdk',
+  'OpenHands/OpenHands-CLI',
+  'OpenHands/docs',
+  'OpenHands/benchmarks',
 ];
 
-async function resolveRepos(targetRepos: string[]): Promise<string[]> {
-  if (targetRepos.length > 0) return targetRepos;
-  try {
-    return await getAllRepositoriesFromOrgs(config.orgs);
-  } catch (err) {
-    console.error('Failed to fetch repos from orgs, using fallback list:', err);
-    return FALLBACK_REPOS;
-  }
+function resolveRepos(targetRepos: string[]): string[] {
+  return targetRepos.length > 0 ? targetRepos : DEFAULT_REPOS;
 }
 
 export async function GET(request: NextRequest) {
@@ -67,11 +60,8 @@ export async function GET(request: NextRequest) {
     })}`;
 
     const result = await cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
-      // Phase 1: resolve the repo list and employee set in parallel — they're independent.
-      const [employeesSet, reposToFetch] = await Promise.all([
-        buildEmployeesSet(),
-        resolveRepos(targetRepos),
-      ]);
+      const reposToFetch = resolveRepos(targetRepos);
+      const employeesSet = await buildEmployeesSet();
 
       // Phase 2: for every repo, run its three fetches in parallel; run all repos in parallel.
       type RepoData = {
