@@ -8,6 +8,7 @@ import DashboardSkeleton from '@/components/DashboardSkeleton'
 import WhatsNew from '@/components/WhatsNew'
 import { Tooltip } from '@/components/Tooltip'
 import { DashboardData, FilterState } from '@/lib/types'
+import { DEFAULT_REPOS } from '@/lib/defaults'
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
@@ -19,7 +20,7 @@ export default function Dashboard() {
   const [allReviewers, setAllReviewers] = useState<string[]>([])
 
   const [filters, setFilters] = useState<FilterState>({
-    repositories: [],
+    repositories: DEFAULT_REPOS,
     labels: [],
     ageRange: 'all', // Default to All Time - no filtering
     status: 'all',
@@ -30,7 +31,7 @@ export default function Dashboard() {
     reviewer: 'all'
   })
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
-    repositories: [],
+    repositories: DEFAULT_REPOS,
     labels: [],
     ageRange: 'all', // Default to All Time - no filtering
     status: 'all',
@@ -195,7 +196,7 @@ export default function Dashboard() {
                   setAppliedFilters(newFilters)
                   fetchData(newFilters)
                 }}
-                className="min-w-[200px]"
+                className="w-[300px]"
                 darkMode={darkMode}
               />
               <button

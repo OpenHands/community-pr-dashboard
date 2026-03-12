@@ -5,16 +5,9 @@ import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
 import { RateLimitError, getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
 import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
 import { DashboardResponse, PR } from '@/lib/types';
+import { DEFAULT_REPOS } from '@/lib/defaults';
 
 export const dynamic = 'force-dynamic';
-
-const DEFAULT_REPOS = [
-  'OpenHands/OpenHands',
-  'OpenHands/software-agent-sdk',
-  'OpenHands/OpenHands-CLI',
-  'OpenHands/docs',
-  'OpenHands/benchmarks',
-];
 
 function resolveRepos(targetRepos: string[]): string[] {
   return targetRepos.length > 0 ? targetRepos : DEFAULT_REPOS;
