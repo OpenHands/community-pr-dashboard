@@ -55,29 +55,31 @@ export async function GET(request: NextRequest) {
     })}`;
 
     const result = await cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
-      const employeesSet = await buildEmployeesSet();
+      // Phase 1: all three are independent — run in parallel
+      const [employeesSet, rawPrs, reviewStatsData] = await Promise.all([
+        buildEmployeesSet(),
+        getOpenPRsGraphQL(owner, repo, draftStatusParam === 'final'),
+        getRecentlyMergedPRsWithReviews(owner, repo, 30),
+      ]);
 
-      const allPrs: PR[] = [];
-      const allReviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] };
-      const allCommunityReviews: CommunityPRReviewData[] = [];
-      const allOrgMemberReviews: OrgMemberPRReviewData[] = [];
-      const allBotReviews: BotPRReviewData[] = [];
+      // Phase 2: getAllPRReviewStats needs employeesSet; kick it off while
+      // transformPR (synchronous) runs so the two overlap.
+      const allReviewStatsPromise = getAllPRReviewStats(owner, repo, 30, employeesSet);
 
-      console.log(`Fetching PRs for ${owner}/${repo}...`);
-      const rawPrs = await getOpenPRsGraphQL(owner, repo, draftStatusParam === 'final');
-      rawPrs.forEach(rawPr => {
+      const allPrs: PR[] = rawPrs.map(rawPr => {
         rawPr.repository = { owner: { login: owner }, name: repo };
-        allPrs.push(transformPR(rawPr, employeesSet));
+        return transformPR(rawPr, employeesSet);
       });
 
-      const reviewStatsData = await getRecentlyMergedPRsWithReviews(owner, repo, 30);
-      allReviewStatsData.completedReviews.push(...reviewStatsData.completedReviews);
-      allReviewStatsData.reviewRequests.push(...reviewStatsData.reviewRequests);
+      const allReviewStatsData: ReviewStatsData = {
+        completedReviews: reviewStatsData.completedReviews,
+        reviewRequests:   reviewStatsData.reviewRequests,
+      };
 
-      const allReviewStats = await getAllPRReviewStats(owner, repo, 30, employeesSet);
-      allCommunityReviews.push(...allReviewStats.communityReviews);
-      allOrgMemberReviews.push(...allReviewStats.orgMemberReviews);
-      allBotReviews.push(...allReviewStats.botReviews);
+      const allReviewStats = await allReviewStatsPromise;
+      const allCommunityReviews: CommunityPRReviewData[]   = allReviewStats.communityReviews;
+      const allOrgMemberReviews: OrgMemberPRReviewData[]   = allReviewStats.orgMemberReviews;
+      const allBotReviews:       BotPRReviewData[]         = allReviewStats.botReviews;
       
       // Apply filters
       let filteredPrs = allPrs;
