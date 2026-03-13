@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 import { cache } from '@/lib/cache';
-import { buildEmployeesSet, isCommunityPR } from '@/lib/employees';
+import { buildEmployeesSet } from '@/lib/employees';
 import { RateLimitError, getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
-import { transformPR, computeKpis, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
-import { DashboardResponse, PR } from '@/lib/types';
+import { transformPR, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
+import { PR } from '@/lib/types';
 import { DEFAULT_REPOS } from '@/lib/defaults';
 
 export const dynamic = 'force-dynamic';

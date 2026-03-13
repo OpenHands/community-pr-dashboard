@@ -1,7 +1,7 @@
 import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats } from './types';
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
-import { CompletedReviewData, ReviewRequestData, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
+import { ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
 
 // Minimum number of data points required for a meaningful median
 const MIN_REVIEWS_FOR_MEDIAN = 3;

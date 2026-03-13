@@ -6,9 +6,9 @@ import { cache } from '@/lib/cache';
 import { buildEmployeesSet } from '@/lib/employees';
 import { getOpenPRsGraphQL } from '@/lib/github';
 import { transformPR, computeReviewStats } from '@/lib/compute';
-import { PR, ReviewStatsResponse } from '@/lib/types';
+import { PR } from '@/lib/types';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     validateConfig();
     

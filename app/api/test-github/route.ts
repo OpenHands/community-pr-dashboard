@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getOpenPRsGraphQL } from '@/lib/github';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('Testing GitHub API...');
     const prs = await getOpenPRsGraphQL('All-Hands-AI', 'OpenHands');
