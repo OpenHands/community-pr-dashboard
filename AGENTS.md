@@ -21,17 +21,7 @@ npm run test         # Run Jest tests
 npm run test:watch   # Run Jest in watch mode
 ```
 
-## Linter Setup
-- **Config**: `.eslintrc.json` (created at repo root)
-- **Extends**: `next/core-web-vitals` + `plugin:@typescript-eslint/recommended`
-- **Parser**: `@typescript-eslint/parser`
-- **Key rules**:
-  - `@typescript-eslint/no-unused-vars`: error (args prefixed with `_` are exempt)
-  - `@typescript-eslint/no-explicit-any`: warn
-- **Note**: Next.js 16 dropped the `next lint` CLI command; the `lint` script uses `eslint` directly.
-
-## Important Notes
-- `next lint` does **not** exist in Next.js 16 — use `npm run lint` instead.
-- Path alias `@/` maps to the project root (configured in `tsconfig.json`).
-- The `eslint-config-next` version (14.x) is intentionally pinned below the Next.js version.
-- `app/page_old.tsx` is a legacy file and may have known lint warnings.
+## Notes
+- `next lint` does not exist in Next.js 16 — use `npm run lint` instead.
+- Path alias `@/` maps to the project root.
+- `app/page_old.tsx` is a legacy file with known lint warnings.
