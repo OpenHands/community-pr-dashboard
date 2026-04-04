@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { config } from './config';
 import { cache } from './cache';
-import { getOrgMembersGraphQL, getOrgMembersREST } from './github';
+import { getOrgMembersGraphQL, getOrgMembersREST, getRepoMaintainersREST } from './github';
 import { EmployeeOverrides } from './types';
 
 function loadEmployeeOverrides(): EmployeeOverrides {
@@ -54,6 +54,19 @@ export async function buildEmployeesSet(): Promise<Set<string>> {
   });
 }
 
+export async function buildRepoMaintainersSet(owner: string, repo: string): Promise<Set<string>> {
+  const cacheKey = `maintainers:${owner}/${repo}`;
+
+  return cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
+    try {
+      return new Set(await getRepoMaintainersREST(owner, repo));
+    } catch (error) {
+      console.error(`Failed to fetch maintainers for ${owner}/${repo}:`, error);
+      return new Set<string>();
+    }
+  });
+}
+
 export function isEmployee(login: string, employeesSet: Set<string>): boolean {
   return employeesSet.has(login);
 }
@@ -76,10 +89,18 @@ export function isCommunityPR(authorLogin: string, employeesSet: Set<string>, au
 
 export type AuthorType = 'employee' | 'maintainer' | 'community' | 'bot';
 
-export function getAuthorType(authorLogin: string, employeesSet: Set<string>, authorAssociation?: string): AuthorType {
+export function getAuthorType(
+  authorLogin: string,
+  employeesSet: Set<string>,
+  authorAssociation?: string,
+  maintainersSet: Set<string> = new Set()
+): AuthorType {
   // Check for bots first (including Dependabot)
   const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
   if (isBot) return 'bot';
+
+  // Prefer explicit repo maintainer membership so employee-maintainers show as maintainers.
+  if (maintainersSet.has(authorLogin)) return 'maintainer';
   
   // Check for employees (org members)
   const isEmployeeUser = isEmployee(authorLogin, employeesSet);

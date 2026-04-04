@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 import { cache } from '@/lib/cache';
-import { buildEmployeesSet } from '@/lib/employees';
+import { buildEmployeesSet, buildRepoMaintainersSet } from '@/lib/employees';
 import { RateLimitError, getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from '@/lib/github';
 import { transformPR, computeDashboardData, computeCommunityReviewerStats, computeOrgMemberReviewerStats, computeBotReviewerStats } from '@/lib/compute';
 import { PR } from '@/lib/types';
@@ -77,11 +77,12 @@ export async function GET(request: NextRequest) {
               getOpenPRsGraphQL(owner, repo),
               getRecentlyMergedPRsWithReviews(owner, repo, 30),
               getAllPRReviewStats(owner, repo, 30, employeesSet),
+              buildRepoMaintainersSet(owner, repo),
             ])
-              .then(([rawPrs, reviewStatsData, allReviewStats]): RepoData => ({
+              .then(([rawPrs, reviewStatsData, allReviewStats, maintainersSet]): RepoData => ({
                 prs: rawPrs.map(rawPr => {
                   rawPr.repository = { owner: { login: owner }, name: repo };
-                  return transformPR(rawPr, employeesSet);
+                  return transformPR(rawPr, employeesSet, maintainersSet);
                 }),
                 reviewStatsData,
                 communityReviews: allReviewStats.communityReviews,

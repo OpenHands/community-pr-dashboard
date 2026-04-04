@@ -25,3 +25,6 @@ npm run test:watch   # Run Jest in watch mode
 - `next lint` does not exist in Next.js 16 — use `npm run lint` instead.
 - Path alias `@/` maps to the project root.
 - `app/page_old.tsx` is a legacy file with known lint warnings.
+- The active working fork is `enyst/oh-community-pr-dashboard`; upstream is `OpenHands/community-pr-dashboard`.
+- PR author badges now prefer repo maintainer status over employee status by deriving maintainers from the GitHub collaborators API in `buildRepoMaintainersSet` / `getRepoMaintainersREST`.
+- `__tests__/api/dashboard.test.ts` may need a larger Node heap in this environment; `NODE_OPTIONS=--max-old-space-size=8192 npm test -- --runInBand __tests__/api/dashboard.test.ts` worked reliably.

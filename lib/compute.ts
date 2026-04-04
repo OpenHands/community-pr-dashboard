@@ -68,7 +68,7 @@ export function computeFlags(
   };
 }
 
-export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
+export function transformPR(rawPR: any, employeesSet: Set<string>, maintainersSet: Set<string> = new Set()): PR {
   const { firstHumanResponseAt, firstReviewAt } = computeFirsts(rawPR, employeesSet);
   const flags = computeFlags(rawPR, firstHumanResponseAt, firstReviewAt);
   
@@ -105,7 +105,7 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
     url: rawPR.url,
     authorLogin,
     authorAssociation,
-    authorType: getAuthorType(authorLogin, employeesSet, authorAssociation),
+    authorType: getAuthorType(authorLogin, employeesSet, authorAssociation, maintainersSet),
     isEmployeeAuthor: isEmployee(authorLogin, employeesSet),
     isDraft: rawPR.isDraft,
     createdAt: rawPR.createdAt,
