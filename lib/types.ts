@@ -18,7 +18,7 @@ export type PR = {
   url: string;
   authorLogin: string;
   authorAssociation: string;
-  authorType: 'employee' | 'maintainer' | 'community' | 'bot';
+  authorType: 'employee' | 'maintainer' | 'collaborator' | 'community' | 'bot';
   isEmployeeAuthor: boolean;
   isDraft: boolean;
   createdAt: string;
@@ -61,6 +61,11 @@ export type ReviewStatsResponse = {
 export type EmployeeOverrides = {
   allowlist: string[];
   denylist: string[];
+};
+
+export type RepoAuthorRoleSets = {
+  maintainers: Set<string>;
+  collaborators: Set<string>;
 };
 
 export type GitHubRateLimit = {

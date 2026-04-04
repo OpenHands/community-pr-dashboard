@@ -590,6 +590,7 @@ export default function Dashboard() {
                     { value: 'community', label: 'Community' },
                     { value: 'employee', label: 'Employee' },
                     { value: 'maintainer', label: 'Maintainer' },
+                    { value: 'collaborator', label: 'Collaborator' },
                     { value: 'bot', label: 'Bot' }
                   ]}
                   value={filters.authorType || 'all'}

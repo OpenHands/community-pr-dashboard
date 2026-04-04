@@ -2,21 +2,32 @@ import { getAuthorType } from '@/lib/employees';
 
 describe('getAuthorType', () => {
   const employeesSet = new Set(['employee-maintainer', 'employee-only']);
-  const maintainersSet = new Set(['employee-maintainer', 'external-maintainer']);
+  const repoAuthorRoleSets = {
+    maintainers: new Set(['employee-maintainer', 'external-maintainer']),
+    collaborators: new Set(['write-collaborator']),
+  };
 
   it('prefers maintainer over employee when a login is both', () => {
-    expect(getAuthorType('employee-maintainer', employeesSet, 'MEMBER', maintainersSet)).toBe('maintainer');
+    expect(getAuthorType('employee-maintainer', employeesSet, 'MEMBER', repoAuthorRoleSets)).toBe('maintainer');
   });
 
   it('keeps employees as employees when they are not repo maintainers', () => {
-    expect(getAuthorType('employee-only', employeesSet, 'MEMBER', maintainersSet)).toBe('employee');
+    expect(getAuthorType('employee-only', employeesSet, 'MEMBER', repoAuthorRoleSets)).toBe('employee');
   });
 
-  it('classifies external collaborators as maintainers', () => {
-    expect(getAuthorType('external-maintainer', employeesSet, 'COLLABORATOR', maintainersSet)).toBe('maintainer');
+  it('classifies external maintainers from repo permissions', () => {
+    expect(getAuthorType('external-maintainer', employeesSet, 'COLLABORATOR', repoAuthorRoleSets)).toBe('maintainer');
+  });
+
+  it('classifies write-only collaborators separately from maintainers', () => {
+    expect(getAuthorType('write-collaborator', employeesSet, 'COLLABORATOR', repoAuthorRoleSets)).toBe('collaborator');
+  });
+
+  it('uses MEMBER association as a fallback employee signal', () => {
+    expect(getAuthorType('member-only', new Set(), 'MEMBER', repoAuthorRoleSets)).toBe('employee');
   });
 
   it('classifies outside contributors as community', () => {
-    expect(getAuthorType('community-user', employeesSet, 'CONTRIBUTOR', maintainersSet)).toBe('community');
+    expect(getAuthorType('community-user', employeesSet, 'CONTRIBUTOR', repoAuthorRoleSets)).toBe('community');
   });
 });

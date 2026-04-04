@@ -40,7 +40,7 @@ jest.mock('@/lib/cache', () => ({
 
 jest.mock('@/lib/employees', () => ({
   buildEmployeesSet: jest.fn(),
-  buildRepoMaintainersSet: jest.fn(),
+  buildRepoAuthorRoleSets: jest.fn(),
   isCommunityPR: jest.fn(),
 }));
 
@@ -72,7 +72,7 @@ import {
   getRecentlyMergedPRsWithReviews,
   getAllPRReviewStats,
 } from '@/lib/github';
-import { buildEmployeesSet, buildRepoMaintainersSet } from '@/lib/employees';
+import { buildEmployeesSet, buildRepoAuthorRoleSets } from '@/lib/employees';
 import {
   transformPR,
   computeDashboardData,
@@ -85,7 +85,7 @@ const mockGetOpenPRs        = getOpenPRsGraphQL               as jest.MockedFunc
 const mockGetMergedPRs      = getRecentlyMergedPRsWithReviews as jest.MockedFunction<typeof getRecentlyMergedPRsWithReviews>;
 const mockGetAllReviewStats = getAllPRReviewStats             as jest.MockedFunction<typeof getAllPRReviewStats>;
 const mockBuildEmployeesSet = buildEmployeesSet               as jest.MockedFunction<typeof buildEmployeesSet>;
-const mockBuildRepoMaintainersSet = buildRepoMaintainersSet   as jest.MockedFunction<typeof buildRepoMaintainersSet>;
+const mockBuildRepoAuthorRoleSets = buildRepoAuthorRoleSets   as jest.MockedFunction<typeof buildRepoAuthorRoleSets>;
 const mockTransformPR             = transformPR               as jest.MockedFunction<typeof transformPR>;
 const mockComputeDashboardData    = computeDashboardData           as jest.MockedFunction<typeof computeDashboardData>;
 const mockComputeCommunityStats   = computeCommunityReviewerStats  as jest.MockedFunction<typeof computeCommunityReviewerStats>;
@@ -136,7 +136,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   mockBuildEmployeesSet.mockResolvedValue(new Set<string>());
-  mockBuildRepoMaintainersSet.mockResolvedValue(new Set<string>());
+  mockBuildRepoAuthorRoleSets.mockResolvedValue({ maintainers: new Set<string>(), collaborators: new Set<string>() });
   mockGetOpenPRs.mockResolvedValue([]);
   mockGetMergedPRs.mockResolvedValue(EMPTY_REVIEW_STATS);
   mockGetAllReviewStats.mockResolvedValue(EMPTY_ALL_REVIEW_STATS);

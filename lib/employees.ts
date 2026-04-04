@@ -2,8 +2,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { config } from './config';
 import { cache } from './cache';
-import { getOrgMembersGraphQL, getOrgMembersREST, getRepoMaintainersREST } from './github';
-import { EmployeeOverrides } from './types';
+import { getOrgMembersGraphQL, getOrgMembersREST, getRepoAuthorRoleSetsREST } from './github';
+import { EmployeeOverrides, RepoAuthorRoleSets } from './types';
 
 function loadEmployeeOverrides(): EmployeeOverrides {
   try {
@@ -54,15 +54,22 @@ export async function buildEmployeesSet(): Promise<Set<string>> {
   });
 }
 
-export async function buildRepoMaintainersSet(owner: string, repo: string): Promise<Set<string>> {
-  const cacheKey = `maintainers:${owner}/${repo}`;
+export async function buildRepoAuthorRoleSets(owner: string, repo: string): Promise<RepoAuthorRoleSets> {
+  const cacheKey = `repo-author-roles:${owner}/${repo}`;
 
   return cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
     try {
-      return new Set(await getRepoMaintainersREST(owner, repo));
+      const roleSets = await getRepoAuthorRoleSetsREST(owner, repo);
+      return {
+        maintainers: new Set(roleSets.maintainers),
+        collaborators: new Set(roleSets.collaborators),
+      };
     } catch (error) {
-      console.error(`Failed to fetch maintainers for ${owner}/${repo}:`, error);
-      return new Set<string>();
+      console.error(`Failed to fetch repo author roles for ${owner}/${repo}:`, error);
+      return {
+        maintainers: new Set<string>(),
+        collaborators: new Set<string>(),
+      };
     }
   });
 }
@@ -87,30 +94,33 @@ export function isCommunityPR(authorLogin: string, employeesSet: Set<string>, au
   return !isBot && !isEmployeeUser && !hasWriteAccess;
 }
 
-export type AuthorType = 'employee' | 'maintainer' | 'community' | 'bot';
+export type AuthorType = 'employee' | 'maintainer' | 'collaborator' | 'community' | 'bot';
+
+function isBotLogin(login: string): boolean {
+  return login.includes('[bot]') || login.endsWith('-bot') || login.endsWith('_bot') || login === 'dependabot';
+}
+
+function isOrgMemberAssociation(authorAssociation?: string): boolean {
+  return authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
+}
 
 export function getAuthorType(
   authorLogin: string,
   employeesSet: Set<string>,
   authorAssociation?: string,
-  maintainersSet: Set<string> = new Set()
+  repoAuthorRoleSets: RepoAuthorRoleSets = { maintainers: new Set(), collaborators: new Set() }
 ): AuthorType {
-  // Check for bots first (including Dependabot)
-  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
-  if (isBot) return 'bot';
+  if (isBotLogin(authorLogin)) return 'bot';
 
-  // Prefer explicit repo maintainer membership so employee-maintainers show as maintainers.
-  if (maintainersSet.has(authorLogin)) return 'maintainer';
-  
-  // Check for employees (org members)
-  const isEmployeeUser = isEmployee(authorLogin, employeesSet);
+  if (repoAuthorRoleSets.maintainers.has(authorLogin)) return 'maintainer';
+
+  const isEmployeeUser = isEmployee(authorLogin, employeesSet) || isOrgMemberAssociation(authorAssociation);
   if (isEmployeeUser) return 'employee';
-  
-  // Check for maintainers (users with write access)
-  const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
-  if (hasWriteAccess) return 'maintainer';
-  
-  // Everyone else is community
+
+  if (repoAuthorRoleSets.collaborators.has(authorLogin) || authorAssociation === 'COLLABORATOR') {
+    return 'collaborator';
+  }
+
   return 'community';
 }
 

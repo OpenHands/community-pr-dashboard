@@ -11,12 +11,12 @@ jest.mock('@/lib/employees', () => ({
     const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
     return !isBot && !isEmployeeUser && !hasWriteAccess;
   },
-  getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string) => {
+  getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string, repoAuthorRoleSets = { maintainers: new Set<string>(), collaborators: new Set<string>() }) => {
     const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
     if (isBot) return 'bot';
-    if (employeesSet.has(authorLogin)) return 'employee';
-    const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
-    if (hasWriteAccess) return 'maintainer';
+    if (repoAuthorRoleSets.maintainers.has(authorLogin)) return 'maintainer';
+    if (employeesSet.has(authorLogin) || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER') return 'employee';
+    if (repoAuthorRoleSets.collaborators.has(authorLogin) || authorAssociation === 'COLLABORATOR') return 'collaborator';
     return 'community';
   },
 }));

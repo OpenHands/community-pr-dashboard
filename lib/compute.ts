@@ -1,4 +1,4 @@
-import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats } from './types';
+import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats, RepoAuthorRoleSets } from './types';
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
 import { ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
@@ -68,7 +68,11 @@ export function computeFlags(
   };
 }
 
-export function transformPR(rawPR: any, employeesSet: Set<string>, maintainersSet: Set<string> = new Set()): PR {
+export function transformPR(
+  rawPR: any,
+  employeesSet: Set<string>,
+  repoAuthorRoleSets: RepoAuthorRoleSets = { maintainers: new Set(), collaborators: new Set() }
+): PR {
   const { firstHumanResponseAt, firstReviewAt } = computeFirsts(rawPR, employeesSet);
   const flags = computeFlags(rawPR, firstHumanResponseAt, firstReviewAt);
   
@@ -105,8 +109,8 @@ export function transformPR(rawPR: any, employeesSet: Set<string>, maintainersSe
     url: rawPR.url,
     authorLogin,
     authorAssociation,
-    authorType: getAuthorType(authorLogin, employeesSet, authorAssociation, maintainersSet),
-    isEmployeeAuthor: isEmployee(authorLogin, employeesSet),
+    authorType: getAuthorType(authorLogin, employeesSet, authorAssociation, repoAuthorRoleSets),
+    isEmployeeAuthor: isEmployee(authorLogin, employeesSet) || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER',
     isDraft: rawPR.isDraft,
     createdAt: rawPR.createdAt,
     updatedAt: rawPR.updatedAt,

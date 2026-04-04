@@ -26,5 +26,5 @@ npm run test:watch   # Run Jest in watch mode
 - Path alias `@/` maps to the project root.
 - `app/page_old.tsx` is a legacy file with known lint warnings.
 - The active working fork is `enyst/oh-community-pr-dashboard`; upstream is `OpenHands/community-pr-dashboard`.
-- PR author badges now prefer repo maintainer status over employee status by deriving maintainers from the GitHub collaborators API in `buildRepoMaintainersSet` / `getRepoMaintainersREST`.
+- PR author badges now distinguish repo maintainers (`maintain`/`admin`) from write-only collaborators by deriving repo author role sets from the GitHub collaborators API in `buildRepoAuthorRoleSets` / `getRepoAuthorRoleSetsREST`.
 - `__tests__/api/dashboard.test.ts` may need a larger Node heap in this environment; `NODE_OPTIONS=--max-old-space-size=8192 npm test -- --runInBand __tests__/api/dashboard.test.ts` worked reliably.
