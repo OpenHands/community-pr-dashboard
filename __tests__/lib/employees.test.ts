@@ -3,7 +3,7 @@ import { getAuthorType } from '@/lib/employees';
 describe('getAuthorType', () => {
   const employeesSet = new Set(['employee-maintainer', 'employee-only']);
   const repoAuthorRoleSets = {
-    maintainers: new Set(['employee-maintainer', 'external-maintainer']),
+    maintainers: new Set(['employee-maintainer', 'non-org-maintainer']),
     collaborators: new Set(['write-collaborator']),
   };
 
@@ -15,8 +15,8 @@ describe('getAuthorType', () => {
     expect(getAuthorType('employee-only', employeesSet, 'MEMBER', repoAuthorRoleSets)).toBe('employee');
   });
 
-  it('classifies external maintainers from repo permissions', () => {
-    expect(getAuthorType('external-maintainer', employeesSet, 'COLLABORATOR', repoAuthorRoleSets)).toBe('maintainer');
+  it('classifies non-org maintainers from repo permissions', () => {
+    expect(getAuthorType('non-org-maintainer', employeesSet, 'COLLABORATOR', repoAuthorRoleSets)).toBe('maintainer');
   });
 
   it('classifies write-only collaborators separately from maintainers', () => {
