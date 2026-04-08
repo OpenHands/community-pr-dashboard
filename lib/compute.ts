@@ -2,6 +2,7 @@ import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats
 import { config } from './config';
 import { isEmployee, isCommunityPR, getAuthorType } from './employees';
 import { ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
+import { isBotLogin } from './bots';
 
 // Minimum number of data points required for a meaningful median
 const MIN_REVIEWS_FOR_MEDIAN = 3;
@@ -24,21 +25,18 @@ export function computeFirsts(pr: any, employeesSet: Set<string>): {
   firstReviewAt?: string;
 } {
   const reviews = pr.reviews?.nodes || [];
-  
-  // Sort reviews by submission time
-  const sortedReviews = reviews
-    .filter((review: any) => review.submittedAt)
+
+  const sortedHumanReviews = reviews
+    .filter((review: any) => review.submittedAt && review.author?.login && !isBotLogin(review.author.login))
     .sort((a: any, b: any) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime());
-  
-  // First review by anyone
-  const firstReviewAt = sortedReviews.length > 0 ? sortedReviews[0].submittedAt : undefined;
-  
-  // First review by an employee (human response)
-  const firstEmployeeReview = sortedReviews.find((review: any) => 
-    review.author?.login && isEmployee(review.author.login, employeesSet)
+
+  const firstReviewAt = sortedHumanReviews[0]?.submittedAt;
+
+  const firstEmployeeReview = sortedHumanReviews.find((review: any) =>
+    isEmployee(review.author.login, employeesSet)
   );
   const firstHumanResponseAt = firstEmployeeReview?.submittedAt;
-  
+
   return { firstHumanResponseAt, firstReviewAt };
 }
 
@@ -76,7 +74,8 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
   const requestedReviewers = {
     users: rawPR.reviewRequests?.nodes
       ?.filter((req: any) => req.requestedReviewer?.__typename === 'User')
-      ?.map((req: any) => req.requestedReviewer.login) || [],
+      ?.map((req: any) => req.requestedReviewer.login)
+      ?.filter((login: string) => !isBotLogin(login)) || [],
     teams: rawPR.reviewRequests?.nodes
       ?.filter((req: any) => req.requestedReviewer?.__typename === 'Team')
       ?.map((req: any) => req.requestedReviewer.slug) || [],
@@ -185,6 +184,10 @@ export function computeReviewerStats(
   
   // From completed reviews (reviewers with write access)
   for (const review of completedReviews) {
+    if (isBotLogin(review.reviewerLogin)) {
+      continue;
+    }
+
     const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(review.authorAssociation);
     if (hasWriteAccess) {
       maintainersSet.add(review.reviewerLogin);
@@ -195,6 +198,10 @@ export function computeReviewerStats(
   const pendingCounts: Record<string, number> = {};
   allPrs.forEach(pr => {
     pr.requestedReviewers.users.forEach(reviewer => {
+      if (isBotLogin(reviewer)) {
+        return;
+      }
+
       pendingCounts[reviewer] = (pendingCounts[reviewer] || 0) + 1;
     });
   });
@@ -209,6 +216,10 @@ export function computeReviewerStats(
   
   for (const review of completedReviews) {
     const login = review.reviewerLogin;
+    if (isBotLogin(login)) {
+      continue;
+    }
+
     if (!reviewerStats[login]) {
       reviewerStats[login] = {
         completedTotal: 0,
@@ -238,6 +249,10 @@ export function computeReviewerStats(
   const requestStats: Record<string, number> = {};
   for (const request of reviewRequests) {
     const login = request.reviewerLogin;
+    if (isBotLogin(login)) {
+      continue;
+    }
+
     requestStats[login] = (requestStats[login] || 0) + 1;
   }
   
@@ -248,9 +263,9 @@ export function computeReviewerStats(
     ...Object.keys(requestStats),
   ]);
   
-  // Filter to only include employees or maintainers
-  const filteredLogins = Array.from(allReviewerLogins).filter(login => 
-    isEmployee(login, employeesSet) || maintainersSet.has(login)
+  // Filter to only include human employees or maintainers
+  const filteredLogins = Array.from(allReviewerLogins).filter(login =>
+    !isBotLogin(login) && (isEmployee(login, employeesSet) || maintainersSet.has(login))
   );
   
   // Build reviewer objects

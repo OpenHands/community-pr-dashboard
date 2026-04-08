@@ -1,4 +1,4 @@
-import { getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, RateLimitError, GitHubAPIError } from '@/lib/github';
+import { getOpenPRsGraphQL, getRecentlyMergedPRsWithReviews, getAllPRReviewStats, RateLimitError, GitHubAPIError } from '@/lib/github';
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -671,7 +671,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     secondRequestDate.setDate(secondRequestDate.getDate() - 5);
     const reviewDate = new Date();
     reviewDate.setDate(reviewDate.getDate() - 3);
-    
+
     const mockGraphQLData = {
       data: {
         repository: {
@@ -723,7 +723,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     // Should use the first request time
     expect(result.reviewRequests).toHaveLength(1);
     expect(result.reviewRequests[0].requestedAt).toBe(firstRequestDate.toISOString());
-    
+
     // The review should be matched with the first request time
     expect(result.completedReviews).toHaveLength(1);
     expect(result.completedReviews[0].requestedAt).toBe(firstRequestDate.toISOString());
@@ -734,7 +734,7 @@ describe('getRecentlyMergedPRsWithReviews', () => {
     reviewDate.setDate(reviewDate.getDate() - 10);
     const requestDate = new Date();
     requestDate.setDate(requestDate.getDate() - 5); // Request came AFTER the review
-    
+
     const mockGraphQLData = {
       data: {
         repository: {
@@ -780,10 +780,153 @@ describe('getRecentlyMergedPRsWithReviews', () => {
 
     // Should have 1 review request
     expect(result.reviewRequests).toHaveLength(1);
-    
+
     // The review should NOT have requestedAt set because it came before the request
     expect(result.completedReviews).toHaveLength(1);
     expect(result.completedReviews[0].requestedAt).toBeNull();
+  });
+});
+
+describe('bot reviewer filtering', () => {
+  const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should ignore bot review requests and completed bot reviews in merged review stats', async () => {
+    const requestedDate = new Date();
+    requestedDate.setDate(requestedDate.getDate() - 5);
+    const submittedDate = new Date();
+    submittedDate.setDate(submittedDate.getDate() - 4);
+
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 1,
+                url: 'https://github.com/test/repo/pull/1',
+                mergedAt: new Date().toISOString(),
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'ReviewRequestedEvent',
+                      createdAt: requestedDate.toISOString(),
+                      requestedReviewer: { __typename: 'User', login: 'all-hands-bot' },
+                    },
+                    {
+                      __typename: 'ReviewRequestedEvent',
+                      createdAt: requestedDate.toISOString(),
+                      requestedReviewer: { __typename: 'User', login: 'reviewer1' },
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'all-hands-bot' },
+                      authorAssociation: 'MEMBER',
+                      submittedAt: submittedDate.toISOString(),
+                      state: 'COMMENTED',
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
+                      submittedAt: submittedDate.toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getRecentlyMergedPRsWithReviews('test', 'repo', 30);
+
+    expect(result.reviewRequests).toEqual([
+      {
+        reviewerLogin: 'reviewer1',
+        requestedAt: requestedDate.toISOString(),
+        prNumber: 1,
+      },
+    ]);
+    expect(result.completedReviews).toHaveLength(1);
+    expect(result.completedReviews[0].reviewerLogin).toBe('reviewer1');
+  });
+
+  it('should ignore bot reviewers when building categorized review stats', async () => {
+    const readyDate = new Date();
+    readyDate.setDate(readyDate.getDate() - 5);
+    const botReviewDate = new Date();
+    botReviewDate.setDate(botReviewDate.getDate() - 4);
+    const humanReviewDate = new Date();
+    humanReviewDate.setDate(humanReviewDate.getDate() - 3);
+
+    const mockGraphQLData = {
+      data: {
+        repository: {
+          pullRequests: {
+            pageInfo: { hasNextPage: false, endCursor: null },
+            nodes: [
+              {
+                number: 12,
+                url: 'https://github.com/test/repo/pull/12',
+                createdAt: readyDate.toISOString(),
+                mergedAt: new Date().toISOString(),
+                isDraft: false,
+                author: { login: 'community-user' },
+                authorAssociation: 'CONTRIBUTOR',
+                timelineItems: {
+                  nodes: [
+                    {
+                      __typename: 'ReadyForReviewEvent',
+                      createdAt: readyDate.toISOString(),
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'all-hands-bot' },
+                      authorAssociation: 'MEMBER',
+                      submittedAt: botReviewDate.toISOString(),
+                      state: 'COMMENTED',
+                    },
+                    {
+                      __typename: 'PullRequestReview',
+                      author: { login: 'reviewer1' },
+                      authorAssociation: 'MEMBER',
+                      submittedAt: humanReviewDate.toISOString(),
+                      state: 'APPROVED',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockGraphQLData,
+      headers: new Headers(),
+    } as Response);
+
+    const result = await getAllPRReviewStats('test', 'repo', 30, new Set(['reviewer1']));
+
+    expect(result.communityReviews).toHaveLength(1);
+    expect(result.communityReviews[0].reviewerLogin).toBe('reviewer1');
+    expect(result.orgMemberReviews).toHaveLength(0);
+    expect(result.botReviews).toHaveLength(0);
   });
 });
 

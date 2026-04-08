@@ -4,6 +4,7 @@ import { config } from './config';
 import { cache } from './cache';
 import { getOrgMembersGraphQL, getOrgMembersREST } from './github';
 import { EmployeeOverrides } from './types';
+import { isBotLogin } from './bots';
 
 function loadEmployeeOverrides(): EmployeeOverrides {
   try {
@@ -59,9 +60,8 @@ export function isEmployee(login: string, employeesSet: Set<string>): boolean {
 }
 
 export function isCommunityPR(authorLogin: string, employeesSet: Set<string>, authorAssociation?: string): boolean {
-  // Exclude bots (including Dependabot - note: dependabot shows as "dependabot", not "dependabot[bot]")
-  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
-  
+  const isBot = isBotLogin(authorLogin);
+
   // Exclude employees
   const isEmployeeUser = isEmployee(authorLogin, employeesSet);
   
@@ -77,9 +77,7 @@ export function isCommunityPR(authorLogin: string, employeesSet: Set<string>, au
 export type AuthorType = 'employee' | 'maintainer' | 'community' | 'bot';
 
 export function getAuthorType(authorLogin: string, employeesSet: Set<string>, authorAssociation?: string): AuthorType {
-  // Check for bots first (including Dependabot)
-  const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
-  if (isBot) return 'bot';
+  if (isBotLogin(authorLogin)) return 'bot';
   
   // Check for employees (org members)
   const isEmployeeUser = isEmployee(authorLogin, employeesSet);
