@@ -205,6 +205,27 @@ describe('GET /api/dashboard — parallel fetch', () => {
   });
 });
 
+// ─── bot PR visibility ───────────────────────────────────────────────────────
+
+describe('GET /api/dashboard — bot PR visibility', () => {
+  it('excludes bot-authored PRs from the returned table rows and totals', async () => {
+    mockGetOpenPRs.mockResolvedValueOnce([{ number: 1 }, { number: 2 }]);
+    mockTransformPR
+      .mockReturnValueOnce(makeTransformedPR({ number: 1, authorLogin: 'community-user', authorType: 'community' }) as any)
+      .mockReturnValueOnce(makeTransformedPR({ number: 2, authorLogin: 'dependabot', authorType: 'bot' }) as any);
+
+    const res = await GET(makeRequest({ repos: 'owner/repo' }));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.prs).toHaveLength(1);
+    expect(body.prs[0].number).toBe(1);
+    expect(body.prs[0].authorType).toBe('community');
+    expect(body.totalPrs).toBe(1);
+  });
+});
+
+
 // ─── RateLimitError → 429 ────────────────────────────────────────────────────
 
 describe('GET /api/dashboard — RateLimitError handling', () => {

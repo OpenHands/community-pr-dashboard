@@ -26,4 +26,4 @@ npm run test:watch   # Run Jest in watch mode
 - Path alias `@/` maps to the project root.
 - `app/page_old.tsx` is a legacy file with known lint warnings.
 - Production HTML includes the deployed git SHA in a comment near the top of the document, which is useful for checking whether Vercel is serving the latest commit.
-- Bot accounts should be filtered out of reviewer-facing metrics and requested-reviewer lists; author bot classification alone is not enough to remove bot reviewers from the dashboard.
+- Bot accounts should be filtered out of reviewer-facing metrics, requested-reviewer lists, and the bottom PR table; author bot classification alone is not enough to remove bot-related rows from the dashboard.

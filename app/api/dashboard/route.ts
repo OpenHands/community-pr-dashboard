@@ -114,10 +114,12 @@ export async function GET(request: NextRequest) {
         allBotReviews.push(...rd.botReviews);
       }
 
-      // Apply filters
-      let filteredPrs = allPrs;
+      const visiblePrs = allPrs.filter(pr => pr.authorType !== 'bot');
 
-      // Don't filter to community PRs by default - show all PRs
+      // Apply filters
+      let filteredPrs = visiblePrs;
+
+      // Don't filter to community PRs by default - show all non-bot PRs
       // Community PR filtering is handled in the compute functions
 
       // Apply label filters if provided
@@ -280,7 +282,7 @@ export async function GET(request: NextRequest) {
       return {
         ...dashboardData,
         prs: filteredPrs,
-        totalPrs: allPrs.length,
+        totalPrs: visiblePrs.length,
         employeeCount: employeesSet.size,
       };
     });

@@ -589,8 +589,7 @@ export default function Dashboard() {
                     { value: 'all', label: 'All Authors' },
                     { value: 'community', label: 'Community' },
                     { value: 'employee', label: 'Employee' },
-                    { value: 'maintainer', label: 'Maintainer' },
-                    { value: 'bot', label: 'Bot' }
+                    { value: 'maintainer', label: 'Maintainer' }
                   ]}
                   value={filters.authorType || 'all'}
                   onChange={(value) => {
