@@ -1,6 +1,6 @@
 import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats, RepoAuthorRoleSets } from './types';
 import { config } from './config';
-import { isEmployee, getAuthorType } from './employees';
+import { isEmployee, getAuthorType, isOrgMemberAssociation } from './employees';
 import { ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
 
 // Minimum number of data points required for a meaningful median
@@ -110,7 +110,7 @@ export function transformPR(
     authorLogin,
     authorAssociation,
     authorType: getAuthorType(authorLogin, employeesSet, authorAssociation, repoAuthorRoleSets),
-    isEmployeeAuthor: isEmployee(authorLogin, employeesSet) || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER',
+    isEmployeeAuthor: isEmployee(authorLogin, employeesSet) || isOrgMemberAssociation(authorAssociation),
     isDraft: rawPR.isDraft,
     createdAt: rawPR.createdAt,
     updatedAt: rawPR.updatedAt,

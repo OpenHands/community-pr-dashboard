@@ -5,12 +5,6 @@ import { ReviewStatsData } from '@/lib/github';
 // Mock the employees module
 jest.mock('@/lib/employees', () => ({
   isEmployee: (login: string, employeesSet: Set<string>) => employeesSet.has(login),
-  isCommunityPR: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string) => {
-    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
-    const isEmployeeUser = employeesSet.has(authorLogin);
-    const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
-    return !isBot && !isEmployeeUser && !hasWriteAccess;
-  },
   getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string, repoAuthorRoleSets = { maintainers: new Set<string>(), collaborators: new Set<string>() }) => {
     const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
     if (isBot) return 'bot';

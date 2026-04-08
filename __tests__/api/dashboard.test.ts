@@ -41,7 +41,6 @@ jest.mock('@/lib/cache', () => ({
 jest.mock('@/lib/employees', () => ({
   buildEmployeesSet: jest.fn(),
   buildRepoAuthorRoleSets: jest.fn(),
-  isCommunityPR: jest.fn(),
 }));
 
 // Keep the real RateLimitError class; replace network functions with mocks.

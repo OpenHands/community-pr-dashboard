@@ -16,6 +16,14 @@ jest.mock('@/lib/config', () => ({
 }));
 
 jest.mock('@/lib/github', () => ({
+  RateLimitError: class RateLimitError extends Error {
+    constructor(resetAt: string) {
+      super('GitHub API rate limit exceeded');
+      this.name = 'RateLimitError';
+      this.resetAt = resetAt;
+    }
+    resetAt: string;
+  },
   getOrgMembersGraphQL: jest.fn(),
   getOrgMembersREST: jest.fn(),
   getRepoCollaboratorsREST: jest.fn(),
@@ -75,4 +83,14 @@ describe('override-backed author role builders', () => {
     expect(roleSets.maintainers).toEqual(new Set(['enyst']));
     expect(roleSets.collaborators).toEqual(new Set(['rbren', 'write-user']));
   });
+
+  it('falls back to explicit maintainers when collaborator lookup fails', async () => {
+    mockGetRepoCollaboratorsREST.mockRejectedValueOnce(new Error('collaborators unavailable'));
+
+    const roleSets = await buildRepoAuthorRoleSets('OpenHands', 'OpenHands');
+
+    expect(roleSets.maintainers).toEqual(new Set(['enyst']));
+    expect(roleSets.collaborators).toEqual(new Set());
+  });
+
 });

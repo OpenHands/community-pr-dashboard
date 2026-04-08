@@ -79,44 +79,25 @@ export async function buildRepoAuthorRoleSets(owner: string, repo: string): Prom
   const cacheKey = `repo-author-roles:${owner}/${repo}`;
 
   return cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
-    try {
-      const [maintainersSet, collaborators] = await Promise.all([
-        buildMaintainersSet(),
-        getRepoCollaboratorsREST(owner, repo),
-      ]);
+    const maintainersSet = await buildMaintainersSet();
+    let collaborators: string[] = [];
 
-      return {
-        maintainers: new Set(maintainersSet),
-        collaborators: new Set(collaborators.filter(login => !maintainersSet.has(login))),
-      };
+    try {
+      collaborators = await getRepoCollaboratorsREST(owner, repo);
     } catch (error) {
       if (error instanceof RateLimitError) throw error;
-      console.error(`Failed to fetch repo author roles for ${owner}/${repo}:`, error);
-      return {
-        maintainers: new Set<string>(),
-        collaborators: new Set<string>(),
-      };
+      console.error(`Failed to fetch repo collaborators for ${owner}/${repo}:`, error);
     }
+
+    return {
+      maintainers: new Set(maintainersSet),
+      collaborators: new Set(collaborators.filter(login => !maintainersSet.has(login))),
+    };
   });
 }
 
 export function isEmployee(login: string, employeesSet: Set<string>): boolean {
   return employeesSet.has(login);
-}
-
-export function isCommunityPR(authorLogin: string, employeesSet: Set<string>, authorAssociation?: string): boolean {
-  const isBot = isBotLogin(authorLogin);
-  
-  // Exclude employees
-  const isEmployeeUser = isEmployee(authorLogin, employeesSet);
-  
-  // Exclude repository maintainers/collaborators (these have write access and are not community)
-  // COLLABORATOR = has write access, MEMBER = org member, OWNER = repo owner
-  const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
-  
-  // Community PRs are from external contributors without write access
-  // This includes: CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE
-  return !isBot && !isEmployeeUser && !hasWriteAccess;
 }
 
 export type AuthorType = 'employee' | 'maintainer' | 'collaborator' | 'community' | 'bot';
@@ -125,7 +106,7 @@ function isBotLogin(login: string): boolean {
   return login.includes('[bot]') || login.endsWith('-bot') || login.endsWith('_bot') || login === 'dependabot';
 }
 
-function isOrgMemberAssociation(authorAssociation?: string): boolean {
+export function isOrgMemberAssociation(authorAssociation?: string): boolean {
   return authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
 }
 
