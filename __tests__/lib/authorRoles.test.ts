@@ -22,38 +22,57 @@ jest.mock('@/lib/github', () => ({
 }));
 
 import { readFileSync } from 'fs';
-import { getRepoCollaboratorsREST } from '@/lib/github';
-import { buildMaintainersSet, buildRepoAuthorRoleSets } from '@/lib/employees';
+import { getOrgMembersGraphQL, getRepoCollaboratorsREST } from '@/lib/github';
+import { buildEmployeesSet, buildMaintainersSet, buildRepoAuthorRoleSets } from '@/lib/employees';
 
 const mockReadFileSync = readFileSync as jest.MockedFunction<typeof readFileSync>;
+const mockGetOrgMembersGraphQL = getOrgMembersGraphQL as jest.MockedFunction<typeof getOrgMembersGraphQL>;
 const mockGetRepoCollaboratorsREST = getRepoCollaboratorsREST as jest.MockedFunction<typeof getRepoCollaboratorsREST>;
 
 beforeEach(() => {
   jest.clearAllMocks();
+
   mockReadFileSync.mockImplementation((path: Parameters<typeof readFileSync>[0]) => {
-    if (String(path).endsWith('maintainers.json')) {
+    const pathString = String(path);
+
+    if (pathString.endsWith('employees.json')) {
       return JSON.stringify({
-        allowlist: ['enyst', 'rbren'],
-        denylist: [],
+        allowlist: ['added-employee'],
+        denylist: ['removed-employee'],
       }) as ReturnType<typeof readFileSync>;
     }
 
-    throw new Error(`Unexpected file read: ${String(path)}`);
+    if (pathString.endsWith('maintainers.json')) {
+      return JSON.stringify({
+        allowlist: ['enyst', 'rbren'],
+        denylist: ['rbren'],
+      }) as ReturnType<typeof readFileSync>;
+    }
+
+    throw new Error(`Unexpected file read: ${pathString}`);
   });
-  mockGetRepoCollaboratorsREST.mockResolvedValue(['enyst', 'write-user']);
+
+  mockGetOrgMembersGraphQL.mockResolvedValue(['org-employee', 'removed-employee']);
+  mockGetRepoCollaboratorsREST.mockResolvedValue(['enyst', 'rbren', 'write-user']);
 });
 
-describe('maintainer role sources', () => {
-  it('builds the maintainer set from config/maintainers.json', async () => {
+describe('override-backed author role builders', () => {
+  it('applies employee allowlist and denylist overrides', async () => {
+    const employees = await buildEmployeesSet();
+
+    expect(employees).toEqual(new Set(['org-employee', 'added-employee']));
+  });
+
+  it('applies maintainer allowlist and denylist overrides', async () => {
     const maintainers = await buildMaintainersSet();
 
-    expect(maintainers).toEqual(new Set(['enyst', 'rbren']));
+    expect(maintainers).toEqual(new Set(['enyst']));
   });
 
   it('keeps explicit maintainers out of the collaborator bucket', async () => {
     const roleSets = await buildRepoAuthorRoleSets('OpenHands', 'OpenHands');
 
-    expect(roleSets.maintainers).toEqual(new Set(['enyst', 'rbren']));
-    expect(roleSets.collaborators).toEqual(new Set(['write-user']));
+    expect(roleSets.maintainers).toEqual(new Set(['enyst']));
+    expect(roleSets.collaborators).toEqual(new Set(['rbren', 'write-user']));
   });
 });
