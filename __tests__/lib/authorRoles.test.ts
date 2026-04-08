@@ -93,4 +93,33 @@ describe('override-backed author role builders', () => {
     expect(roleSets.collaborators).toEqual(new Set());
   });
 
+  it('normalizes malformed override file shapes', async () => {
+    mockReadFileSync.mockImplementation((path: Parameters<typeof readFileSync>[0]) => {
+      const pathString = String(path);
+
+      if (pathString.endsWith('employees.json')) {
+        return JSON.stringify({
+          allowlist: 'not-an-array',
+          denylist: [null, 'removed-employee', 123],
+        }) as ReturnType<typeof readFileSync>;
+      }
+
+      if (pathString.endsWith('maintainers.json')) {
+        return JSON.stringify({
+          allowlist: ['enyst', false],
+          denylist: 'not-an-array',
+        }) as ReturnType<typeof readFileSync>;
+      }
+
+      throw new Error(`Unexpected file read: ${pathString}`);
+    });
+
+    const employees = await buildEmployeesSet();
+    const maintainers = await buildMaintainersSet();
+
+    expect(employees).toEqual(new Set(['org-employee']));
+    expect(maintainers).toEqual(new Set(['enyst']));
+  });
+
+
 });

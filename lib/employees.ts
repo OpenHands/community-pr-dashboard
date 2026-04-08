@@ -5,11 +5,24 @@ import { cache } from './cache';
 import { RateLimitError, getOrgMembersGraphQL, getOrgMembersREST, getRepoCollaboratorsREST } from './github';
 import { EmployeeOverrides, LoginOverrides, MaintainerOverrides, RepoAuthorRoleSets } from './types';
 
+function normalizeOverrides(data: unknown): LoginOverrides {
+  if (!data || typeof data !== 'object') {
+    return { allowlist: [], denylist: [] };
+  }
+
+  const record = data as Partial<LoginOverrides>;
+
+  return {
+    allowlist: Array.isArray(record.allowlist) ? record.allowlist.filter((value): value is string => typeof value === 'string') : [],
+    denylist: Array.isArray(record.denylist) ? record.denylist.filter((value): value is string => typeof value === 'string') : [],
+  };
+}
+
 function loadOverrides(fileName: string): LoginOverrides {
   try {
     const filePath = join(process.cwd(), 'config', fileName);
     const fileContent = readFileSync(filePath, 'utf-8');
-    return JSON.parse(fileContent);
+    return normalizeOverrides(JSON.parse(fileContent));
   } catch {
     return { allowlist: [], denylist: [] };
   }
