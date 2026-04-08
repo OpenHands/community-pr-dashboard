@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { config } from './config';
 import { cache } from './cache';
-import { getOrgMembersGraphQL, getOrgMembersREST, getRepoCollaboratorsREST } from './github';
+import { RateLimitError, getOrgMembersGraphQL, getOrgMembersREST, getRepoCollaboratorsREST } from './github';
 import { EmployeeOverrides, LoginOverrides, MaintainerOverrides, RepoAuthorRoleSets } from './types';
 
 function loadOverrides(fileName: string): LoginOverrides {
@@ -90,6 +90,7 @@ export async function buildRepoAuthorRoleSets(owner: string, repo: string): Prom
         collaborators: new Set(collaborators.filter(login => !maintainersSet.has(login))),
       };
     } catch (error) {
+      if (error instanceof RateLimitError) throw error;
       console.error(`Failed to fetch repo author roles for ${owner}/${repo}:`, error);
       return {
         maintainers: new Set<string>(),
