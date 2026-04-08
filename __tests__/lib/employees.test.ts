@@ -23,6 +23,10 @@ describe('getAuthorType', () => {
     expect(getAuthorType('write-collaborator', employeesSet, 'COLLABORATOR', repoAuthorRoleSets)).toBe('collaborator');
   });
 
+  it('classifies bot accounts as bot', () => {
+    expect(getAuthorType('dependabot[bot]', employeesSet, 'NONE', repoAuthorRoleSets)).toBe('bot');
+  });
+
   it('uses MEMBER association as a fallback employee signal', () => {
     expect(getAuthorType('member-only', new Set(), 'MEMBER', repoAuthorRoleSets)).toBe('employee');
   });

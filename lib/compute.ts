@@ -124,7 +124,7 @@ export function transformPR(
   };
 }
 
-export function computeKpis(allPrs: PR[], _employeesSet: Set<string>): KPIs {
+export function computeKpis(allPrs: PR[]): KPIs {
   const communityPrs = allPrs.filter(pr => pr.authorType === 'community');
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
