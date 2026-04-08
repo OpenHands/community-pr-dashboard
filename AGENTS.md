@@ -25,3 +25,5 @@ npm run test:watch   # Run Jest in watch mode
 - `next lint` does not exist in Next.js 16 — use `npm run lint` instead.
 - Path alias `@/` maps to the project root.
 - `app/page_old.tsx` is a legacy file with known lint warnings.
+- Production HTML includes the deployed git SHA in a comment near the top of the document, which is useful for checking whether Vercel is serving the latest commit.
+- Bot accounts should be filtered out of reviewer-facing metrics and requested-reviewer lists; author bot classification alone is not enough to remove bot reviewers from the dashboard.

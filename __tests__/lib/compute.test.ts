@@ -1,4 +1,4 @@
-import { computeReviewerStats, computeDashboardData } from '@/lib/compute';
+import { computeFirsts, computeReviewerStats, computeDashboardData } from '@/lib/compute';
 import { PR } from '@/lib/types';
 import { ReviewStatsData } from '@/lib/github';
 
@@ -6,13 +6,13 @@ import { ReviewStatsData } from '@/lib/github';
 jest.mock('@/lib/employees', () => ({
   isEmployee: (login: string, employeesSet: Set<string>) => employeesSet.has(login),
   isCommunityPR: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string) => {
-    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
     const isEmployeeUser = employeesSet.has(authorLogin);
     const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
     return !isBot && !isEmployeeUser && !hasWriteAccess;
   },
   getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string) => {
-    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin === 'dependabot';
+    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
     if (isBot) return 'bot';
     if (employeesSet.has(authorLogin)) return 'employee';
     const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
@@ -27,6 +27,34 @@ jest.mock('@/lib/config', () => ({
     sla: { firstResponseHours: 72, firstReviewHours: 168 },
   },
 }));
+
+describe('computeFirsts', () => {
+  it('should ignore bot reviews when finding first review timestamps', () => {
+    const employeesSet = new Set(['employee1']);
+    const pr = {
+      reviews: {
+        nodes: [
+          {
+            author: { login: 'all-hands-bot' },
+            submittedAt: '2024-01-01T01:00:00Z',
+            state: 'COMMENTED',
+          },
+          {
+            author: { login: 'employee1' },
+            submittedAt: '2024-01-01T02:00:00Z',
+            state: 'APPROVED',
+          },
+        ],
+      },
+    };
+
+    expect(computeFirsts(pr, employeesSet)).toEqual({
+      firstHumanResponseAt: '2024-01-01T02:00:00Z',
+      firstReviewAt: '2024-01-01T02:00:00Z',
+    });
+  });
+});
+
 
 describe('computeReviewerStats', () => {
   const employeesSet = new Set(['employee1', 'employee2', 'employee3']);
@@ -220,6 +248,30 @@ describe('computeReviewerStats', () => {
     // inactive-user should not be in results since they have no actual review activity
     // and are not an employee or maintainer
     expect(result.find(r => r.name === 'inactive-user')).toBeUndefined();
+  });
+
+  it('should exclude bot reviewers from reviewer stats', () => {
+    const prs: PR[] = [
+      createMockPR({ requestedReviewers: { users: ['employee1', 'all-hands-bot'], teams: [] } }),
+    ];
+    const reviewStatsData: ReviewStatsData = {
+      completedReviews: [
+        { reviewerLogin: 'employee1', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T10:00:00Z', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1, prUrl: 'url1' },
+        { reviewerLogin: 'all-hands-bot', authorAssociation: 'MEMBER', submittedAt: '2024-01-15T11:00:00Z', requestedAt: '2024-01-14T11:00:00Z', prNumber: 1, prUrl: 'url1' },
+      ],
+      reviewRequests: [
+        { reviewerLogin: 'employee1', requestedAt: '2024-01-14T10:00:00Z', prNumber: 1 },
+        { reviewerLogin: 'all-hands-bot', requestedAt: '2024-01-14T11:00:00Z', prNumber: 1 },
+      ],
+    };
+
+    const result = computeReviewerStats(prs, reviewStatsData, employeesSet);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('employee1');
+    expect(result[0].pendingCount).toBe(1);
+    expect(result[0].completedTotal).toBe(1);
+    expect(result.find(r => r.name === 'all-hands-bot')).toBeUndefined();
   });
 
   it('should sort reviewers by total reviews completed (descending)', () => {
