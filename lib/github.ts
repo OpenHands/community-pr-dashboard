@@ -150,11 +150,7 @@ export async function getOrgMembersREST(org: string): Promise<string[]> {
   return members;
 }
 
-export async function getRepoAuthorRoleSetsREST(
-  owner: string,
-  repo: string
-): Promise<{ maintainers: string[]; collaborators: string[] }> {
-  const maintainers = new Set<string>();
+export async function getRepoCollaboratorsREST(owner: string, repo: string): Promise<string[]> {
   const collaborators = new Set<string>();
   let page = 1;
   let hasMore = true;
@@ -171,9 +167,7 @@ export async function getRepoAuthorRoleSetsREST(
     } else {
       data.forEach((collaborator: any) => {
         const permissions = collaborator.permissions || {};
-        if (permissions.admin || permissions.maintain) {
-          maintainers.add(collaborator.login);
-        } else if (permissions.push) {
+        if (permissions.admin || permissions.maintain || permissions.push) {
           collaborators.add(collaborator.login);
         }
       });
@@ -181,10 +175,7 @@ export async function getRepoAuthorRoleSetsREST(
     }
   }
 
-  return {
-    maintainers: Array.from(maintainers),
-    collaborators: Array.from(collaborators),
-  };
+  return Array.from(collaborators);
 }
 
 export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<any[]> {

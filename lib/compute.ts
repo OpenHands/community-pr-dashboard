@@ -1,6 +1,6 @@
 import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats, RepoAuthorRoleSets } from './types';
 import { config } from './config';
-import { isEmployee, isCommunityPR, getAuthorType } from './employees';
+import { isEmployee, getAuthorType } from './employees';
 import { ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
 
 // Minimum number of data points required for a meaningful median
@@ -125,7 +125,7 @@ export function transformPR(
 }
 
 export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
-  const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
+  const communityPrs = allPrs.filter(pr => pr.authorType === 'community');
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
   // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)
@@ -296,7 +296,7 @@ export function computeDashboardData(
   employeesSet: Set<string>,
   reviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] }
 ): import('./types').DashboardData {
-  const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
+  const communityPrs = allPrs.filter(pr => pr.authorType === 'community');
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
   // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)

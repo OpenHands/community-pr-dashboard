@@ -2,18 +2,25 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { config } from './config';
 import { cache } from './cache';
-import { getOrgMembersGraphQL, getOrgMembersREST, getRepoAuthorRoleSetsREST } from './github';
-import { EmployeeOverrides, RepoAuthorRoleSets } from './types';
+import { getOrgMembersGraphQL, getOrgMembersREST, getRepoCollaboratorsREST } from './github';
+import { EmployeeOverrides, LoginOverrides, MaintainerOverrides, RepoAuthorRoleSets } from './types';
 
-function loadEmployeeOverrides(): EmployeeOverrides {
+function loadOverrides(fileName: string): LoginOverrides {
   try {
-    const filePath = join(process.cwd(), 'config', 'employees.json');
+    const filePath = join(process.cwd(), 'config', fileName);
     const fileContent = readFileSync(filePath, 'utf-8');
     return JSON.parse(fileContent);
   } catch {
-    // If file doesn't exist or is invalid, return empty overrides
     return { allowlist: [], denylist: [] };
   }
+}
+
+function loadEmployeeOverrides(): EmployeeOverrides {
+  return loadOverrides('employees.json');
+}
+
+function loadMaintainerOverrides(): MaintainerOverrides {
+  return loadOverrides('maintainers.json');
 }
 
 export async function buildEmployeesSet(): Promise<Set<string>> {
@@ -54,15 +61,33 @@ export async function buildEmployeesSet(): Promise<Set<string>> {
   });
 }
 
+export async function buildMaintainersSet(): Promise<Set<string>> {
+  const cacheKey = 'maintainers';
+
+  return cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
+    const maintainers = new Set<string>();
+    const overrides = loadMaintainerOverrides();
+
+    overrides.allowlist.forEach(login => maintainers.add(login));
+    overrides.denylist.forEach(login => maintainers.delete(login));
+
+    return maintainers;
+  });
+}
+
 export async function buildRepoAuthorRoleSets(owner: string, repo: string): Promise<RepoAuthorRoleSets> {
   const cacheKey = `repo-author-roles:${owner}/${repo}`;
 
   return cache.withCache(cacheKey, config.cache.ttlSeconds, async () => {
     try {
-      const roleSets = await getRepoAuthorRoleSetsREST(owner, repo);
+      const [maintainersSet, collaborators] = await Promise.all([
+        buildMaintainersSet(),
+        getRepoCollaboratorsREST(owner, repo),
+      ]);
+
       return {
-        maintainers: new Set(roleSets.maintainers),
-        collaborators: new Set(roleSets.collaborators),
+        maintainers: new Set(maintainersSet),
+        collaborators: new Set(collaborators.filter(login => !maintainersSet.has(login))),
       };
     } catch (error) {
       console.error(`Failed to fetch repo author roles for ${owner}/${repo}:`, error);

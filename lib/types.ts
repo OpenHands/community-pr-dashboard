@@ -58,10 +58,13 @@ export type ReviewStatsResponse = {
   uniqueReviewersWithPending: number;
 };
 
-export type EmployeeOverrides = {
+export type LoginOverrides = {
   allowlist: string[];
   denylist: string[];
 };
+
+export type EmployeeOverrides = LoginOverrides;
+export type MaintainerOverrides = LoginOverrides;
 
 export type RepoAuthorRoleSets = {
   maintainers: Set<string>;
