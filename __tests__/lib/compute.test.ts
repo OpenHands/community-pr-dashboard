@@ -7,7 +7,8 @@ jest.mock('@/lib/employees', () => ({
   isEmployee: (login: string, employeesSet: Set<string>) => employeesSet.has(login),
   isOrgMemberAssociation: (authorAssociation?: string) => authorAssociation === 'MEMBER' || authorAssociation === 'OWNER',
   getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string, repoAuthorRoleSets = { maintainers: new Set<string>(), collaborators: new Set<string>() }) => {
-    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
+    const normalizedLogin = authorLogin.toLowerCase();
+    const isBot = normalizedLogin.includes('[bot]') || normalizedLogin.endsWith('-bot') || normalizedLogin.endsWith('_bot') || normalizedLogin === 'dependabot';
     if (isBot) return 'bot';
     if (repoAuthorRoleSets.maintainers.has(authorLogin)) return 'maintainer';
     if (employeesSet.has(authorLogin) || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER') return 'employee';
