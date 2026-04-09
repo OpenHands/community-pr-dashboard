@@ -26,6 +26,7 @@ npm run test:watch   # Run Jest in watch mode
 - Path alias `@/` maps to the project root.
 - `app/page_old.tsx` is a legacy file with known lint warnings.
 - The active working fork is `enyst/oh-community-pr-dashboard`; upstream is `OpenHands/community-pr-dashboard`.
+- If a branch is first reviewed on the fork, the final handoff should close the fork PR and open an upstream PR from the same fork branch, with the fork PR left closed and linked to the upstream PR for traceability.
 - PR author badges use `config/maintainers.json` as the maintainer source of truth, with repo collaborators still derived from the GitHub collaborators API in `buildRepoAuthorRoleSets` / `getRepoCollaboratorsREST`.
 - Bot accounts should be filtered out of reviewer-facing metrics and requested-reviewer lists; author bot classification alone is not enough to remove bot reviewers from the dashboard.
 - Production HTML includes the deployed git SHA in a comment near the top of the document, which is useful for checking whether Vercel is serving the latest commit.
