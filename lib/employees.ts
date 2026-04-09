@@ -4,6 +4,7 @@ import { config } from './config';
 import { cache } from './cache';
 import { RateLimitError, getOrgMembersGraphQL, getOrgMembersREST, getRepoCollaboratorsREST } from './github';
 import { EmployeeOverrides, LoginOverrides, MaintainerOverrides, RepoAuthorRoleSets } from './types';
+import { isBotLogin } from './bots';
 
 function normalizeOverrides(data: unknown): LoginOverrides {
   if (!data || typeof data !== 'object') {
@@ -114,10 +115,6 @@ export function isEmployee(login: string, employeesSet: Set<string>): boolean {
 }
 
 export type AuthorType = 'employee' | 'maintainer' | 'collaborator' | 'community' | 'bot';
-
-function isBotLogin(login: string): boolean {
-  return login.includes('[bot]') || login.endsWith('-bot') || login.endsWith('_bot') || login === 'dependabot';
-}
 
 export function isOrgMemberAssociation(authorAssociation?: string): boolean {
   return authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';

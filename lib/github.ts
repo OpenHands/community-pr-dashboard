@@ -1,5 +1,6 @@
 import { config } from './config';
 import { GitHubRateLimit } from './types';
+import { isBotLogin } from './bots';
 
 export class GitHubAPIError extends Error {
   constructor(
@@ -398,11 +399,19 @@ export async function getRecentlyMergedPRsWithReviews(owner: string, repo: strin
       
       for (const item of pr.timelineItems?.nodes || []) {
         if (item.__typename === 'ReviewRequestedEvent' && item.requestedReviewer?.login) {
+          if (isBotLogin(item.requestedReviewer.login)) {
+            continue;
+          }
+
           // Only store the first request time (don't overwrite if already exists)
           if (!prReviewRequests[item.requestedReviewer.login]) {
             prReviewRequests[item.requestedReviewer.login] = item.createdAt;
           }
         } else if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
+          if (isBotLogin(item.author.login)) {
+            continue;
+          }
+
           // Only count actual reviews (APPROVED, CHANGES_REQUESTED, COMMENTED)
           if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
             reviews.push({
@@ -595,7 +604,7 @@ export async function getAllPRReviewStats(
       if (!authorLogin) continue;
 
       // Determine author type
-      const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
+      const isBot = isBotLogin(authorLogin);
       const isEmployee = employeesSet.has(authorLogin);
       const hasWriteAccess = ['COLLABORATOR', 'MEMBER', 'OWNER'].includes(authorAssociation);
 
@@ -612,10 +621,14 @@ export async function getAllPRReviewStats(
         readyForReviewAt = pr.createdAt;
       }
 
-      // Find first review by each reviewer
+      // Find first human review by each reviewer
       const reviewerFirstReview: Record<string, string> = {};
       for (const item of pr.timelineItems?.nodes || []) {
         if (item.__typename === 'PullRequestReview' && item.author?.login && item.submittedAt) {
+          if (isBotLogin(item.author.login)) {
+            continue;
+          }
+
           if (['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'].includes(item.state)) {
             const reviewerLogin = item.author.login;
             if (!reviewerFirstReview[reviewerLogin]) {
