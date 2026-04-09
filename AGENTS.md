@@ -25,5 +25,7 @@ npm run test:watch   # Run Jest in watch mode
 - `next lint` does not exist in Next.js 16 — use `npm run lint` instead.
 - Path alias `@/` maps to the project root.
 - `app/page_old.tsx` is a legacy file with known lint warnings.
-- Production HTML includes the deployed git SHA in a comment near the top of the document, which is useful for checking whether Vercel is serving the latest commit.
+- PR author badges use `config/maintainers.json` as the maintainer source of truth, with repo collaborators still derived from the GitHub collaborators API in `buildRepoAuthorRoleSets` / `getRepoCollaboratorsREST`.
 - Bot accounts should be filtered out of reviewer-facing metrics and requested-reviewer lists; author bot classification alone is not enough to remove bot reviewers from the dashboard.
+- Production HTML includes the deployed git SHA in a comment near the top of the document, which is useful for checking whether Vercel is serving the latest commit.
+- `__tests__/api/dashboard.test.ts` may need a larger Node heap in this environment; `NODE_OPTIONS=--max-old-space-size=8192 npm test -- --runInBand __tests__/api/dashboard.test.ts` worked reliably.

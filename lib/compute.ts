@@ -1,6 +1,6 @@
-import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats } from './types';
+import { PR, Review, KPIs, ReviewStatsResponse, Reviewer, CommunityReviewerStats, OrgMemberReviewerStats, BotReviewerStats, RepoAuthorRoleSets } from './types';
 import { config } from './config';
-import { isEmployee, isCommunityPR, getAuthorType } from './employees';
+import { isEmployee, getAuthorType, isOrgMemberAssociation } from './employees';
 import { ReviewStatsData, CommunityPRReviewData, OrgMemberPRReviewData, BotPRReviewData } from './github';
 import { isBotLogin } from './bots';
 
@@ -66,7 +66,11 @@ export function computeFlags(
   };
 }
 
-export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
+export function transformPR(
+  rawPR: any,
+  employeesSet: Set<string>,
+  repoAuthorRoleSets: RepoAuthorRoleSets = { maintainers: new Set(), collaborators: new Set() }
+): PR {
   const { firstHumanResponseAt, firstReviewAt } = computeFirsts(rawPR, employeesSet);
   const flags = computeFlags(rawPR, firstHumanResponseAt, firstReviewAt);
   
@@ -104,8 +108,8 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
     url: rawPR.url,
     authorLogin,
     authorAssociation,
-    authorType: getAuthorType(authorLogin, employeesSet, authorAssociation),
-    isEmployeeAuthor: isEmployee(authorLogin, employeesSet),
+    authorType: getAuthorType(authorLogin, employeesSet, authorAssociation, repoAuthorRoleSets),
+    isEmployeeAuthor: isEmployee(authorLogin, employeesSet) || isOrgMemberAssociation(authorAssociation),
     isDraft: rawPR.isDraft,
     createdAt: rawPR.createdAt,
     updatedAt: rawPR.updatedAt,
@@ -119,8 +123,8 @@ export function transformPR(rawPR: any, employeesSet: Set<string>): PR {
   };
 }
 
-export function computeKpis(allPrs: PR[], employeesSet: Set<string>): KPIs {
-  const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
+export function computeKpis(allPrs: PR[]): KPIs {
+  const communityPrs = allPrs.filter(pr => pr.authorType === 'community');
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
   // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)
@@ -307,7 +311,7 @@ export function computeDashboardData(
   employeesSet: Set<string>,
   reviewStatsData: ReviewStatsData = { completedReviews: [], reviewRequests: [] }
 ): import('./types').DashboardData {
-  const communityPrs = allPrs.filter(pr => isCommunityPR(pr.authorLogin, employeesSet, pr.authorAssociation));
+  const communityPrs = allPrs.filter(pr => pr.authorType === 'community');
   const nonDraftPrs = allPrs.filter(pr => !pr.isDraft);
   
   // Calculate medians - use readyForReviewAt as start time (handles draft PRs correctly)

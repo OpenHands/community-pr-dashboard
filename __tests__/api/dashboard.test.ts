@@ -40,7 +40,7 @@ jest.mock('@/lib/cache', () => ({
 
 jest.mock('@/lib/employees', () => ({
   buildEmployeesSet: jest.fn(),
-  isCommunityPR: jest.fn(),
+  buildRepoAuthorRoleSets: jest.fn(),
 }));
 
 // Keep the real RateLimitError class; replace network functions with mocks.
@@ -71,7 +71,7 @@ import {
   getRecentlyMergedPRsWithReviews,
   getAllPRReviewStats,
 } from '@/lib/github';
-import { buildEmployeesSet } from '@/lib/employees';
+import { buildEmployeesSet, buildRepoAuthorRoleSets } from '@/lib/employees';
 import {
   transformPR,
   computeDashboardData,
@@ -80,11 +80,12 @@ import {
   computeBotReviewerStats,
 } from '@/lib/compute';
 
-const mockGetOpenPRs        = getOpenPRsGraphQL              as jest.MockedFunction<typeof getOpenPRsGraphQL>;
+const mockGetOpenPRs        = getOpenPRsGraphQL               as jest.MockedFunction<typeof getOpenPRsGraphQL>;
 const mockGetMergedPRs      = getRecentlyMergedPRsWithReviews as jest.MockedFunction<typeof getRecentlyMergedPRsWithReviews>;
 const mockGetAllReviewStats = getAllPRReviewStats             as jest.MockedFunction<typeof getAllPRReviewStats>;
-const mockBuildEmployeesSet = buildEmployeesSet              as jest.MockedFunction<typeof buildEmployeesSet>;
-const mockTransformPR             = transformPR                    as jest.MockedFunction<typeof transformPR>;
+const mockBuildEmployeesSet = buildEmployeesSet               as jest.MockedFunction<typeof buildEmployeesSet>;
+const mockBuildRepoAuthorRoleSets = buildRepoAuthorRoleSets   as jest.MockedFunction<typeof buildRepoAuthorRoleSets>;
+const mockTransformPR             = transformPR               as jest.MockedFunction<typeof transformPR>;
 const mockComputeDashboardData    = computeDashboardData           as jest.MockedFunction<typeof computeDashboardData>;
 const mockComputeCommunityStats   = computeCommunityReviewerStats  as jest.MockedFunction<typeof computeCommunityReviewerStats>;
 const mockComputeOrgMemberStats   = computeOrgMemberReviewerStats  as jest.MockedFunction<typeof computeOrgMemberReviewerStats>;
@@ -134,6 +135,7 @@ beforeEach(() => {
   jest.clearAllMocks();
 
   mockBuildEmployeesSet.mockResolvedValue(new Set<string>());
+  mockBuildRepoAuthorRoleSets.mockResolvedValue({ maintainers: new Set<string>(), collaborators: new Set<string>() });
   mockGetOpenPRs.mockResolvedValue([]);
   mockGetMergedPRs.mockResolvedValue(EMPTY_REVIEW_STATS);
   mockGetAllReviewStats.mockResolvedValue(EMPTY_ALL_REVIEW_STATS);

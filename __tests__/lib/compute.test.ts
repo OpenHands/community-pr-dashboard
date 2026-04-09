@@ -5,18 +5,14 @@ import { ReviewStatsData } from '@/lib/github';
 // Mock the employees module
 jest.mock('@/lib/employees', () => ({
   isEmployee: (login: string, employeesSet: Set<string>) => employeesSet.has(login),
-  isCommunityPR: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string) => {
-    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
-    const isEmployeeUser = employeesSet.has(authorLogin);
-    const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
-    return !isBot && !isEmployeeUser && !hasWriteAccess;
-  },
-  getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string) => {
-    const isBot = authorLogin.includes('[bot]') || authorLogin.endsWith('-bot') || authorLogin.endsWith('_bot') || authorLogin === 'dependabot';
+  isOrgMemberAssociation: (authorAssociation?: string) => authorAssociation === 'MEMBER' || authorAssociation === 'OWNER',
+  getAuthorType: (authorLogin: string, employeesSet: Set<string>, authorAssociation?: string, repoAuthorRoleSets = { maintainers: new Set<string>(), collaborators: new Set<string>() }) => {
+    const normalizedLogin = authorLogin.toLowerCase();
+    const isBot = normalizedLogin.includes('[bot]') || normalizedLogin.endsWith('-bot') || normalizedLogin.endsWith('_bot') || normalizedLogin === 'dependabot';
     if (isBot) return 'bot';
-    if (employeesSet.has(authorLogin)) return 'employee';
-    const hasWriteAccess = authorAssociation === 'COLLABORATOR' || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER';
-    if (hasWriteAccess) return 'maintainer';
+    if (repoAuthorRoleSets.maintainers.has(authorLogin)) return 'maintainer';
+    if (employeesSet.has(authorLogin) || authorAssociation === 'MEMBER' || authorAssociation === 'OWNER') return 'employee';
+    if (repoAuthorRoleSets.collaborators.has(authorLogin) || authorAssociation === 'COLLABORATOR') return 'collaborator';
     return 'community';
   },
 }));

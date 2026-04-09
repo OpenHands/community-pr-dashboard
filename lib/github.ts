@@ -151,6 +151,34 @@ export async function getOrgMembersREST(org: string): Promise<string[]> {
   return members;
 }
 
+export async function getRepoCollaboratorsREST(owner: string, repo: string): Promise<string[]> {
+  const collaborators = new Set<string>();
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const response = await fetchGitHub(
+      `https://api.github.com/repos/${owner}/${repo}/collaborators?affiliation=all&per_page=100&page=${page}`
+    );
+
+    const data = await response.json();
+
+    if (data.length === 0) {
+      hasMore = false;
+    } else {
+      data.forEach((collaborator: any) => {
+        const permissions = collaborator.permissions || {};
+        if (permissions.admin || permissions.maintain || permissions.push) {
+          collaborators.add(collaborator.login);
+        }
+      });
+      page++;
+    }
+  }
+
+  return Array.from(collaborators);
+}
+
 export async function getOpenPRsGraphQL(owner: string, repo: string): Promise<any[]> {
   const query = `
     query OpenPRs($owner: String!, $name: String!, $cursor: String) {

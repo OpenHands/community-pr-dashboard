@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { config, validateConfig } from '@/lib/config';
 import { cache } from '@/lib/cache';
-import { buildEmployeesSet } from '@/lib/employees';
+import { buildEmployeesSet, buildRepoAuthorRoleSets } from '@/lib/employees';
 import { getOpenPRsGraphQL } from '@/lib/github';
 import { transformPR, computeReviewStats } from '@/lib/compute';
 import { PR } from '@/lib/types';
+import { DEFAULT_REPOS } from '@/lib/defaults';
 
 export async function GET(_request: NextRequest) {
   try {
@@ -21,22 +22,21 @@ export async function GET(_request: NextRequest) {
       // Get all PRs from configured repositories
       const allPrs: PR[] = [];
       
-      // For MVP, use hardcoded repos (same as dashboard)
-      const reposToFetch = config.repos.include.length > 0 ? config.repos.include : [
-        'All-Hands-AI/OpenHands',
-        'All-Hands-AI/agent-sdk',
-      ];
+      const reposToFetch = config.repos.include.length > 0 ? config.repos.include : DEFAULT_REPOS;
       
       for (const repoPath of reposToFetch) {
         const [owner, repo] = repoPath.split('/');
         if (!owner || !repo) continue;
         
         try {
-          const rawPrs = await getOpenPRsGraphQL(owner, repo);
+          const [rawPrs, repoAuthorRoleSets] = await Promise.all([
+            getOpenPRsGraphQL(owner, repo),
+            buildRepoAuthorRoleSets(owner, repo),
+          ]);
           const transformedPrs = rawPrs.map(rawPr => {
             // Add repo info to raw PR for transformation
             rawPr.repository = { owner: { login: owner }, name: repo };
-            return transformPR(rawPr, employeesSet);
+            return transformPR(rawPr, employeesSet, repoAuthorRoleSets);
           });
           
           allPrs.push(...transformedPrs);
