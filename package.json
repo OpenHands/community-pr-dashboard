@@ -8,10 +8,12 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "db:migrate": "node scripts/apply-migrations.mjs",
     "test": "jest",
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@octokit/rest": "^22.0.1",
     "next": "^16.0.10",
     "react": "^19.2.3",
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

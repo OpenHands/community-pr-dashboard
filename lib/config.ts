@@ -18,6 +18,20 @@ export const config = {
   cache: {
     ttlSeconds: parseInt(process.env.CACHE_TTL_SECONDS || '120'),
   },
+  database: {
+    url: process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || '',
+  },
+  sync: {
+    cooldownSeconds: parseInt(process.env.DASHBOARD_SYNC_COOLDOWN_SECONDS || '300'),
+    lockTimeoutSeconds: parseInt(process.env.DASHBOARD_SYNC_LOCK_TIMEOUT_SECONDS || '600'),
+    cronSecret: process.env.SYNC_CRON_SECRET || '',
+  },
+  backfill: {
+    startDate: process.env.BACKFILL_START_DATE || '',
+    maxPrPagesPerRepo: process.env.BACKFILL_MAX_PR_PAGES_PER_REPO
+      ? parseInt(process.env.BACKFILL_MAX_PR_PAGES_PER_REPO)
+      : null,
+  },
   limits: {
     maxPrPagesPerRepo: parseInt(process.env.MAX_PR_PAGES_PER_REPO || '10'),
   },
