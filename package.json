@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "db:migrate": "node scripts/apply-migrations.mjs",
+    "backfill": "node scripts/backfill.mjs",
     "test": "jest",
     "test:watch": "jest --watch"
   },

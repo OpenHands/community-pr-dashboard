@@ -2,6 +2,9 @@ import { Pool } from '@neondatabase/serverless';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { loadEnvFiles } from './load-env.mjs';
+
+loadEnvFiles();
 
 const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
 
