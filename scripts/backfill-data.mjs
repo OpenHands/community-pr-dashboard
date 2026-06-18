@@ -21,6 +21,23 @@ function sortByOccurredAt(items, accessor) {
   });
 }
 
+function dedupeBy(rows, keyBuilder) {
+  const dedupedRows = [];
+  const seenKeys = new Set();
+
+  for (const row of rows) {
+    const key = keyBuilder(row);
+    if (seenKeys.has(key)) {
+      continue;
+    }
+
+    seenKeys.add(key);
+    dedupedRows.push(row);
+  }
+
+  return dedupedRows;
+}
+
 export async function resolveRepositories(explicitRepos) {
   if (explicitRepos.length > 0) {
     const repositories = [];
@@ -272,7 +289,7 @@ function getReviewRequestDescriptor(event) {
 }
 
 export function buildTimelineEventRows(timelineEvents) {
-  return sortByOccurredAt(
+  const rows = sortByOccurredAt(
     timelineEvents.filter(event => TIMELINE_EVENTS_TO_STORE.has(event?.event) && event?.created_at),
     event => event.created_at
   ).map(event => {
@@ -294,11 +311,14 @@ export function buildTimelineEventRows(timelineEvents) {
       rawPayload: event,
     };
   });
+
+  return dedupeBy(rows, row => row.githubNodeId);
 }
 
 export function buildReviewRequestRows(pr, timelineEvents) {
   const rows = [];
   const activeRowsByKey = new Map();
+  const seenRequestEventKeys = new Set();
   const sortedEvents = sortByOccurredAt(
     timelineEvents.filter(event => ['review_requested', 'review_request_removed'].includes(event?.event) && event?.created_at),
     event => event.created_at
@@ -311,6 +331,13 @@ export function buildReviewRequestRows(pr, timelineEvents) {
     }
 
     if (event.event === 'review_requested') {
+      const requestEventKey = `${descriptor.reviewerKey}:${event.created_at}`;
+      if (seenRequestEventKeys.has(requestEventKey)) {
+        continue;
+      }
+
+      seenRequestEventKeys.add(requestEventKey);
+
       const row = {
         reviewerType: descriptor.reviewerType,
         reviewerLogin: descriptor.reviewerLogin,
@@ -376,11 +403,14 @@ export function buildReviewRequestRows(pr, timelineEvents) {
     }
   }
 
-  return rows;
+  return dedupeBy(
+    rows,
+    row => `${row.reviewerType}:${row.reviewerLogin || ''}:${row.teamSlug || ''}:${row.requestedAt}`
+  );
 }
 
 export function buildReviewRows(reviews) {
-  return sortByOccurredAt(
+  const rows = sortByOccurredAt(
     reviews.filter(review => review?.submitted_at && review?.node_id),
     review => review.submitted_at
   ).map(review => ({
@@ -391,6 +421,8 @@ export function buildReviewRows(reviews) {
     submittedAt: review.submitted_at,
     rawPayload: review,
   }));
+
+  return dedupeBy(rows, row => row.githubNodeId);
 }
 
 export function summarizePullRequest(pr, details) {
